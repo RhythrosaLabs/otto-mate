@@ -17,8 +17,8 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/connections", tags=["connections"])
 
-# Path to .env file
-ENV_FILE = Path(__file__).parent.parent.parent.parent / ".env"
+# Path to .env file - use working directory for consistency
+ENV_FILE = Path.cwd() / ".env"
 
 
 class ConnectionCredentials(BaseModel):
@@ -170,13 +170,20 @@ async def get_connection_status() -> Dict[str, bool]:
     """Get status of all service connections."""
     env_vars = read_env_file()
     
+    def is_valid_key(key: str) -> bool:
+        """Check if a key is a real API key (not a placeholder)."""
+        if not key:
+            return False
+        placeholders = ["your_", "placeholder", "xxx", "change_this", "insert_", "add_your"]
+        return not any(p in key.lower() for p in placeholders)
+    
     return {
-        "anthropic": bool(env_vars.get("ANTHROPIC_API_KEY")),
-        "openai": bool(env_vars.get("OPENAI_API_KEY")),
-        "replicate": bool(env_vars.get("REPLICATE_API_TOKEN")),
-        "printify": bool(env_vars.get("PRINTIFY_API_TOKEN") or env_vars.get("PRINTIFY_API_KEY")),
-        "shopify": bool(env_vars.get("SHOPIFY_ACCESS_TOKEN")),
-        "serper": bool(env_vars.get("SERPER_API_KEY"))
+        "anthropic": is_valid_key(env_vars.get("ANTHROPIC_API_KEY", "")),
+        "openai": is_valid_key(env_vars.get("OPENAI_API_KEY", "")),
+        "replicate": is_valid_key(env_vars.get("REPLICATE_API_TOKEN", "")),
+        "printify": is_valid_key(env_vars.get("PRINTIFY_API_TOKEN", "") or env_vars.get("PRINTIFY_API_KEY", "")),
+        "shopify": is_valid_key(env_vars.get("SHOPIFY_ACCESS_TOKEN", "")),
+        "serper": is_valid_key(env_vars.get("SERPER_API_KEY", ""))
     }
 
 

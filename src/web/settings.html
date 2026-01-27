@@ -619,6 +619,14 @@
                     Interface
                 </a>
             </nav>
+            
+            <!-- API Keys Link -->
+            <div style="padding: 1rem; margin-top: 1rem; background: var(--bg-input); border-radius: 8px;">
+                <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Need to update API keys?</p>
+                <a href="/onboarding" style="color: var(--primary); text-decoration: none; font-size: 0.875rem;">
+                    🔑 Manage Connections
+                </a>
+            </div>
         </aside>
         
         <!-- Settings Content -->
@@ -1403,12 +1411,34 @@
             // Would actually test TTS here
         }
         
-        function testPrintify() {
-            showToast('Testing Printify connection...', 'success');
+        async function testPrintify() {
+            showToast('Testing Printify connection...', 'info');
+            try {
+                const response = await fetch('/api/connections/test/printify', { method: 'POST' });
+                const result = await response.json();
+                if (result.success) {
+                    showToast('Printify connection successful!', 'success');
+                } else {
+                    showToast('Printify connection failed: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showToast('Failed to test Printify: ' + error.message, 'error');
+            }
         }
         
-        function testShopify() {
-            showToast('Testing Shopify connection...', 'success');
+        async function testShopify() {
+            showToast('Testing Shopify connection...', 'info');
+            try {
+                const response = await fetch('/api/connections/test/shopify', { method: 'POST' });
+                const result = await response.json();
+                if (result.success) {
+                    showToast('Shopify connection successful!', 'success');
+                } else {
+                    showToast('Shopify connection failed: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showToast('Failed to test Shopify: ' + error.message, 'error');
+            }
         }
         
         function testNotification() {
