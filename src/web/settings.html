@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Otto Universal AI - Settings</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent: #22d3ee;
+            --success: #22c55e;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --border: #475569;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        .header {
+            background: var(--bg-card);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .logo-text h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .logo-text span {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--text-primary);
+            background: var(--bg-input);
+        }
+        
+        /* Main Content */
+        .main-content {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 2rem;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            flex-shrink: 0;
+        }
+        
+        .sidebar-nav {
+            background: var(--bg-card);
+            border-radius: 12px;
+            overflow: hidden;
+            position: sticky;
+            top: 100px;
+        }
+        
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 1.25rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+        
+        .sidebar-nav a:hover {
+            background: var(--bg-input);
+            color: var(--text-primary);
+        }
+        
+        .sidebar-nav a.active {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            border-left-color: var(--primary);
+        }
+        
+        .sidebar-nav a svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        /* Settings Content */
+        .settings-content {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .settings-section {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+        
+        .settings-section.active {
+            display: block;
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .section-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .section-header p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+        
+        .form-group .description {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        
+        input[type="text"],
+        input[type="number"],
+        input[type="email"],
+        input[type="password"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            transition: border-color 0.2s;
+        }
+        
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        /* Toggle Switch */
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .toggle-group:last-child {
+            border-bottom: none;
+        }
+        
+        .toggle-info h4 {
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+        
+        .toggle-info p {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
+        .toggle {
+            position: relative;
+            width: 48px;
+            height: 26px;
+            cursor: pointer;
+        }
+        
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--bg-input);
+            border-radius: 26px;
+            transition: 0.3s;
+        }
+        
+        .toggle-slider:before {
+            content: "";
+            position: absolute;
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background: var(--text-secondary);
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+        
+        .toggle input:checked + .toggle-slider {
+            background: var(--primary);
+        }
+        
+        .toggle input:checked + .toggle-slider:before {
+            transform: translateX(22px);
+            background: white;
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-input);
+            color: var(--text-primary);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+        
+        .btn-danger {
+            background: var(--error);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+        
+        /* API Key Input */
+        .api-key-input {
+            position: relative;
+        }
+        
+        .api-key-input input {
+            padding-right: 100px;
+        }
+        
+        .api-key-input .actions {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .api-key-input .actions button {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+        
+        .api-key-input .actions button:hover {
+            color: var(--text-primary);
+        }
+        
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .status-badge.connected {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+        }
+        
+        .status-badge.disconnected {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+        }
+        
+        .status-badge::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+        
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .toast.success {
+            border-color: var(--success);
+        }
+        
+        .toast.error {
+            border-color: var(--error);
+        }
+        
+        /* File Browser */
+        .file-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .file-item {
+            background: var(--bg-input);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .file-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .file-item .icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .file-item .name {
+            font-size: 0.75rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .file-item .size {
+            font-size: 0.625rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Storage Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stat-card {
+            background: var(--bg-input);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        
+        .stat-card .value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .stat-card .label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+                padding: 1rem;
+            }
+            
+            .sidebar {
+                width: 100%;
+            }
+            
+            .sidebar-nav {
+                display: flex;
+                overflow-x: auto;
+                position: static;
+            }
+            
+            .sidebar-nav a {
+                flex-shrink: 0;
+                border-left: none;
+                border-bottom: 3px solid transparent;
+            }
+            
+            .sidebar-nav a.active {
+                border-left: none;
+                border-bottom-color: var(--primary);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <a href="/" class="logo">
+            <div class="logo-icon">🤖</div>
+            <div class="logo-text">
+                <h1>Otto Universal</h1>
+                <span>Settings</span>
+            </div>
+        </a>
+        <nav class="nav-links">
+            <a href="/">Chat</a>
+            <a href="/files-page">Files</a>
+            <a href="/settings-page" class="active">Settings</a>
+        </nav>
+    </header>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <a href="#ai" class="active" data-section="ai">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2a4 4 0 0 1 4 4v2a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z"/>
+                        <path d="M6 10v2a6 6 0 0 0 12 0v-2"/>
+                        <line x1="12" y1="18" x2="12" y2="22"/>
+                    </svg>
+                    AI Models
+                </a>
+                <a href="#voice" data-section="voice">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                        <line x1="12" y1="19" x2="12" y2="23"/>
+                    </svg>
+                    Voice
+                </a>
+                <a href="#image" data-section="image">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                    Images
+                </a>
+                <a href="#printify" data-section="printify">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <path d="M16 10a4 4 0 0 1-8 0"/>
+                    </svg>
+                    Printify
+                </a>
+                <a href="#shopify" data-section="shopify">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="9" cy="21" r="1"/>
+                        <circle cx="20" cy="21" r="1"/>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                    </svg>
+                    Shopify
+                </a>
+                <a href="#storage" data-section="storage">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    Storage
+                </a>
+                <a href="#notifications" data-section="notifications">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                    Notifications
+                </a>
+                <a href="#ui" data-section="ui">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                    Interface
+                </a>
+            </nav>
+        </aside>
+        
+        <!-- Settings Content -->
+        <main class="settings-content">
+            <!-- AI Settings -->
+            <section id="ai" class="settings-section active">
+                <div class="section-header">
+                    <div>
+                        <h2>AI Model Settings</h2>
+                        <p>Configure AI model preferences and behavior</p>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Default Model</label>
+                        <select id="ai-default-model">
+                            <option value="claude-sonnet-4-20250514">Claude Sonnet 4</option>
+                            <option value="claude-3-opus-20240229">Claude 3 Opus</option>
+                            <option value="gpt-4-turbo-preview">GPT-4 Turbo</option>
+                            <option value="gpt-4o">GPT-4o</option>
+                        </select>
+                        <p class="description">Primary model for AI responses</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Fallback Model</label>
+                        <select id="ai-fallback-model">
+                            <option value="gpt-4-turbo-preview">GPT-4 Turbo</option>
+                            <option value="claude-sonnet-4-20250514">Claude Sonnet 4</option>
+                            <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                        </select>
+                        <p class="description">Used when primary model fails</p>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Max Tokens</label>
+                        <input type="number" id="ai-max-tokens" value="4096" min="256" max="128000">
+                        <p class="description">Maximum response length</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Temperature</label>
+                        <input type="number" id="ai-temperature" value="0.7" min="0" max="2" step="0.1">
+                        <p class="description">0 = deterministic, 2 = creative</p>
+                    </div>
+                </div>
+                
+                <div class="toggle-group">
+                    <div class="toggle-info">
+                        <h4>Enable Streaming</h4>
+                        <p>Stream responses as they're generated</p>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="ai-streaming" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="saveSection('ai')">Save Changes</button>
+                    <button class="btn btn-secondary" onclick="resetSection('ai')">Reset to Default</button>
+                </div>
+            </section>
+            
+            <!-- Voice Settings -->
+            <section id="voice" class="settings-section">
+                <div class="section-header">
+                    <div>
+                        <h2>Voice Settings</h2>
+                        <p>Configure speech-to-text and text-to-speech</p>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Speech Recognition Model</label>
+                        <select id="voice-stt-model">
+                            <option value="whisper-1">Whisper (OpenAI)</option>
+                            <option value="whisper-large-v3">Whisper Large v3</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>TTS Provider</label>
+                        <select id="voice-tts-provider">
+                            <option value="openai">OpenAI</option>
+                            <option value="elevenlabs">ElevenLabs</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Voice</label>
+                        <select id="voice-tts-voice">
+                            <option value="nova">Nova (Female)</option>
+                            <option value="alloy">Alloy (Neutral)</option>
+                            <option value="echo">Echo (Male)</option>
+                            <option value="fable">Fable (British)</option>
+                            <option value="onyx">Onyx (Deep)</option>
+                            <option value="shimmer">Shimmer (Soft)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Speech Speed</label>
+                        <input type="number" id="voice-tts-speed" value="1.0" min="0.25" max="4.0" step="0.25">
+                    </div>
+                </div>
+                
+                <div class="toggle-group">
+                    <div class="toggle-info">
+                        <h4>Auto-play Responses</h4>
+                        <p>Automatically speak AI responses</p>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="voice-auto-play" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="toggle-group">
+                    <div class="toggle-info">
+                        <h4>Voice Activation</h4>
+                        <p>Listen for wake word "Hey Otto"</p>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="voice-activation">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="saveSection('voice')">Save Changes</button>
+                    <button class="btn btn-secondary" onclick="testVoice()">Test Voice</button>
+                </div>
+            </section>
+            
+            <!-- Image Settings -->
+            <section id="image" class="settings-section">
+                <div class="section-header">
+                    <div>
+                        <h2>Image Generation</h2>
+                        <p>Configure AI image generation defaults</p>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Default Model</label>
+                        <select id="image-default-model">
+                            <option value="flux_schnell">Flux Schnell (Fast)</option>
+                            <option value="flux_pro">Flux Pro (Quality)</option>
+                            <option value="sdxl">SDXL</option>
+                            <option value="stable_diffusion_3">Stable Diffusion 3</option>
+                            <option value="ideogram">Ideogram</option>
+                            <option value="recraft">Recraft v3</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Default Size</label>
+                        <select id="image-default-size">
+                            <option value="1024x1024">1024x1024 (Square)</option>
+                            <option value="1024x768">1024x768 (Landscape)</option>
+                            <option value="768x1024">768x1024 (Portrait)</option>
+                            <option value="1536x1024">1536x1024 (Wide)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="toggle-group">
+                    <div class="toggle-info">
+                        <h4>Auto Remove Background</h4>
+                        <p>Automatically remove backgrounds from generated images</p>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="image-auto-remove-bg">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="toggle-group">
+                    <div class="toggle-info">
+                        <h4>Save Generated Images</h4>
+                        <p>Automatically save generated images to storage</p>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="image-save-generated" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="saveSection('image')">Save Changes</button>
+                    <button class="btn btn-secondary" onclick="resetSection('image')">Reset to Default</button>
+                </div>
+            </section>
+            
+            <!-- Printify Settings -->
+            <section id="printify" class="settings-section">
+                <div class="section-header">
+                    <div>
+                        <h2>Printify Integration</h2>
+                        <p>Configure your Printify store connection</p>
+                    </div>
+                    <span class="status-badge connected">Connected</span>
+                </div>
+                
+                <div class="form-group">
+                    <label>Shop ID</label>
+                    <input type="text" id="printify-shop-id" placeholder="Enter your shop ID">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Default Blueprint</label>
+                        <select id="printify-default-blueprint">
+                            <option value="6">Unisex Jersey Short Sleeve Tee</option>
+                            <option value="5">Unisex Heavy Cotton Tee</option>
+                            <option value="145">Unisex Heavy Blend Hoodie</option>
+                            <option value="3">Premium Unisex Tee</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Default Print Provider</label>
+                        <select id="printify-default-provider">
+                            <option value="99">Monster Digital</option>
+                            <option value="27">Printful</option>
+                            <option value="28">Awkward Styles</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Default Tags</label>
+                    <input type="text" id="printify-default-tags" placeholder="tag1, tag2, tag3">
+                    <p class="description">Comma-separated tags added to all products</p>
+                </div>
+                
+                <div class="toggle-group">
+                    <div class="toggle-info">
+                        <h4>Auto Publish</h4>
+                        <p>Automatically publish products after creation</p>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="printify-auto-publish">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="toggle-group">
+                    <div class="toggle-info">
+                        <h4>Enable Integration</h4>
+                        <p>Allow Otto to manage Printify products</p>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="printify-enabled" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="saveSection('printify')">Save Changes</button>
+                    <button class="btn btn-secondary" onclick="testPrintify()">Test Connection</button>
+                </div>
+            </section>
+            
+            <!-- Shopify Settings -->
+            <section id="shopify" class="settings-section">
+                <div class="section-header">
+                    <div>
+                        <h2>Shopify Integration</h2>
+                        <p>Configure your Shopify store connection</p>
+                    </div>
+                    <span class="status-badge connected">Connected</span>
+                </div>
+                
+                <div class="form-group">
+                    <label>Shop Name</label>
+                    <input type="text" id="shopify-shop-name" placeholder="your-store.myshopify.com">
+                </div>
+                
+                <div class="toggle-group">
+                    <div class="toggle-info">
+                        <h4>Auto Sync</h4>
+                        <p>Automatically sync products with Shopify</p>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="shopify-auto-sync">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="form-group">
+                    <label>Sync Interval (minutes)</label>
+                    <input type="number" id="shopify-sync-interval" value="60" min="5" max="1440">
+                </div>
+                
+                <div class="toggle-group">
+                    <div class="toggle-info">
+                        <h4>Enable Integration</h4>
+                        <p>Allow Otto to manage Shopify store</p>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="shopify-enabled" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="saveSection('shopify')">Save Changes</button>
+                    <button class="btn btn-secondary" onclick="testShopify()">Test Connection</button>
+                </div>
+            </section>
+            
+            <!-- Storage Settings -->
+            <section id="storage" class="settings-section">
+                <div class="section-header">
+                    <div>
+                        <h2>Storage Settings</h2>
+                        <p>Manage file storage and organization</p>
+                    </div>
+                </div>
+                
+                <div class="stats-grid" id="storage-stats">
+                    <div class="stat-card">
+                        <div class="value" id="stat-total-files">0</div>
+                        <div class="label">Total Files</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="value" id="stat-total-size">0 MB</div>
+                        <div class="label">Total Size</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="value" id="stat-images">0</div>
+                        <div class="label">Images</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="value" id="stat-documents">0</div>
+                        <div class="label">Documents</div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Storage Provider</label>
+                        <select id="storage-provider">
+                            <option value="local">Local Storage</option>
+                            <option value="s3" disabled>AWS S3 (Coming Soon)</option>
+                            <option value="gcs" disabled>Google Cloud (Coming Soon)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Max File Size (MB)</label>
+                        <input type="number" id="storage-max-size" value="100" min="1" max="1000">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Auto Cleanup (days)</label>
+                    <input type="number" id="storage-cleanup-days" value="30" min="1" max="365">
+                    <p class="description">Automatically delete temp files older than this</p>
+                </div>
+                
+                <div class="toggle-group">
+                    <div class="toggle-info">
+                        <h4>Image Compression</h4>
+                        <p>Compress images to save storage space</p>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="storage-compression" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="saveSection('storage')">Save Changes</button>
+                    <button class="btn btn-secondary" onclick="cleanupStorage()">Cleanup Now</button>
+                    <button class="btn btn-danger" onclick="clearAllFiles()">Clear All Files</button>
+                </div>
+            </section>
+            
+            <!-- Notification Settings -->
+            <section id="notifications" class="settings-section">
+                <div class="section-header">
+                    <div>
+                        <h2>Notifications</h2>
+                        <p>Configure alerts and notifications</p>
+                    </div>
+                </div>
+                
+                <div class="toggle-group">
+                    <div class="toggle-info">
+                        <h4>Email Notifications</h4>
+                        <p>Receive email alerts for important events</p>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="notif-email">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="notif-email-address" placeholder="your@email.com">
+                </div>
+                
+                <div class="form-group">
+                    <label>Webhook URL</label>
+                    <input type="text" id="notif-webhook" placeholder="https://...">
+                    <p class="description">Send notifications to external services</p>
+                </div>
+                
+                <div class="toggle-group">
+                    <div class="toggle-info">
+                        <h4>Order Notifications</h4>
+                        <p>Alert when new orders are received</p>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="notif-orders" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="toggle-group">
+                    <div class="toggle-info">
+                        <h4>Error Notifications</h4>
+                        <p>Alert when errors occur</p>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="notif-errors" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="toggle-group">
+                    <div class="toggle-info">
+                        <h4>Daily Digest</h4>
+                        <p>Receive daily summary email</p>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="notif-digest">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="saveSection('notifications')">Save Changes</button>
+                    <button class="btn btn-secondary" onclick="testNotification()">Send Test</button>
+                </div>
+            </section>
+            
+            <!-- UI Settings -->
+            <section id="ui" class="settings-section">
+                <div class="section-header">
+                    <div>
+                        <h2>Interface Settings</h2>
+                        <p>Customize the appearance and behavior</p>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Theme</label>
+                        <select id="ui-theme">
+                            <option value="dark">Dark</option>
+                            <option value="light">Light</option>
+                            <option value="system">System</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Language</label>
+                        <select id="ui-language">
+                            <option value="en">English</option>
+                            <option value="es">Español</option>
+                            <option value="fr">Français</option>
+                            <option value="de">Deutsch</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Timezone</label>
+                        <select id="ui-timezone">
+                            <option value="UTC">UTC</option>
+                            <option value="America/New_York">Eastern Time</option>
+                            <option value="America/Chicago">Central Time</option>
+                            <option value="America/Denver">Mountain Time</option>
+                            <option value="America/Los_Angeles">Pacific Time</option>
+                            <option value="Europe/London">London</option>
+                            <option value="Europe/Paris">Paris</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Date Format</label>
+                        <select id="ui-date-format">
+                            <option value="YYYY-MM-DD">2026-01-26</option>
+                            <option value="MM/DD/YYYY">01/26/2026</option>
+                            <option value="DD/MM/YYYY">26/01/2026</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="toggle-group">
+                    <div class="toggle-info">
+                        <h4>Compact Mode</h4>
+                        <p>Reduce spacing for more content</p>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="ui-compact">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="toggle-group">
+                    <div class="toggle-info">
+                        <h4>Show Tool Details</h4>
+                        <p>Display detailed tool execution info</p>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="ui-tool-details" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="saveSection('ui')">Save Changes</button>
+                    <button class="btn btn-secondary" onclick="resetSection('ui')">Reset to Default</button>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <span class="toast-message"></span>
+    </div>
+    
+    <script>
+        // Settings state
+        let settings = {};
+        
+        // Load settings on page load
+        async function loadSettings() {
+            try {
+                const response = await fetch('/settings');
+                settings = await response.json();
+                populateForm();
+                loadStorageStats();
+            } catch (error) {
+                showToast('Failed to load settings', 'error');
+            }
+        }
+        
+        // Populate form with settings
+        function populateForm() {
+            // AI Settings
+            document.getElementById('ai-default-model').value = settings.ai?.default_model || 'claude-sonnet-4-20250514';
+            document.getElementById('ai-fallback-model').value = settings.ai?.fallback_model || 'gpt-4-turbo-preview';
+            document.getElementById('ai-max-tokens').value = settings.ai?.max_tokens || 4096;
+            document.getElementById('ai-temperature').value = settings.ai?.temperature || 0.7;
+            document.getElementById('ai-streaming').checked = settings.ai?.enable_streaming !== false;
+            
+            // Voice Settings
+            document.getElementById('voice-stt-model').value = settings.voice?.stt_model || 'whisper-1';
+            document.getElementById('voice-tts-provider').value = settings.voice?.tts_provider || 'openai';
+            document.getElementById('voice-tts-voice').value = settings.voice?.tts_voice || 'nova';
+            document.getElementById('voice-tts-speed').value = settings.voice?.tts_speed || 1.0;
+            document.getElementById('voice-auto-play').checked = settings.voice?.auto_play_responses !== false;
+            document.getElementById('voice-activation').checked = settings.voice?.voice_activation === true;
+            
+            // Image Settings
+            document.getElementById('image-default-model').value = settings.image?.default_model || 'flux_schnell';
+            document.getElementById('image-default-size').value = settings.image?.default_size || '1024x1024';
+            document.getElementById('image-auto-remove-bg').checked = settings.image?.auto_remove_background === true;
+            document.getElementById('image-save-generated').checked = settings.image?.save_generated_images !== false;
+            
+            // Printify Settings
+            document.getElementById('printify-shop-id').value = settings.printify?.shop_id || '';
+            document.getElementById('printify-default-blueprint').value = settings.printify?.default_blueprint || 6;
+            document.getElementById('printify-default-provider').value = settings.printify?.default_print_provider || 99;
+            document.getElementById('printify-default-tags').value = (settings.printify?.default_tags || []).join(', ');
+            document.getElementById('printify-auto-publish').checked = settings.printify?.auto_publish === true;
+            document.getElementById('printify-enabled').checked = settings.printify?.enabled !== false;
+            
+            // Shopify Settings
+            document.getElementById('shopify-shop-name').value = settings.shopify?.shop_name || '';
+            document.getElementById('shopify-auto-sync').checked = settings.shopify?.auto_sync === true;
+            document.getElementById('shopify-sync-interval').value = settings.shopify?.sync_interval_minutes || 60;
+            document.getElementById('shopify-enabled').checked = settings.shopify?.enabled !== false;
+            
+            // Storage Settings
+            document.getElementById('storage-provider').value = settings.storage?.provider || 'local';
+            document.getElementById('storage-max-size').value = settings.storage?.max_file_size_mb || 100;
+            document.getElementById('storage-cleanup-days').value = settings.storage?.auto_cleanup_days || 30;
+            document.getElementById('storage-compression').checked = settings.storage?.image_compression !== false;
+            
+            // Notification Settings
+            document.getElementById('notif-email').checked = settings.notifications?.email_notifications === true;
+            document.getElementById('notif-email-address').value = settings.notifications?.email_address || '';
+            document.getElementById('notif-webhook').value = settings.notifications?.webhook_url || '';
+            document.getElementById('notif-orders').checked = settings.notifications?.notify_on_order !== false;
+            document.getElementById('notif-errors').checked = settings.notifications?.notify_on_error !== false;
+            document.getElementById('notif-digest').checked = settings.notifications?.daily_digest === true;
+            
+            // UI Settings
+            document.getElementById('ui-theme').value = settings.ui?.theme || 'dark';
+            document.getElementById('ui-language').value = settings.ui?.language || 'en';
+            document.getElementById('ui-timezone').value = settings.ui?.timezone || 'UTC';
+            document.getElementById('ui-date-format').value = settings.ui?.date_format || 'YYYY-MM-DD';
+            document.getElementById('ui-compact').checked = settings.ui?.compact_mode === true;
+            document.getElementById('ui-tool-details').checked = settings.ui?.show_tool_details !== false;
+        }
+        
+        // Save section
+        async function saveSection(section) {
+            const values = getSectionValues(section);
+            
+            try {
+                const response = await fetch(`/settings/${section}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(values)
+                });
+                
+                if (response.ok) {
+                    showToast('Settings saved successfully', 'success');
+                    loadSettings();
+                } else {
+                    showToast('Failed to save settings', 'error');
+                }
+            } catch (error) {
+                showToast('Failed to save settings', 'error');
+            }
+        }
+        
+        // Get section values from form
+        function getSectionValues(section) {
+            switch (section) {
+                case 'ai':
+                    return {
+                        default_model: document.getElementById('ai-default-model').value,
+                        fallback_model: document.getElementById('ai-fallback-model').value,
+                        max_tokens: parseInt(document.getElementById('ai-max-tokens').value),
+                        temperature: parseFloat(document.getElementById('ai-temperature').value),
+                        enable_streaming: document.getElementById('ai-streaming').checked
+                    };
+                case 'voice':
+                    return {
+                        stt_model: document.getElementById('voice-stt-model').value,
+                        tts_provider: document.getElementById('voice-tts-provider').value,
+                        tts_voice: document.getElementById('voice-tts-voice').value,
+                        tts_speed: parseFloat(document.getElementById('voice-tts-speed').value),
+                        auto_play_responses: document.getElementById('voice-auto-play').checked,
+                        voice_activation: document.getElementById('voice-activation').checked
+                    };
+                case 'image':
+                    return {
+                        default_model: document.getElementById('image-default-model').value,
+                        default_size: document.getElementById('image-default-size').value,
+                        auto_remove_background: document.getElementById('image-auto-remove-bg').checked,
+                        save_generated_images: document.getElementById('image-save-generated').checked
+                    };
+                case 'printify':
+                    return {
+                        shop_id: document.getElementById('printify-shop-id').value,
+                        default_blueprint: parseInt(document.getElementById('printify-default-blueprint').value),
+                        default_print_provider: parseInt(document.getElementById('printify-default-provider').value),
+                        default_tags: document.getElementById('printify-default-tags').value.split(',').map(t => t.trim()).filter(t => t),
+                        auto_publish: document.getElementById('printify-auto-publish').checked,
+                        enabled: document.getElementById('printify-enabled').checked
+                    };
+                case 'shopify':
+                    return {
+                        shop_name: document.getElementById('shopify-shop-name').value,
+                        auto_sync: document.getElementById('shopify-auto-sync').checked,
+                        sync_interval_minutes: parseInt(document.getElementById('shopify-sync-interval').value),
+                        enabled: document.getElementById('shopify-enabled').checked
+                    };
+                case 'storage':
+                    return {
+                        provider: document.getElementById('storage-provider').value,
+                        max_file_size_mb: parseInt(document.getElementById('storage-max-size').value),
+                        auto_cleanup_days: parseInt(document.getElementById('storage-cleanup-days').value),
+                        image_compression: document.getElementById('storage-compression').checked
+                    };
+                case 'notifications':
+                    return {
+                        email_notifications: document.getElementById('notif-email').checked,
+                        email_address: document.getElementById('notif-email-address').value,
+                        webhook_url: document.getElementById('notif-webhook').value,
+                        notify_on_order: document.getElementById('notif-orders').checked,
+                        notify_on_error: document.getElementById('notif-errors').checked,
+                        daily_digest: document.getElementById('notif-digest').checked
+                    };
+                case 'ui':
+                    return {
+                        theme: document.getElementById('ui-theme').value,
+                        language: document.getElementById('ui-language').value,
+                        timezone: document.getElementById('ui-timezone').value,
+                        date_format: document.getElementById('ui-date-format').value,
+                        compact_mode: document.getElementById('ui-compact').checked,
+                        show_tool_details: document.getElementById('ui-tool-details').checked
+                    };
+            }
+        }
+        
+        // Reset section
+        async function resetSection(section) {
+            if (!confirm(`Reset ${section} settings to defaults?`)) return;
+            
+            try {
+                const response = await fetch(`/settings/reset?section=${section}`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    showToast('Settings reset to defaults', 'success');
+                    loadSettings();
+                } else {
+                    showToast('Failed to reset settings', 'error');
+                }
+            } catch (error) {
+                showToast('Failed to reset settings', 'error');
+            }
+        }
+        
+        // Load storage stats
+        async function loadStorageStats() {
+            try {
+                const response = await fetch('/files/stats/summary');
+                const stats = await response.json();
+                
+                document.getElementById('stat-total-files').textContent = stats.total_files;
+                document.getElementById('stat-total-size').textContent = formatSize(stats.total_size);
+                document.getElementById('stat-images').textContent = stats.by_category?.images?.count || 0;
+                document.getElementById('stat-documents').textContent = stats.by_category?.documents?.count || 0;
+            } catch (error) {
+                console.error('Failed to load storage stats:', error);
+            }
+        }
+        
+        // Format file size
+        function formatSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+        
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.querySelector('.toast-message').textContent = message;
+            toast.className = `toast ${type} show`;
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Navigation
+        document.querySelectorAll('.sidebar-nav a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const section = link.dataset.section;
+                
+                // Update nav
+                document.querySelectorAll('.sidebar-nav a').forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+                
+                // Update sections
+                document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
+                document.getElementById(section).classList.add('active');
+            });
+        });
+        
+        // Test functions
+        function testVoice() {
+            showToast('Testing voice...', 'success');
+            // Would actually test TTS here
+        }
+        
+        function testPrintify() {
+            showToast('Testing Printify connection...', 'success');
+        }
+        
+        function testShopify() {
+            showToast('Testing Shopify connection...', 'success');
+        }
+        
+        function testNotification() {
+            showToast('Sending test notification...', 'success');
+        }
+        
+        async function cleanupStorage() {
+            try {
+                await fetch('/files/cleanup', { method: 'POST' });
+                showToast('Storage cleanup complete', 'success');
+                loadStorageStats();
+            } catch (error) {
+                showToast('Cleanup failed', 'error');
+            }
+        }
+        
+        function clearAllFiles() {
+            if (!confirm('Are you sure you want to delete ALL files? This cannot be undone!')) return;
+            showToast('This feature is disabled for safety', 'error');
+        }
+        
+        // Initialize
+        loadSettings();
+    </script>
+</body>
+</html>

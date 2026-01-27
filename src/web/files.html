@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Otto Universal AI - Files</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent: #22d3ee;
+            --success: #22c55e;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --border: #475569;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        .header {
+            background: var(--bg-card);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .logo-text h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .logo-text span {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--text-primary);
+            background: var(--bg-input);
+        }
+        
+        /* Main Content */
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        
+        .stat-card .icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+        }
+        
+        .stat-card .value {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .stat-card .label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+        
+        /* Toolbar */
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .toolbar-left {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .search-box {
+            position: relative;
+        }
+        
+        .search-box input {
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            width: 300px;
+        }
+        
+        .search-box svg {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            color: var(--text-secondary);
+        }
+        
+        .filter-select {
+            padding: 0.75rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-input);
+            color: var(--text-primary);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+        
+        /* View Toggle */
+        .view-toggle {
+            display: flex;
+            background: var(--bg-card);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .view-toggle button {
+            padding: 0.5rem 1rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .view-toggle button.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        /* Files Grid */
+        .files-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .file-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        
+        .file-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+        }
+        
+        .file-card.selected {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+        
+        .file-preview {
+            height: 150px;
+            background: var(--bg-input);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .file-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .file-preview .icon {
+            font-size: 3rem;
+            color: var(--text-secondary);
+        }
+        
+        .file-info {
+            padding: 1rem;
+        }
+        
+        .file-info .name {
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 0.25rem;
+        }
+        
+        .file-info .meta {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .file-checkbox {
+            position: absolute;
+            top: 0.5rem;
+            left: 0.5rem;
+            width: 20px;
+            height: 20px;
+            background: var(--bg-dark);
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .file-card:hover .file-checkbox,
+        .file-card.selected .file-checkbox {
+            opacity: 1;
+        }
+        
+        .file-card.selected .file-checkbox {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        /* Files List */
+        .files-list {
+            display: none;
+        }
+        
+        .files-list.active {
+            display: block;
+        }
+        
+        .files-grid.active {
+            display: grid;
+        }
+        
+        .file-row {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background: var(--bg-card);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .file-row:hover {
+            background: var(--bg-input);
+        }
+        
+        .file-row .icon {
+            width: 40px;
+            height: 40px;
+            background: var(--bg-input);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.25rem;
+        }
+        
+        .file-row .details {
+            flex: 1;
+        }
+        
+        .file-row .name {
+            font-weight: 500;
+        }
+        
+        .file-row .meta {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
+        .file-row .actions {
+            display: flex;
+            gap: 0.5rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .file-row:hover .actions {
+            opacity: 1;
+        }
+        
+        .file-row .actions button {
+            padding: 0.5rem;
+            background: var(--bg-dark);
+            border: none;
+            border-radius: 6px;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+        
+        .file-row .actions button:hover {
+            color: var(--text-primary);
+        }
+        
+        /* Upload Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-overlay.show {
+            display: flex;
+        }
+        
+        .modal {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal h2 {
+            margin-bottom: 1.5rem;
+        }
+        
+        .drop-zone {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .drop-zone:hover,
+        .drop-zone.dragover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+        
+        .drop-zone .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .drop-zone p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+        
+        .drop-zone input {
+            display: none;
+        }
+        
+        .upload-progress {
+            margin-top: 1.5rem;
+            display: none;
+        }
+        
+        .upload-progress.show {
+            display: block;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: var(--bg-input);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .upload-status {
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+        
+        .empty-state .icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .empty-state h3 {
+            margin-bottom: 0.5rem;
+        }
+        
+        .empty-state p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+        
+        /* File Detail Sidebar */
+        .file-detail {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: var(--bg-card);
+            border-left: 1px solid var(--border);
+            padding: 2rem;
+            overflow-y: auto;
+            transition: right 0.3s;
+            z-index: 200;
+        }
+        
+        .file-detail.open {
+            right: 0;
+        }
+        
+        .file-detail-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--bg-input);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 1.25rem;
+        }
+        
+        .file-detail-preview {
+            width: 100%;
+            height: 200px;
+            background: var(--bg-input);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+        
+        .file-detail-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .file-detail h3 {
+            word-break: break-all;
+            margin-bottom: 1rem;
+        }
+        
+        .file-detail-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .file-detail-meta .item {
+            background: var(--bg-input);
+            padding: 0.75rem;
+            border-radius: 8px;
+        }
+        
+        .file-detail-meta .label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
+        .file-detail-meta .value {
+            font-weight: 500;
+            margin-top: 0.25rem;
+        }
+        
+        .file-detail-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        .file-detail-actions .btn {
+            flex: 1;
+        }
+        
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .toast.success {
+            border-color: var(--success);
+        }
+        
+        .toast.error {
+            border-color: var(--error);
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box input {
+                width: 100%;
+            }
+            
+            .files-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+            
+            .file-detail {
+                width: 100%;
+                right: -100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <a href="/" class="logo">
+            <div class="logo-icon">🤖</div>
+            <div class="logo-text">
+                <h1>Otto Universal</h1>
+                <span>Files</span>
+            </div>
+        </a>
+        <nav class="nav-links">
+            <a href="/">Chat</a>
+            <a href="/files-page" class="active">Files</a>
+            <a href="/settings-page">Settings</a>
+        </nav>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="icon">📁</div>
+                <div class="value" id="stat-total">0</div>
+                <div class="label">Total Files</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">💾</div>
+                <div class="value" id="stat-size">0 MB</div>
+                <div class="label">Storage Used</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">🖼️</div>
+                <div class="value" id="stat-images">0</div>
+                <div class="label">Images</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">📄</div>
+                <div class="value" id="stat-docs">0</div>
+                <div class="label">Documents</div>
+            </div>
+        </div>
+        
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <div class="search-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="M21 21l-4.35-4.35"/>
+                    </svg>
+                    <input type="text" id="search-input" placeholder="Search files...">
+                </div>
+                <select class="filter-select" id="category-filter">
+                    <option value="">All Categories</option>
+                    <option value="images">Images</option>
+                    <option value="documents">Documents</option>
+                    <option value="audio">Audio</option>
+                    <option value="video">Video</option>
+                    <option value="generated">Generated</option>
+                </select>
+            </div>
+            <div class="toolbar-right" style="display: flex; gap: 1rem;">
+                <div class="view-toggle">
+                    <button class="active" data-view="grid">⊞</button>
+                    <button data-view="list">☰</button>
+                </div>
+                <button class="btn btn-primary" onclick="openUploadModal()">
+                    <span>+</span> Upload
+                </button>
+            </div>
+        </div>
+        
+        <!-- Files Grid -->
+        <div class="files-grid active" id="files-grid"></div>
+        
+        <!-- Files List -->
+        <div class="files-list" id="files-list"></div>
+        
+        <!-- Empty State -->
+        <div class="empty-state" id="empty-state" style="display: none;">
+            <div class="icon">📂</div>
+            <h3>No files yet</h3>
+            <p>Upload your first file to get started</p>
+            <button class="btn btn-primary" onclick="openUploadModal()">Upload File</button>
+        </div>
+    </main>
+    
+    <!-- Upload Modal -->
+    <div class="modal-overlay" id="upload-modal">
+        <div class="modal">
+            <h2>Upload Files</h2>
+            <div class="drop-zone" id="drop-zone">
+                <div class="icon">📤</div>
+                <p>Drag & drop files here or click to browse</p>
+                <button class="btn btn-secondary">Choose Files</button>
+                <input type="file" id="file-input" multiple>
+            </div>
+            <div class="upload-progress" id="upload-progress">
+                <div class="progress-bar">
+                    <div class="progress-bar-fill" id="progress-fill"></div>
+                </div>
+                <div class="upload-status" id="upload-status">Uploading...</div>
+            </div>
+            <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
+                <button class="btn btn-secondary" onclick="closeUploadModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- File Detail Sidebar -->
+    <div class="file-detail" id="file-detail">
+        <button class="file-detail-close" onclick="closeFileDetail()">×</button>
+        <div class="file-detail-preview" id="detail-preview"></div>
+        <h3 id="detail-name"></h3>
+        <div class="file-detail-meta">
+            <div class="item">
+                <div class="label">Size</div>
+                <div class="value" id="detail-size"></div>
+            </div>
+            <div class="item">
+                <div class="label">Type</div>
+                <div class="value" id="detail-type"></div>
+            </div>
+            <div class="item">
+                <div class="label">Category</div>
+                <div class="value" id="detail-category"></div>
+            </div>
+            <div class="item">
+                <div class="label">Created</div>
+                <div class="value" id="detail-created"></div>
+            </div>
+        </div>
+        <div class="file-detail-actions">
+            <button class="btn btn-primary" id="download-btn">Download</button>
+            <button class="btn btn-secondary" style="background: var(--error);" id="delete-btn">Delete</button>
+        </div>
+    </div>
+    
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <span class="toast-message"></span>
+    </div>
+    
+    <script>
+        let files = [];
+        let selectedFile = null;
+        let currentView = 'grid';
+        
+        // Load files on page load
+        async function loadFiles() {
+            try {
+                const category = document.getElementById('category-filter').value;
+                let url = '/files?limit=200';
+                if (category) url += `&category=${category}`;
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                files = data.files;
+                renderFiles();
+                loadStats();
+            } catch (error) {
+                showToast('Failed to load files', 'error');
+            }
+        }
+        
+        // Load storage stats
+        async function loadStats() {
+            try {
+                const response = await fetch('/files/stats/summary');
+                const stats = await response.json();
+                
+                document.getElementById('stat-total').textContent = stats.total_files;
+                document.getElementById('stat-size').textContent = formatSize(stats.total_size);
+                document.getElementById('stat-images').textContent = stats.by_category?.images?.count || 0;
+                document.getElementById('stat-docs').textContent = stats.by_category?.documents?.count || 0;
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+            }
+        }
+        
+        // Render files
+        function renderFiles() {
+            const grid = document.getElementById('files-grid');
+            const list = document.getElementById('files-list');
+            const empty = document.getElementById('empty-state');
+            
+            if (files.length === 0) {
+                grid.style.display = 'none';
+                list.style.display = 'none';
+                empty.style.display = 'block';
+                return;
+            }
+            
+            empty.style.display = 'none';
+            
+            // Render grid
+            grid.innerHTML = files.map(file => `
+                <div class="file-card" data-id="${file.id}" onclick="selectFile('${file.id}')">
+                    <div class="file-preview">
+                        <div class="file-checkbox"></div>
+                        ${file.mime_type.startsWith('image/') 
+                            ? `<img src="/files/${file.id}" alt="${file.original_name}">`
+                            : `<div class="icon">${getFileIcon(file.mime_type)}</div>`
+                        }
+                    </div>
+                    <div class="file-info">
+                        <div class="name">${file.original_name}</div>
+                        <div class="meta">
+                            <span>${formatSize(file.size)}</span>
+                            <span>${formatDate(file.created_at)}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Render list
+            list.innerHTML = files.map(file => `
+                <div class="file-row" data-id="${file.id}" onclick="selectFile('${file.id}')">
+                    <div class="icon">${getFileIcon(file.mime_type)}</div>
+                    <div class="details">
+                        <div class="name">${file.original_name}</div>
+                        <div class="meta">${formatSize(file.size)} • ${file.category} • ${formatDate(file.created_at)}</div>
+                    </div>
+                    <div class="actions">
+                        <button onclick="event.stopPropagation(); downloadFile('${file.id}')">⬇</button>
+                        <button onclick="event.stopPropagation(); deleteFile('${file.id}')">🗑</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Get file icon based on MIME type
+        function getFileIcon(mimeType) {
+            if (mimeType.startsWith('image/')) return '🖼️';
+            if (mimeType.startsWith('video/')) return '🎬';
+            if (mimeType.startsWith('audio/')) return '🎵';
+            if (mimeType.includes('pdf')) return '📕';
+            if (mimeType.includes('word')) return '📝';
+            if (mimeType.includes('excel') || mimeType.includes('spreadsheet')) return '📊';
+            return '📄';
+        }
+        
+        // Format file size
+        function formatSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+        
+        // Format date
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString();
+        }
+        
+        // Select file
+        function selectFile(id) {
+            selectedFile = files.find(f => f.id === id);
+            if (!selectedFile) return;
+            
+            // Update cards
+            document.querySelectorAll('.file-card').forEach(c => c.classList.remove('selected'));
+            document.querySelector(`.file-card[data-id="${id}"]`)?.classList.add('selected');
+            
+            // Update detail panel
+            const detail = document.getElementById('file-detail');
+            const preview = document.getElementById('detail-preview');
+            
+            if (selectedFile.mime_type.startsWith('image/')) {
+                preview.innerHTML = `<img src="/files/${selectedFile.id}" alt="${selectedFile.original_name}">`;
+            } else {
+                preview.innerHTML = `<div style="font-size: 4rem;">${getFileIcon(selectedFile.mime_type)}</div>`;
+            }
+            
+            document.getElementById('detail-name').textContent = selectedFile.original_name;
+            document.getElementById('detail-size').textContent = formatSize(selectedFile.size);
+            document.getElementById('detail-type').textContent = selectedFile.mime_type;
+            document.getElementById('detail-category').textContent = selectedFile.category;
+            document.getElementById('detail-created').textContent = formatDate(selectedFile.created_at);
+            
+            document.getElementById('download-btn').onclick = () => downloadFile(selectedFile.id);
+            document.getElementById('delete-btn').onclick = () => deleteFile(selectedFile.id);
+            
+            detail.classList.add('open');
+        }
+        
+        // Close file detail
+        function closeFileDetail() {
+            document.getElementById('file-detail').classList.remove('open');
+            document.querySelectorAll('.file-card').forEach(c => c.classList.remove('selected'));
+            selectedFile = null;
+        }
+        
+        // Download file
+        function downloadFile(id) {
+            window.open(`/files/${id}/download`, '_blank');
+        }
+        
+        // Delete file
+        async function deleteFile(id) {
+            if (!confirm('Delete this file?')) return;
+            
+            try {
+                const response = await fetch(`/files/${id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    showToast('File deleted', 'success');
+                    closeFileDetail();
+                    loadFiles();
+                } else {
+                    showToast('Delete failed', 'error');
+                }
+            } catch (error) {
+                showToast('Delete failed', 'error');
+            }
+        }
+        
+        // Upload modal
+        function openUploadModal() {
+            document.getElementById('upload-modal').classList.add('show');
+        }
+        
+        function closeUploadModal() {
+            document.getElementById('upload-modal').classList.remove('show');
+            document.getElementById('upload-progress').classList.remove('show');
+        }
+        
+        // File upload handling
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        
+        dropZone.addEventListener('click', () => fileInput.click());
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+        
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+        
+        async function handleFiles(fileList) {
+            if (fileList.length === 0) return;
+            
+            const progress = document.getElementById('upload-progress');
+            const progressFill = document.getElementById('progress-fill');
+            const status = document.getElementById('upload-status');
+            
+            progress.classList.add('show');
+            
+            let completed = 0;
+            const total = fileList.length;
+            
+            for (const file of fileList) {
+                status.textContent = `Uploading ${file.name}...`;
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                try {
+                    const response = await fetch('/files/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (response.ok) {
+                        completed++;
+                        progressFill.style.width = `${(completed / total) * 100}%`;
+                    }
+                } catch (error) {
+                    console.error('Upload failed:', error);
+                }
+            }
+            
+            status.textContent = `Uploaded ${completed} of ${total} files`;
+            showToast(`Uploaded ${completed} files`, 'success');
+            
+            setTimeout(() => {
+                closeUploadModal();
+                loadFiles();
+            }, 1000);
+        }
+        
+        // View toggle
+        document.querySelectorAll('.view-toggle button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentView = btn.dataset.view;
+                
+                document.querySelectorAll('.view-toggle button').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                document.getElementById('files-grid').classList.toggle('active', currentView === 'grid');
+                document.getElementById('files-list').classList.toggle('active', currentView === 'list');
+            });
+        });
+        
+        // Search
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const filtered = files.filter(f => 
+                f.original_name.toLowerCase().includes(query) ||
+                f.category.toLowerCase().includes(query)
+            );
+            
+            // Re-render with filtered files
+            const grid = document.getElementById('files-grid');
+            const list = document.getElementById('files-list');
+            
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div class="empty-state"><p>No files match your search</p></div>';
+                list.innerHTML = '';
+            } else {
+                grid.innerHTML = filtered.map(file => `
+                    <div class="file-card" data-id="${file.id}" onclick="selectFile('${file.id}')">
+                        <div class="file-preview">
+                            ${file.mime_type.startsWith('image/') 
+                                ? `<img src="/files/${file.id}" alt="${file.original_name}">`
+                                : `<div class="icon">${getFileIcon(file.mime_type)}</div>`
+                            }
+                        </div>
+                        <div class="file-info">
+                            <div class="name">${file.original_name}</div>
+                            <div class="meta">
+                                <span>${formatSize(file.size)}</span>
+                                <span>${formatDate(file.created_at)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        });
+        
+        // Category filter
+        document.getElementById('category-filter').addEventListener('change', loadFiles);
+        
+        // Toast
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.querySelector('.toast-message').textContent = message;
+            toast.className = `toast ${type} show`;
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Initialize
+        loadFiles();
+    </script>
+</body>
+</html>

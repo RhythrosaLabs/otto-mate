@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Otto Universal AI</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent: #22d3ee;
+            --success: #22c55e;
+            --error: #ef4444;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header */
+        .header {
+            background: var(--bg-card);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--text-primary);
+            background: var(--bg-input);
+        }
+        
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Main Chat Area */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem;
+            overflow: hidden;
+        }
+        
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 1rem;
+            scroll-behavior: smooth;
+        }
+        
+        .message {
+            margin-bottom: 1.5rem;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+        }
+        
+        .avatar.user {
+            background: var(--primary);
+        }
+        
+        .avatar.otto {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+        }
+        
+        .sender {
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        .timestamp {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+        }
+        
+        .message-content {
+            padding: 1rem 1.25rem;
+            background: var(--bg-card);
+            border-radius: 12px;
+            border-top-left-radius: 4px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+        
+        .message.user .message-content {
+            background: var(--primary);
+            border-top-left-radius: 12px;
+            border-top-right-radius: 4px;
+        }
+        
+        .message-content code {
+            background: rgba(0,0,0,0.3);
+            padding: 0.125rem 0.375rem;
+            border-radius: 4px;
+            font-family: 'Monaco', monospace;
+            font-size: 0.875em;
+        }
+        
+        .message-content pre {
+            background: rgba(0,0,0,0.3);
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 0.5rem 0;
+        }
+        
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 1rem;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--text-secondary);
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-8px); }
+        }
+        
+        /* Input Area */
+        .input-area {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1rem;
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-end;
+        }
+        
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+        
+        textarea {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid transparent;
+            border-radius: 12px;
+            padding: 0.875rem 1rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: inherit;
+            resize: none;
+            min-height: 48px;
+            max-height: 200px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        
+        textarea:focus {
+            border-color: var(--primary);
+        }
+        
+        textarea::placeholder {
+            color: var(--text-secondary);
+        }
+        
+        .input-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1.25rem;
+        }
+        
+        .btn-voice {
+            background: var(--bg-input);
+            color: var(--text-secondary);
+        }
+        
+        .btn-voice:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-voice.recording {
+            background: var(--error);
+            color: white;
+            animation: pulse 1s infinite;
+        }
+        
+        .btn-send {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-send:hover {
+            background: var(--primary-dark);
+        }
+        
+        .btn-send:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* Welcome Screen */
+        .welcome {
+            text-align: center;
+            padding: 3rem;
+        }
+        
+        .welcome-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .welcome h2 {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .welcome p {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            margin-bottom: 2rem;
+        }
+        
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            justify-content: center;
+        }
+        
+        .suggestion {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 0.75rem 1.25rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+        
+        .suggestion:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        /* Artifacts/Results */
+        .artifacts {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+        
+        .artifact {
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .artifact img {
+            max-width: 200px;
+            max-height: 200px;
+            display: block;
+        }
+        
+        /* Mobile */
+        @media (max-width: 640px) {
+            .main {
+                padding: 1rem;
+            }
+            
+            .header {
+                padding: 1rem;
+            }
+            
+            .welcome h2 {
+                font-size: 1.5rem;
+            }
+            
+            .suggestions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">🤖</div>
+            <h1>Otto Universal</h1>
+        </div>
+        <nav class="nav-links">
+            <a href="/" class="active">Chat</a>
+            <a href="/files-page">Files</a>
+            <a href="/settings-page">Settings</a>
+        </nav>
+        <div class="status">
+            <div class="status-dot"></div>
+            <span id="statusText">Connected</span>
+        </div>
+    </header>
+    
+    <main class="main">
+        <div class="messages" id="messages">
+            <div class="welcome" id="welcome">
+                <div class="welcome-icon">✨</div>
+                <h2>Hello! I'm Otto</h2>
+                <p>Your universal AI assistant. I can help with anything from business automation to creative projects.</p>
+                <div class="suggestions">
+                    <button class="suggestion" onclick="sendSuggestion('Create a t-shirt design with a husky')">🎨 Create a t-shirt design</button>
+                    <button class="suggestion" onclick="sendSuggestion('Write a blog post about AI trends')">📝 Write a blog post</button>
+                    <button class="suggestion" onclick="sendSuggestion('Research competitor websites')">🔍 Research competitors</button>
+                    <button class="suggestion" onclick="sendSuggestion('Generate social media content')">📱 Social media content</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="input-area">
+            <div class="input-wrapper">
+                <textarea 
+                    id="input" 
+                    placeholder="Ask Otto anything..."
+                    rows="1"
+                    onkeydown="handleKeyDown(event)"
+                    oninput="autoResize(this)"
+                ></textarea>
+            </div>
+            <div class="input-actions">
+                <button class="btn btn-voice" id="voiceBtn" onclick="toggleVoice()">🎤</button>
+                <button class="btn btn-send" id="sendBtn" onclick="sendMessage()">➤</button>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        const API_URL = window.location.origin;
+        let sessionId = null;
+        let isRecording = false;
+        let mediaRecorder = null;
+        let audioChunks = [];
+        
+        // Auto-resize textarea
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
+        }
+        
+        // Handle Enter key
+        function handleKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+        
+        // Send suggestion
+        function sendSuggestion(text) {
+            document.getElementById('input').value = text;
+            sendMessage();
+        }
+        
+        // Send message
+        async function sendMessage() {
+            const input = document.getElementById('input');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Hide welcome screen
+            document.getElementById('welcome')?.remove();
+            
+            // Add user message
+            addMessage('user', message);
+            input.value = '';
+            autoResize(input);
+            
+            // Show typing indicator
+            showTyping();
+            
+            try {
+                const response = await fetch(`${API_URL}/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: message,
+                        session_id: sessionId
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // Update session ID
+                if (data.session_id) {
+                    sessionId = data.session_id;
+                }
+                
+                // Hide typing and show response
+                hideTyping();
+                addMessage('otto', data.response, data.results);
+                
+            } catch (error) {
+                hideTyping();
+                addMessage('otto', 'Sorry, I encountered an error. Please try again.');
+                console.error('Error:', error);
+            }
+        }
+        
+        // Add message to chat
+        function addMessage(sender, content, artifacts = null) {
+            const messages = document.getElementById('messages');
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            const now = new Date();
+            const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            messageDiv.innerHTML = `
+                <div class="message-header">
+                    <div class="avatar ${sender}">${sender === 'user' ? '👤' : '🤖'}</div>
+                    <span class="sender">${sender === 'user' ? 'You' : 'Otto'}</span>
+                    <span class="timestamp">${time}</span>
+                </div>
+                <div class="message-content">${formatContent(content)}</div>
+                ${artifacts ? formatArtifacts(artifacts) : ''}
+            `;
+            
+            messages.appendChild(messageDiv);
+            messages.scrollTop = messages.scrollHeight;
+        }
+        
+        // Format message content
+        function formatContent(content) {
+            // Basic markdown-like formatting
+            return content
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/`(.*?)`/g, '<code>$1</code>')
+                .replace(/\n/g, '<br>');
+        }
+        
+        // Format artifacts (images, etc)
+        function formatArtifacts(artifacts) {
+            if (!artifacts || !artifacts.length) return '';
+            
+            let html = '<div class="artifacts">';
+            for (const artifact of artifacts) {
+                if (artifact.images) {
+                    for (const img of artifact.images) {
+                        html += `<div class="artifact"><img src="${img}" alt="Generated image"></div>`;
+                    }
+                }
+            }
+            html += '</div>';
+            return html;
+        }
+        
+        // Typing indicator
+        function showTyping() {
+            const messages = document.getElementById('messages');
+            const typing = document.createElement('div');
+            typing.id = 'typing';
+            typing.className = 'message otto';
+            typing.innerHTML = `
+                <div class="message-header">
+                    <div class="avatar otto">🤖</div>
+                    <span class="sender">Otto</span>
+                </div>
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+            messages.appendChild(typing);
+            messages.scrollTop = messages.scrollHeight;
+        }
+        
+        function hideTyping() {
+            document.getElementById('typing')?.remove();
+        }
+        
+        // Voice recording
+        async function toggleVoice() {
+            const btn = document.getElementById('voiceBtn');
+            
+            if (!isRecording) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+                    
+                    mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+                    mediaRecorder.onstop = processVoice;
+                    
+                    mediaRecorder.start();
+                    isRecording = true;
+                    btn.className = 'btn btn-voice recording';
+                    btn.textContent = '⏹';
+                } catch (err) {
+                    alert('Could not access microphone');
+                }
+            } else {
+                mediaRecorder.stop();
+                mediaRecorder.stream.getTracks().forEach(t => t.stop());
+                isRecording = false;
+                btn.className = 'btn btn-voice';
+                btn.textContent = '🎤';
+            }
+        }
+        
+        async function processVoice() {
+            const blob = new Blob(audioChunks, { type: 'audio/wav' });
+            const reader = new FileReader();
+            
+            reader.onloadend = async () => {
+                const base64 = reader.result.split(',')[1];
+                
+                showTyping();
+                
+                try {
+                    const response = await fetch(`${API_URL}/voice`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            audio_base64: base64,
+                            session_id: sessionId
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    hideTyping();
+                    
+                    if (data.transcription) {
+                        document.getElementById('welcome')?.remove();
+                        addMessage('user', data.transcription);
+                    }
+                    
+                    if (data.response) {
+                        addMessage('otto', data.response);
+                    }
+                    
+                    // Play audio response if available
+                    if (data.audio_base64) {
+                        const audio = new Audio(`data:audio/mp3;base64,${data.audio_base64}`);
+                        audio.play();
+                    }
+                    
+                } catch (error) {
+                    hideTyping();
+                    addMessage('otto', 'Sorry, I had trouble processing your voice. Please try again.');
+                }
+            };
+            
+            reader.readAsDataURL(blob);
+        }
+        
+        // WebSocket for real-time updates (optional)
+        function connectWebSocket() {
+            const ws = new WebSocket(`ws://${window.location.host}/ws`);
+            
+            ws.onopen = () => {
+                document.getElementById('statusText').textContent = 'Connected';
+            };
+            
+            ws.onclose = () => {
+                document.getElementById('statusText').textContent = 'Reconnecting...';
+                setTimeout(connectWebSocket, 3000);
+            };
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                // Handle real-time updates
+            };
+        }
+        
+        // Initialize
+        document.getElementById('input').focus();
+    </script>
+</body>
+</html>
