@@ -34,6 +34,30 @@ class ImageGenerationTools(ToolBase):
             "ideogram": "ideogram-ai/ideogram-v2",
             "recraft": "recraft-ai/recraft-v3:9507e61ddace8b3a238371b17a61be203747c5081ea6070fecd3c40d27318922"
         }
+        
+        # Valid aspect ratios for Flux models
+        self.valid_aspect_ratios = [
+            "1:1", "16:9", "21:9", "3:2", "2:3", "4:5", "5:4", "3:4", "4:3", "9:16", "9:21"
+        ]
+    
+    def _get_aspect_ratio(self, width: int, height: int) -> str:
+        """Convert width/height to closest valid Flux aspect ratio."""
+        import math
+        
+        target_ratio = width / height
+        
+        best_ratio = "1:1"
+        best_diff = float('inf')
+        
+        for ar in self.valid_aspect_ratios:
+            w, h = map(int, ar.split(":"))
+            ratio = w / h
+            diff = abs(ratio - target_ratio)
+            if diff < best_diff:
+                best_diff = diff
+                best_ratio = ar
+        
+        return best_ratio
     
     async def _run_model(
         self,
@@ -122,7 +146,10 @@ class ImageGenerationTools(ToolBase):
         
         # Model-specific adjustments
         if "flux" in model.lower():
-            input_data["aspect_ratio"] = f"{width}:{height}"
+            # Flux uses aspect_ratio strings like "1:1", "16:9" etc, not pixel dimensions
+            # Convert width/height to closest aspect ratio
+            aspect_ratio = self._get_aspect_ratio(width, height)
+            input_data["aspect_ratio"] = aspect_ratio
             input_data.pop("width", None)
             input_data.pop("height", None)
         
