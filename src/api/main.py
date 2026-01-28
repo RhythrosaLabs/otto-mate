@@ -29,6 +29,8 @@ from .agents import router as agents_router, set_orchestrator as set_agents_orch
 from .models import router as models_router, set_orchestrator as set_models_orchestrator
 from .workflows import router as workflows_router, set_orchestrator as set_workflows_orchestrator
 from .business import router as business_router, set_business_orchestrator
+from .projects import router as projects_router
+from .skills import router as skills_router
 
 # Load environment variables
 load_dotenv()
@@ -85,8 +87,21 @@ async def lifespan(app: FastAPI):
     set_workflows_orchestrator(orchestrator)
     set_business_orchestrator(autonomous_orchestrator, workflow_generator)
     
+    # Initialize skills and projects systems
+    logger.info("Loading Skills System...")
+    from ..core.skills_system import get_skills_registry
+    skills_registry = get_skills_registry()
+    logger.info(f"✨ Skills System ready: {len(skills_registry.list_skills())} skills loaded")
+    
+    logger.info("Initializing Project Management...")
+    from ..core.project_manager import get_project_manager
+    project_manager = get_project_manager()
+    logger.info(f"✨ Project Manager ready: {len(project_manager.list_projects())} projects loaded")
+    
     logger.info("Otto Universal API is ready!")
     logger.info("✨ Autonomous Business Operations: ACTIVE")
+    logger.info(f"✨ Skills Available: {len(skills_registry.list_skills())}")
+    logger.info(f"✨ Projects: {len(project_manager.list_projects())}")
     yield
     
     # Cleanup
@@ -109,6 +124,8 @@ app.include_router(agents_router)
 app.include_router(models_router)
 app.include_router(workflows_router)
 app.include_router(business_router)
+app.include_router(projects_router)
+app.include_router(skills_router)
 
 # Add CORS middleware
 app.add_middleware(

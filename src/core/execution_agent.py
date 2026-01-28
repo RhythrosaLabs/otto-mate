@@ -498,6 +498,15 @@ class ExecutionAgent:
             elif isinstance(output, str) and output.startswith("http"):
                 images = [output]
         
+        # CRITICAL FIX: Check for saved file IDs (from save_generated_image tool)
+        # Convert file IDs to proper URLs
+        if "id" in data and ("file" in tool_name.lower() or "save" in tool_name.lower()):
+            file_id = data["id"]
+            file_type = data.get("type", "unknown")
+            if file_type.startswith("image/"):
+                # Add as /files/{id} URL which the frontend will handle
+                images.append(f"/files/{file_id}")
+        
         for i, img_url in enumerate(images):
             self.artifacts.append(Artifact(
                 id=str(uuid.uuid4())[:8],
