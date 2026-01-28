@@ -259,18 +259,22 @@ class ResearchTools(ToolBase):
     
     @tool(
         name="get_trending_topics",
-        description="Get trending topics and news",
+        description="Get trending topics and news in a specific category, optionally filtered by keywords",
         category="research"
     )
     async def get_trending_topics(
         self,
-        category: str = "general"
+        category: str = "general",
+        keywords: Optional[List[str]] = None,
+        num_results: int = 15
     ) -> Dict[str, Any]:
         """
         Get trending topics.
         
         Args:
-            category: Topic category (general, tech, business, entertainment)
+            category: Topic category (general, tech, business, entertainment, fashion)
+            keywords: Optional list of keywords to filter/enhance the search
+            num_results: Number of results to return
         """
         # Search for trending topics
         queries = {
@@ -282,7 +286,13 @@ class ResearchTools(ToolBase):
         }
         
         query = queries.get(category, queries["general"])
-        return await self.search_web(query, num_results=15)
+        
+        # Add keywords to query if provided
+        if keywords:
+            keyword_str = " ".join(keywords[:5])  # Limit to 5 keywords
+            query = f"{query} {keyword_str}"
+        
+        return await self.search_web(query, num_results=num_results)
     
     @tool(
         name="analyze_competitor",

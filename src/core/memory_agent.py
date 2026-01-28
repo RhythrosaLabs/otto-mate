@@ -98,6 +98,117 @@ class MemoryAgent:
             List of relevant memories
         """
         try:
+            # Query conversation history
+            where_filter = {"session_id": session_id} if session_id else None
+            
+            results = self.conversations.query(
+                query_texts=[query],
+                n_results=k,
+                where=where_filter
+            )
+            
+            memories = []
+            if results["documents"]:
+                for i, doc in enumerate(results["documents"][0]):
+                    memories.append({
+                        "content": doc,
+                        "metadata": results["metadatas"][0][i],
+                        "distance": results["distances"][0][i]
+                    })
+            
+            return memories
+            
+        except Exception as e:
+            logger.error(f"Failed to recall memories: {e}")
+            return []
+    
+    async def store_execution(
+        self,
+        session_id: str,
+        task: Any,
+        results: Dict[str, Any],
+        impact: Dict[str, Any]
+    ) -> str:
+        """
+        Store business execution history with full context.
+        
+        Args:
+            session_id: Session identifier
+            task: Task object
+            results: Execution results
+            impact: Business impact analysis
+            
+        Returns:
+            Execution ID
+        """
+        execution_id = f"exec_{session_id}_{datetime.now().timestamp()}"
+        
+        try:
+            # Create comprehensive execution record
+            execution_summary = f"""
+Task: {task.description}
+Domain: {task.domain.value}
+Status: {task.status.value}
+Duration: {task.duration}s
+Success: {results.get('success', False)}
+Business Impact: {impact.get('business_value', {})}
+"""
+            
+            self.knowledge.add(
+                documents=[execution_summary],
+                metadatas=[{
+                    "session_id": session_id,
+                    "task_id": task.id,
+                    "domain": task.domain.value,
+                    "timestamp": datetime.now().isoformat(),
+                    "success": results.get("success", False),
+                    "type": "business_execution"
+                }],
+                ids=[execution_id]
+            )
+            
+            logger.debug(f"Stored execution: {execution_id}")
+            return execution_id
+            
+        except Exception as e:
+            logger.error(f"Failed to store execution: {e}")
+            raise
+    
+    async def get_business_insights(
+        self,
+        domain: str,
+        k: int = 10
+    ) -> List[Dict[str, Any]]:
+        """
+        Get business insights from execution history.
+        
+        Args:
+            domain: Business domain
+            k: Number of insights
+            
+        Returns:
+            List of relevant insights
+        """
+        try:
+            results = self.knowledge.query(
+                query_texts=[f"successful {domain} operations"],
+                n_results=k,
+                where={"domain": domain, "success": True}
+            )
+            
+            insights = []
+            if results["documents"]:
+                for i, doc in enumerate(results["documents"][0]):
+                    insights.append({
+                        "content": doc,
+                        "metadata": results["metadatas"][0][i]
+                    })
+            
+            return insights
+            
+        except Exception as e:
+            logger.error(f"Failed to get business insights: {e}")
+            return []
             where_filter = None
             if session_id:
                 where_filter = {"session_id": session_id}

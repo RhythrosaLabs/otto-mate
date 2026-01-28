@@ -1,14 +1,8 @@
 """
-Otto Universal Tools
-====================
-
-Export all available tools.
+Otto Universal Tools - Export all tools including autonomous capabilities.
 """
 
-# Core tool infrastructure
 from .core import tool, ToolBase
-
-# Tool implementations
 from .printify import PrintifyTools
 from .image_generation import ImageGenerationTools
 from .research import ResearchTools
@@ -16,31 +10,12 @@ from .shopify import ShopifyTools
 from .content import ContentTools
 from .browser import BrowserTools
 from .file_storage import FileStorageTools
+from .replicate_universal import ReplicateUniversal
+from .code_execution import CodeExecutionTools, DataProcessingTools
 
 __all__ = [
-    # Core
-    "tool",
-    "ToolBase", 
-    
-    # Tools
-    "PrintifyTools",
-    "ImageGenerationTools",
-    "ResearchTools",
-    "ShopifyTools",
-    "ContentTools",
-    "BrowserTools",
-    "FileStorageTools",
+    "tool", "ToolBase",
+    "PrintifyTools", "ImageGenerationTools", "ResearchTools",
+    "ShopifyTools", "ContentTools", "BrowserTools", "FileStorageTools",
+    "ReplicateUniversal", "CodeExecutionTools", "DataProcessingTools",
 ]
-
-
-def get_all_tool_classes():
-    """Get all available tool classes."""
-    return [
-        PrintifyTools,
-        ImageGenerationTools,
-        ResearchTools,
-        ShopifyTools,
-        ContentTools,
-        BrowserTools,
-        FileStorageTools,
-    ]

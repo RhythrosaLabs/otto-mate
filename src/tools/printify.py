@@ -30,25 +30,44 @@ class PrintifyTools(ToolBase):
         self,
         method: str,
         endpoint: str,
-        data: Optional[Dict] = None
+        data: Optional[Dict] = None,
+        retry_count: int = 3
     ) -> Dict[str, Any]:
-        """Make API request to Printify."""
-        url = f"{self.BASE_URL}{endpoint}"
+        """Make API request to Printify with retry logic."""
+        import asyncio
         
-        async with aiohttp.ClientSession() as session:
-            async with session.request(
-                method,
-                url,
-                headers=self.headers,
-                json=data
-            ) as response:
-                result = await response.json()
-                
-                if response.status >= 400:
-                    logger.error(f"Printify API error: {result}")
-                    raise Exception(f"Printify API error: {result}")
-                
-                return result
+        url = f"{self.BASE_URL}{endpoint}"
+        last_error = None
+        
+        for attempt in range(retry_count):
+            try:
+                async with aiohttp.ClientSession() as session:
+                    async with session.request(
+                        method,
+                        url,
+                        headers=self.headers,
+                        json=data,
+                        timeout=aiohttp.ClientTimeout(total=30)
+                    ) as response:
+                        result = await response.json()
+                        
+                        if response.status >= 400:
+                            logger.error(f"Printify API error (attempt {attempt + 1}): {result}")
+                            last_error = Exception(f"Printify API error: {result}")
+                            if attempt < retry_count - 1:
+                                await asyncio.sleep(2 ** attempt)  # Exponential backoff
+                                continue
+                            raise last_error
+                        
+                        return result
+            except aiohttp.ClientError as e:
+                logger.error(f"Network error (attempt {attempt + 1}): {e}")
+                last_error = e
+                if attempt < retry_count - 1:
+                    await asyncio.sleep(2 ** attempt)
+                    continue
+        
+        raise last_error or Exception("Request failed after retries")
     
     @tool(
         name="printify_list_products",
@@ -148,16 +167,78 @@ class PrintifyTools(ToolBase):
     
     @tool(
         name="printify_upload_image",
-        description="Upload an image to Printify",
+        description="Upload an image to Printify from a URL",
         category="printify"
     )
-    async def upload_image(self, image_url: str, filename: str = "design.png") -> Dict[str, Any]:
-        """Upload an image to Printify via URL."""
+    async def upload_image(
+        self,
+        image_url: str = None,
+        filename: str = "design.png",
+        file_name: str = None,  # Alias for filename (accepts both)
+        image_path: str = None,  # Alias for image_url (accepts both)
+        url: str = None  # Another alias for image_url
+    ) -> Dict[str, Any]:
+        """
+        Upload an image to Printify.
+        
+        First downloads the image from the URL, then uploads the base64-encoded
+        content to Printify. This approach works with both public URLs and 
+        local/authenticated URLs.
+        
+        Args:
+            image_url: URL of the image to upload
+            filename: Name for the file on Printify
+            file_name: Alias for filename (accepts both parameter names)
+            image_path: Alias for image_url (accepts image_path parameter)
+            url: Alias for image_url
+            
+        Returns:
+            Dict with upload ID
+        """
+        # Handle aliases - resolve the actual image URL
+        actual_url = image_url or image_path or url
+        if not actual_url:
+            raise ValueError("Must provide image_url, image_path, or url parameter")
+        
+        # Handle filename alias
+        if file_name:
+            filename = file_name
+        import base64
+        
         endpoint = "/uploads/images.json"
+        
+        # Download the image first
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.get(actual_url, timeout=aiohttp.ClientTimeout(total=30)) as response:
+                    if response.status != 200:
+                        # Fallback: try URL-based upload if download fails
+                        logger.warning(f"Could not download image (status {response.status}), trying URL upload")
+                        data = {
+                            "file_name": filename,
+                            "url": actual_url
+                        }
+                        return await self._request("POST", endpoint, data)
+                    
+                    image_data = await response.read()
+            except Exception as e:
+                # Fallback: try URL-based upload if download fails
+                logger.warning(f"Could not download image ({e}), trying URL upload")
+                data = {
+                    "file_name": filename,
+                    "url": actual_url
+                }
+                return await self._request("POST", endpoint, data)
+        
+        # Base64 encode the image data
+        encoded = base64.b64encode(image_data).decode("utf-8")
+        
+        # Upload using contents (base64) - this is more reliable than URL
         data = {
             "file_name": filename,
-            "url": image_url
+            "contents": encoded
         }
+        
         return await self._request("POST", endpoint, data)
     
     @tool(
@@ -194,6 +275,14 @@ class PrintifyTools(ToolBase):
         """Get available blueprints."""
         return await self._request("GET", "/catalog/blueprints.json")
     
+    # Default fallbacks for common product types
+    BLUEPRINT_DEFAULTS = {
+        6: {"name": "Unisex Heavy Cotton Tee", "provider_id": 99, "provider_name": "Monster Digital"},  # Gildan 5000
+        145: {"name": "Unisex Softstyle T-Shirt", "provider_id": 99, "provider_name": "Monster Digital"},  # Gildan 64000
+        12: {"name": "Ceramic Mug 11oz", "provider_id": 28, "provider_name": "Duplium"},
+        380: {"name": "Unisex Hoodie", "provider_id": 99, "provider_name": "Monster Digital"},
+    }
+    
     @tool(
         name="printify_get_print_providers",
         description="Get print providers for a blueprint",
@@ -201,8 +290,25 @@ class PrintifyTools(ToolBase):
     )
     async def get_print_providers(self, blueprint_id: int) -> Dict[str, Any]:
         """Get print providers for a blueprint."""
+        # Handle invalid blueprint_id (e.g., passed as string 'from_previous_step')
+        if not isinstance(blueprint_id, int):
+            try:
+                blueprint_id = int(blueprint_id)
+            except (ValueError, TypeError):
+                # Default to Unisex Heavy Cotton Tee
+                blueprint_id = 6
+                logger.warning(f"Invalid blueprint_id, defaulting to {blueprint_id}")
+        
         endpoint = f"/catalog/blueprints/{blueprint_id}/print_providers.json"
-        return await self._request("GET", endpoint)
+        try:
+            return await self._request("GET", endpoint)
+        except Exception as e:
+            # Fallback to defaults if API fails
+            if blueprint_id in self.BLUEPRINT_DEFAULTS:
+                fallback = self.BLUEPRINT_DEFAULTS[blueprint_id]
+                logger.warning(f"Print provider lookup failed, using fallback: {fallback}")
+                return [{"id": fallback["provider_id"], "title": fallback["provider_name"]}]
+            raise e
     
     @tool(
         name="printify_get_variants",
@@ -278,3 +384,233 @@ class PrintifyTools(ToolBase):
             })
         
         return variants
+
+    @tool(
+        name="printify_create_tshirt",
+        description="Create a t-shirt product on Printify with a design image. This is a simplified helper that handles all the complexity automatically.",
+        category="printify"
+    )
+    async def create_tshirt(
+        self,
+        title: str,
+        description: str,
+        image_url: str = None,
+        image_path: str = None,  # Alias for image_url
+        price_cents: int = 2499,
+        blueprint_id: int = 6,  # Gildan 5000 by default
+        print_provider_id: int = 99  # Monster Digital by default
+    ) -> Dict[str, Any]:
+        """
+        Create a t-shirt product on Printify - simplified helper.
+        
+        This method handles all the complexity of:
+        1. Uploading the image
+        2. Getting variants
+        3. Setting up print areas
+        4. Creating the product
+        
+        Args:
+            title: Product title
+            description: Product description
+            image_url: URL of the design image
+            image_path: Alias for image_url
+            price_cents: Price in cents (default 2499 = $24.99)
+            blueprint_id: Blueprint ID (default 6 = Gildan 5000 Heavy Cotton Tee)
+            print_provider_id: Provider ID (default 99 = Monster Digital)
+            
+        Returns:
+            Dict with created product info
+        """
+        # Handle image_url alias
+        actual_url = image_url or image_path
+        if not actual_url:
+            raise ValueError("Must provide image_url or image_path parameter")
+        
+        try:
+            # Step 1: Upload the image
+            logger.info(f"Uploading design image: {actual_url}")
+            upload_result = await self.upload_image(actual_url, f"{title.replace(' ', '_')}.png")
+            image_id = upload_result.get("id")
+            
+            if not image_id:
+                raise Exception("Failed to upload image to Printify")
+            
+            logger.info(f"Image uploaded successfully: {image_id}")
+            
+            # Step 2: Get variants and placeholders
+            variants_result = await self.get_variants(blueprint_id, print_provider_id)
+            variants = variants_result.get("variants", [])
+            
+            if not variants:
+                raise Exception("No variants available for this product")
+            
+            # Build variant list with pricing
+            variant_list = []
+            variant_ids = []
+            for variant in variants:
+                variant_list.append({
+                    "id": variant["id"],
+                    "price": price_cents,
+                    "is_enabled": True
+                })
+                variant_ids.append(variant["id"])
+            
+            # Step 3: Build print areas
+            print_areas = [{
+                "variant_ids": variant_ids,
+                "placeholders": [{
+                    "position": "front",
+                    "images": [{
+                        "id": image_id,
+                        "x": 0.5,
+                        "y": 0.5,
+                        "scale": 1.0,
+                        "angle": 0
+                    }]
+                }]
+            }]
+            
+            # Step 4: Create the product
+            product_data = {
+                "title": title,
+                "description": description,
+                "blueprint_id": blueprint_id,
+                "print_provider_id": print_provider_id,
+                "variants": variant_list,
+                "print_areas": print_areas
+            }
+            
+            endpoint = f"/shops/{self.shop_id}/products.json"
+            result = await self._request("POST", endpoint, product_data)
+            
+            logger.info(f"T-shirt created successfully: {result.get('id')}")
+            return {
+                "success": True,
+                "product_id": result.get("id"),
+                "title": title,
+                "image_id": image_id,
+                "variants_count": len(variant_list),
+                "product_url": f"https://printify.com/app/products/{result.get('id')}"
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to create t-shirt: {e}")
+            return {
+                "success": False,
+                "error": str(e)
+            }
+
+    @tool(
+        name="printify_create_mug",
+        description="Create a mug product on Printify with a design image. This is a simplified helper that handles all the complexity automatically.",
+        category="printify"
+    )
+    async def create_mug(
+        self,
+        title: str,
+        description: str,
+        image_url: str = None,
+        image_path: str = None,  # Alias for image_url
+        price_cents: int = 1499,
+        blueprint_id: int = 12,  # Ceramic Mug 11oz by default
+        print_provider_id: int = 28  # Duplium by default
+    ) -> Dict[str, Any]:
+        """
+        Create a mug product on Printify - simplified helper.
+        
+        This method handles all the complexity of:
+        1. Uploading the image
+        2. Getting variants
+        3. Setting up print areas
+        4. Creating the product
+        
+        Args:
+            title: Product title
+            description: Product description
+            image_url: URL of the design image
+            image_path: Alias for image_url
+            price_cents: Price in cents (default 1499 = $14.99)
+            blueprint_id: Blueprint ID (default 12 = Ceramic Mug 11oz)
+            print_provider_id: Provider ID (default 28 = Duplium)
+            
+        Returns:
+            Dict with created product info
+        """
+        # Handle image_url alias
+        actual_url = image_url or image_path
+        if not actual_url:
+            raise ValueError("Must provide image_url or image_path parameter")
+        
+        try:
+            # Step 1: Upload the image
+            logger.info(f"Uploading design image: {actual_url}")
+            upload_result = await self.upload_image(actual_url, f"{title.replace(' ', '_')}_mug.png")
+            image_id = upload_result.get("id")
+            
+            if not image_id:
+                raise Exception("Failed to upload image to Printify")
+            
+            logger.info(f"Image uploaded successfully: {image_id}")
+            
+            # Step 2: Get variants and placeholders
+            variants_result = await self.get_variants(blueprint_id, print_provider_id)
+            variants = variants_result.get("variants", [])
+            
+            if not variants:
+                raise Exception("No variants available for this product")
+            
+            # Build variant list with pricing
+            variant_list = []
+            variant_ids = []
+            for variant in variants:
+                variant_list.append({
+                    "id": variant["id"],
+                    "price": price_cents,
+                    "is_enabled": True
+                })
+                variant_ids.append(variant["id"])
+            
+            # Step 3: Build print areas (mugs typically have "front" area)
+            print_areas = [{
+                "variant_ids": variant_ids,
+                "placeholders": [{
+                    "position": "front",
+                    "images": [{
+                        "id": image_id,
+                        "x": 0.5,
+                        "y": 0.5,
+                        "scale": 1.0,
+                        "angle": 0
+                    }]
+                }]
+            }]
+            
+            # Step 4: Create the product
+            product_data = {
+                "title": title,
+                "description": description,
+                "blueprint_id": blueprint_id,
+                "print_provider_id": print_provider_id,
+                "variants": variant_list,
+                "print_areas": print_areas
+            }
+            
+            endpoint = f"/shops/{self.shop_id}/products.json"
+            result = await self._request("POST", endpoint, product_data)
+            
+            logger.info(f"Mug created successfully: {result.get('id')}")
+            return {
+                "success": True,
+                "product_id": result.get("id"),
+                "title": title,
+                "image_id": image_id,
+                "variants_count": len(variant_list),
+                "product_url": f"https://printify.com/app/products/{result.get('id')}"
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to create mug: {e}")
+            return {
+                "success": False,
+                "error": str(e)
+            }

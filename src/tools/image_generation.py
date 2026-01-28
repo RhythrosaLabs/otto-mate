@@ -25,14 +25,14 @@ class ImageGenerationTools(ToolBase):
             "Content-Type": "application/json"
         }
         
-        # Model versions
+        # Model versions - all with explicit version hashes for reliability
         self.models = {
-            "flux_schnell": "black-forest-labs/flux-schnell",
+            "flux_schnell": "black-forest-labs/flux-schnell:c846a69991daf4c0e5d016514849d14ee5b2e6846ce6b9d6f21369e564cfe51e",
             "flux_pro": "black-forest-labs/flux-1.1-pro",
-            "sdxl": "stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b",
+            "sdxl": "stability-ai/sdxl:7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc",
             "stable_diffusion_3": "stability-ai/stable-diffusion-3",
             "ideogram": "ideogram-ai/ideogram-v2",
-            "recraft": "recraft-ai/recraft-v3"
+            "recraft": "recraft-ai/recraft-v3:9507e61ddace8b3a238371b17a61be203747c5081ea6070fecd3c40d27318922"
         }
     
     async def _run_model(
@@ -44,19 +44,20 @@ class ImageGenerationTools(ToolBase):
         """Run a Replicate model."""
         url = f"{self.base_url}/predictions"
         
-        data = {
-            "model": model,
-            "input": input_data
-        }
-        
-        # For versioned models
+        # For versioned models (e.g., "owner/model:version_hash")
         if ":" in model:
             parts = model.split(":")
             data = {
                 "version": parts[1],
                 "input": input_data
             }
-            model = parts[0]
+        else:
+            # For official/deployment models (e.g., "owner/model")
+            # Use the models endpoint which returns the latest version
+            data = {
+                "model": model,
+                "input": input_data
+            }
         
         async with aiohttp.ClientSession() as session:
             # Start prediction
@@ -155,17 +156,33 @@ class ImageGenerationTools(ToolBase):
         
         Args:
             prompt: Design description
-            style: Design style (vector, illustration, realistic)
-            model: Model to use
+            style: Design style - one of:
+                - "vector": Clean vector-style poster art
+                - "illustration": Digital illustration
+                - "hand_drawn": Hand-drawn sketch style
+                - "poster": Alternative poster art style
+                - "realistic": Realistic image style
+                - "minimalist": Simple outline style
+            model: Model to use (recraft recommended)
         """
         # Enhanced prompt for t-shirt designs
         enhanced_prompt = f"{prompt}, {style} art style, clean design, suitable for t-shirt print, high contrast, no background, centered composition"
         
         if model == "recraft":
             model_id = self.models["recraft"]
+            # Map user-friendly style names to valid Recraft styles
+            style_map = {
+                "vector": "digital_illustration/2d_art_poster",
+                "illustration": "digital_illustration",
+                "hand_drawn": "digital_illustration/hand_drawn",
+                "poster": "digital_illustration/2d_art_poster_2",
+                "realistic": "realistic_image",
+                "minimalist": "digital_illustration/hand_drawn_outline",
+            }
+            recraft_style = style_map.get(style, "digital_illustration/2d_art_poster")
             input_data = {
                 "prompt": enhanced_prompt,
-                "style": "vector_illustration" if style == "vector" else "digital_illustration",
+                "style": recraft_style,
                 "size": "1024x1024"
             }
         else:

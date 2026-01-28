@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workflows - Otto</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+:root{--bg:#fff;--bg2:#f5f5f7;--bg3:#e8e8ed;--text:#1d1d1f;--text2:#6e6e73;--border:#d2d2d7;--accent:#0071e3;--grad:linear-gradient(135deg,#667eea 0%,#764ba2 100%);--success:#34c759;--error:#ff3b30;--warn:#ff9500;--shadow:0 4px 12px rgba(0,0,0,.1)}
+[data-theme=dark]{--bg:#000;--bg2:#1c1c1e;--bg3:#2c2c2e;--text:#f5f5f7;--text2:#a1a1a6;--border:#38383a;--accent:#0a84ff}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,-apple-system,sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+.app{display:flex;height:100vh}
+.sidebar{width:280px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column}
+.sidebar-header{padding:20px;border-bottom:1px solid var(--border)}
+.logo{display:flex;align-items:center;gap:12px;font-size:20px;font-weight:700;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo-icon{width:36px;height:36px;background:var(--grad);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;-webkit-text-fill-color:#fff}
+.nav{padding:16px 12px;border-bottom:1px solid var(--border)}
+.nav-title{font-size:11px;font-weight:600;text-transform:uppercase;color:var(--text2);padding:0 8px;margin-bottom:8px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;color:var(--text2);text-decoration:none;cursor:pointer;transition:.2s}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:var(--accent);color:#fff}
+.palette{flex:1;overflow-y:auto;padding:12px}
+.cat{margin-bottom:16px}
+.cat-header{display:flex;align-items:center;gap:8px;padding:8px;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer}
+.cat-items{display:flex;flex-direction:column;gap:4px}
+.tool{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:12px;cursor:grab;transition:.2s}
+.tool:hover{border-color:var(--accent);transform:translateX(4px)}
+.tool-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff}
+.tool-name{font-size:13px;font-weight:500}
+.main{flex:1;display:flex;flex-direction:column}
+.toolbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:var(--bg2);border-bottom:1px solid var(--border)}
+.title-input{font-size:18px;font-weight:600;background:transparent;border:none;color:var(--text);padding:8px 12px;border-radius:12px;min-width:200px}
+.title-input:focus{outline:none;background:var(--bg3)}
+.btn{display:flex;align-items:center;gap:8px;padding:8px 16px;border:1px solid var(--border);border-radius:9999px;background:var(--bg);color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:.2s}
+.btn:hover{border-color:var(--accent)}
+.btn.run{background:var(--success);border:none;color:#fff}
+.canvas-wrap{flex:1;position:relative;background:var(--bg2);background-image:radial-gradient(circle,var(--border) 1px,transparent 1px);background-size:20px 20px}
+.canvas{position:absolute;inset:0;overflow:auto}
+.canvas-inner{position:relative;width:4000px;height:3000px}
+.node{position:absolute;min-width:240px;background:var(--bg);border:2px solid var(--border);border-radius:20px;box-shadow:var(--shadow);cursor:move}
+.node.selected{border-color:var(--accent);box-shadow:0 0 20px rgba(102,126,234,.3)}
+.node.running{border-color:var(--warn)}
+.node.done{border-color:var(--success)}
+.node-head{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border)}
+.node-icon{width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff}
+.node-title{font-size:14px;font-weight:600}
+.node-type{font-size:11px;color:var(--text2)}
+.node-body{padding:12px 16px}
+.param{margin-bottom:12px}
+.param-label{font-size:11px;font-weight:500;color:var(--text2);margin-bottom:4px}
+.param-input{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text);font-size:13px}
+.param-input:focus{outline:none;border-color:var(--accent)}
+.conn-pt{position:absolute;width:16px;height:16px;background:var(--bg);border:2px solid var(--border);border-radius:50%;cursor:crosshair;z-index:10}
+.conn-pt.in{left:-8px;top:50%;transform:translateY(-50%)}
+.conn-pt.out{right:-8px;top:50%;transform:translateY(-50%)}
+.conn-pt:hover{background:var(--accent);border-color:var(--accent)}
+.svg{position:absolute;inset:0;pointer-events:none;z-index:5}
+.line{fill:none;stroke:var(--accent);stroke-width:2}
+.nl-wrap{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);width:600px;max-width:calc(100% - 40px);z-index:100}
+.nl-bar{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--bg);border:1px solid var(--border);border-radius:9999px;box-shadow:0 8px 30px rgba(0,0,0,.12)}
+.nl-bar:focus-within{border-color:var(--accent);box-shadow:0 0 20px rgba(102,126,234,.3)}
+.nl-input{flex:1;border:none;background:transparent;color:var(--text);font-size:15px;outline:none}
+.nl-btn{width:40px;height:40px;border:none;background:var(--grad);border-radius:50%;cursor:pointer;color:#fff;font-size:18px}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);z-index:1000;display:none;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{width:100%;max-width:900px;max-height:80vh;background:var(--bg);border-radius:20px;box-shadow:0 8px 30px rgba(0,0,0,.12);overflow:hidden}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border)}
+.modal-title{font-size:20px;font-weight:600}
+.modal-body{flex:1;overflow-y:auto;padding:24px}
+.tpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.tpl-card{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:20px;cursor:pointer;transition:.2s}
+.tpl-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.tpl-icon{width:48px;height:48px;background:var(--grad);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:12px}
+.tpl-name{font-size:16px;font-weight:600;margin-bottom:4px}
+.tpl-desc{font-size:13px;color:var(--text2)}
+.toast-wrap{position:fixed;bottom:100px;right:20px;z-index:2000}
+.toast{padding:12px 20px;background:var(--bg);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);margin-top:8px}
+.toast.success{border-left:4px solid var(--success)}
+.toast.error{border-left:4px solid var(--error)}
+.theme-btn{width:40px;height:40px;border:none;background:var(--bg3);border-radius:9999px;cursor:pointer;font-size:18px}
+    </style>
+</head>
+<body>
+<div class="app">
+    <aside class="sidebar">
+        <div class="sidebar-header"><div class="logo"><div class="logo-icon">⚡</div>Otto Workflows</div></div>
+        <nav class="nav">
+            <div class="nav-title">Navigation</div>
+            <a href="index_v2.html" class="nav-item"><span>💬</span>Chat</a>
+            <div class="nav-item active"><span>🔄</span>Workflows</div>
+            <a href="agents.html" class="nav-item"><span>🤖</span>Agents</a>
+            <a href="files.html" class="nav-item"><span>📁</span>Files</a>
+            <a href="settings.html" class="nav-item"><span>⚙️</span>Settings</a>
+        </nav>
+        <div class="nav"><div class="nav-title">Tool Palette</div></div>
+        <div class="palette" id="palette"></div>
+    </aside>
+    <main class="main">
+        <div class="toolbar">
+            <div style="display:flex;gap:16px;align-items:center">
+                <input type="text" class="title-input" value="Untitled Workflow" id="wfTitle">
+                <button class="btn" onclick="showTpl()">📋 Templates</button>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+                <button class="btn" onclick="clear()">🗑️ Clear</button>
+                <button class="btn" onclick="save()">💾 Save</button>
+                <button class="btn run" onclick="run()">▶️ Run</button>
+                <button class="theme-btn" onclick="toggleTheme()">🌙</button>
+            </div>
+        </div>
+        <div class="canvas-wrap">
+            <div class="canvas" id="canvas">
+                <svg class="svg" id="svg"></svg>
+                <div class="canvas-inner" id="inner"></div>
+            </div>
+            <div class="nl-wrap">
+                <div class="nl-bar">
+                    <span style="font-size:20px">✨</span>
+                    <input type="text" class="nl-input" id="nlIn" placeholder="Describe workflow in plain English...">
+                    <button class="nl-btn" onclick="nlCreate()">→</button>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<div class="modal-bg" id="tplModal">
+    <div class="modal">
+        <div class="modal-head"><span class="modal-title">Workflow Templates</span><button onclick="hideTpl()" style="background:none;border:none;font-size:20px;cursor:pointer">✕</button></div>
+        <div class="modal-body"><div class="tpl-grid" id="tplGrid"></div></div>
+    </div>
+</div>
+<div class="toast-wrap" id="toasts"></div>
+<script>
+let nodes=[],conns=[],tools={};
+const CATS={research:{i:'🔍',c:'#6366f1'},content:{i:'📝',c:'#8b5cf6'},ai_models:{i:'🤖',c:'#ec4899'},printify:{i:'👕',c:'#f59e0b'},shopify:{i:'🛍️',c:'#10b981'},browser:{i:'🌐',c:'#3b82f6'},code:{i:'💻',c:'#06b6d4'},data:{i:'📊',c:'#14b8a6'}};
+document.addEventListener('DOMContentLoaded',()=>{loadTools();loadWf();document.documentElement.setAttribute('data-theme',localStorage.getItem('otto-theme')||'light');});
+async function loadTools(){try{const r=await fetch('/tools');tools=await r.json();renderPalette();}catch(e){console.error(e);}}
+function renderPalette(){const p=document.getElementById('palette');p.innerHTML='';for(const[cat,list]of Object.entries(tools)){const c=CATS[cat]||{i:'⚙️',c:'#666'};p.innerHTML+='<div class="cat"><div class="cat-header"><span>'+c.i+'</span><span>'+cat+'</span></div><div class="cat-items">'+list.map(t=>'<div class="tool" onclick="addNode(\''+t.name+'\',\''+cat+'\')"><div class="tool-icon" style="background:'+c.c+'">'+c.i+'</div><div class="tool-name">'+t.name.replace(/_/g,' ')+'</div></div>').join('')+'</div></div>';}}
+function addNode(tool,cat,x=100+nodes.length*280,y=150){const c=CATS[cat]||{i:'⚙️',c:'#666'};const n={id:'n'+Date.now(),tool,cat,x,y,params:{},title:tool.replace(/_/g,' ')};nodes.push(n);renderNode(n,c);toast('Added '+n.title,'success');}
+function renderNode(n,c){const el=document.createElement('div');el.className='node';el.id=n.id;el.style.cssText='left:'+n.x+'px;top:'+n.y+'px';el.innerHTML='<div class="conn-pt in"></div><div class="conn-pt out"></div><div class="node-head" style="background:linear-gradient(135deg,'+c.c+'22,'+c.c+'11)"><div class="node-icon" style="background:'+c.c+'">'+c.i+'</div><div><div class="node-title">'+n.title+'</div><div class="node-type">'+n.tool+'</div></div></div><div class="node-body"><div class="param"><label class="param-label">Parameters</label><input class="param-input" placeholder="JSON params"></div></div>';el.onmousedown=e=>drag(e,n,el);document.getElementById('inner').appendChild(el);}
+function drag(e,n,el){if(e.target.tagName==='INPUT')return;let ox=e.clientX-n.x,oy=e.clientY-n.y;function mv(e){n.x=e.clientX-ox;n.y=e.clientY-oy;el.style.left=n.x+'px';el.style.top=n.y+'px';drawConns();}function up(){document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);}document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);}
+function drawConns(){const svg=document.getElementById('svg');svg.innerHTML=conns.map(c=>{const f=document.getElementById(c.from),t=document.getElementById(c.to);if(!f||!t)return'';const x1=f.offsetLeft+f.offsetWidth,y1=f.offsetTop+f.offsetHeight/2,x2=t.offsetLeft,y2=t.offsetTop+t.offsetHeight/2;return'<path class="line" d="M'+x1+' '+y1+' C'+(x1+50)+' '+y1+','+(x2-50)+' '+y2+','+x2+' '+y2+'"/>';}).join('');}
+async function loadWf(){try{const r=await fetch('/api/workflows/');const d=await r.json();document.getElementById('tplGrid').innerHTML=d.workflows.map(w=>'<div class="tpl-card" onclick="loadTpl(\''+w.id+'\')"><div class="tpl-icon">'+(w.icon||'⚙️')+'</div><div class="tpl-name">'+w.name+'</div><div class="tpl-desc">'+(w.description||'')+'</div></div>').join('');}catch(e){console.error(e);}}
+async function loadTpl(id){try{const r=await fetch('/api/workflows/'+id);const w=await r.json();clear();document.getElementById('wfTitle').value=w.name;w.steps.forEach((s,i)=>addNode(s.tool,'code',100+i*280,150));hideTpl();}catch(e){toast('Failed','error');}}
+async function save(){const steps=nodes.map(n=>({tool:n.tool,params:n.params,name:n.title}));if(!steps.length){toast('Add nodes first','error');return;}try{await fetch('/api/workflows/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:document.getElementById('wfTitle').value,steps,category:'custom',icon:'⚙️'})});toast('Saved!','success');loadWf();}catch(e){toast('Failed','error');}}
+async function run(){if(!nodes.length){toast('Add nodes first','error');return;}for(let n of nodes){document.getElementById(n.id).classList.add('running');await fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:'Execute '+n.tool,session_id:'wf_'+Date.now()})});document.getElementById(n.id).classList.remove('running');document.getElementById(n.id).classList.add('done');}toast('Complete!','success');}
+async function nlCreate(){const txt=document.getElementById('nlIn').value;if(!txt)return;toast('Creating...','');const r=await fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:'Plan workflow: '+txt,session_id:'nl_'+Date.now()})});const d=await r.json();if(d.plan?.steps){clear();d.plan.steps.forEach((s,i)=>addNode(s.tool,'code',100+i*280,150));}document.getElementById('nlIn').value='';}
+function clear(){nodes=[];conns=[];document.getElementById('inner').innerHTML='<svg class="svg" id="svg"></svg>';}
+function showTpl(){document.getElementById('tplModal').classList.add('open');}
+function hideTpl(){document.getElementById('tplModal').classList.remove('open');}
+function toggleTheme(){const t=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',t);localStorage.setItem('otto-theme',t);}
+function toast(msg,type=''){const c=document.getElementById('toasts');const t=document.createElement('div');t.className='toast '+type;t.textContent=msg;c.appendChild(t);setTimeout(()=>t.remove(),3000);}
+document.getElementById('nlIn').onkeypress=e=>{if(e.key==='Enter')nlCreate();};
+</script>
+</body>
+</html>

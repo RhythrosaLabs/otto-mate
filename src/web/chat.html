@@ -1,0 +1,1976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Otto - AI Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #e9ecef;
+            --text: #1a1a1a;
+            --text-secondary: #6c757d;
+            --text-tertiary: #adb5bd;
+            --border: #dee2e6;
+            --accent: #0066ff;
+            --accent-hover: #0052cc;
+            --success: #28a745;
+            --error: #dc3545;
+            --warning: #ffc107;
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --shadow: 0 2px 8px rgba(0,0,0,0.08);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+        }
+
+        [data-theme="dark"] {
+            --bg: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --text: #f0f6fc;
+            --text-secondary: #8b949e;
+            --text-tertiary: #6e7681;
+            --border: #30363d;
+            --accent: #58a6ff;
+            --accent-hover: #1f6feb;
+            --shadow: 0 2px 8px rgba(0,0,0,0.4);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.6);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .new-chat-btn {
+            width: 100%;
+            margin: 16px 0;
+            padding: 12px 16px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .new-chat-btn:hover {
+            background: var(--accent-hover);
+        }
+
+        .chat-history {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 16px;
+        }
+
+        .history-item {
+            padding: 12px;
+            margin-bottom: 4px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            position: relative;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+        }
+
+        .history-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .history-item.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        .history-item-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .history-item-actions {
+            display: none;
+            gap: 4px;
+            margin-left: 8px;
+        }
+
+        .history-item:hover .history-item-actions {
+            display: flex;
+        }
+
+        .history-action-btn {
+            width: 24px;
+            height: 24px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 12px;
+            opacity: 0.6;
+            transition: all 0.2s;
+        }
+
+        .history-action-btn:hover {
+            opacity: 1;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .history-item.active .history-action-btn:hover {
+            background: rgba(0,0,0,0.2);
+        }
+
+        /* Rename dialog */
+        .rename-dialog {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            z-index: 1001;
+            box-shadow: var(--shadow-lg);
+            min-width: 300px;
+        }
+
+        .rename-dialog h3 {
+            margin-bottom: 16px;
+            font-size: 16px;
+        }
+
+        .rename-dialog input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .rename-dialog-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .rename-dialog button {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            border: none;
+        }
+
+        .rename-cancel {
+            background: var(--bg-tertiary);
+            color: var(--text);
+        }
+
+        .rename-save {
+            background: var(--accent);
+            color: white;
+        }
+
+        .dialog-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .history-title {
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .history-time {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            margin-top: 4px;
+        }
+
+        .sidebar-footer {
+            padding: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.2s;
+            margin-bottom: 4px;
+        }
+
+        .nav-link:hover {
+            background: var(--bg-tertiary);
+            color: var(--text);
+        }
+
+        /* Main Area */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .toggle-sidebar {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background 0.2s;
+        }
+
+        .toggle-sidebar:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .model-select {
+            padding: 8px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 13px;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .model-select:hover {
+            border-color: var(--accent);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .header-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .header-btn:hover {
+            background: var(--bg-tertiary);
+            transform: translateY(-1px);
+        }
+
+        /* Chat Area */
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .welcome {
+            max-width: 700px;
+            margin: auto;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .welcome-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .welcome h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .welcome p {
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+
+        .suggestions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 12px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .suggestion {
+            padding: 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .suggestion:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .suggestion-icon {
+            font-size: 28px;
+            margin-bottom: 12px;
+        }
+
+        .suggestion-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .suggestion-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* Messages */
+        .messages {
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .message {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .message.user .avatar {
+            background: var(--accent);
+            color: white;
+        }
+
+        .message.assistant .avatar {
+            background: var(--gradient);
+            color: white;
+        }
+
+        .message-content {
+            flex: 1;
+            max-width: 75%;
+        }
+
+        .message-bubble {
+            padding: 16px 20px;
+            border-radius: 16px;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+        
+        .media-embed {
+            margin: 15px 0;
+            max-width: 100%;
+        }
+        
+        .media-embed img,
+        .media-embed video {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .media-embed a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        
+        .media-embed a:hover {
+            text-decoration: underline;
+        }
+
+        .message.user .message-bubble {
+            background: var(--accent);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant .message-bubble {
+            background: var(--bg-secondary);
+            border-bottom-left-radius: 4px;
+        }
+
+        /* Thinking/Reasoning Display */
+        .thinking {
+            margin-top: 12px;
+            padding: 12px 16px;
+            background: var(--bg-tertiary);
+            border-left: 3px solid var(--accent);
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        .thinking-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .thinking-steps {
+            color: var(--text-secondary);
+        }
+
+        .thinking-step {
+            padding: 6px 0;
+            display: flex;
+            align-items: start;
+            gap: 8px;
+        }
+
+        .step-icon {
+            margin-top: 2px;
+        }
+
+        .step-icon.running {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Tool Execution */
+        .tool-execution {
+            margin-top: 12px;
+            padding: 12px 16px;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        .tool-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .tool-icon {
+            width: 28px;
+            height: 28px;
+            background: var(--gradient);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: white;
+        }
+
+        .tool-name {
+            font-weight: 600;
+        }
+
+        .tool-status {
+            margin-left: auto;
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: var(--success);
+            color: white;
+        }
+
+        .tool-result {
+            margin-top: 8px;
+            padding: 10px;
+            background: var(--bg);
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: 'SF Mono', monospace;
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 16px 20px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--text-tertiary);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 20px 24px;
+            border-top: 1px solid var(--border);
+            background: var(--bg);
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .quick-action {
+            padding: 8px 14px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .quick-action:hover {
+            border-color: var(--accent);
+            background: var(--bg-tertiary);
+            transform: translateY(-1px);
+        }
+
+        .input-wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .input-container {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 24px;
+            padding: 8px 8px 8px 20px;
+            transition: all 0.2s;
+        }
+
+        .input-container:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+        }
+
+        .input-container textarea {
+            flex: 1;
+            border: none;
+            background: transparent;
+            color: var(--text);
+            font-size: 15px;
+            font-family: inherit;
+            resize: none;
+            max-height: 200px;
+            padding: 12px 0;
+            line-height: 1.5;
+        }
+
+        .input-container textarea:focus {
+            outline: none;
+        }
+
+        .input-container textarea::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .input-buttons {
+            display: flex;
+            gap: 4px;
+        }
+
+        .input-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .input-btn:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .input-btn.send {
+            background: var(--accent);
+            color: white;
+        }
+
+        .input-btn.send:hover {
+            background: var(--accent-hover);
+            transform: scale(1.05);
+        }
+
+        .input-btn.send:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Artifacts Panel */
+        .artifacts {
+            position: fixed;
+            right: -500px;
+            top: 0;
+            width: 500px;
+            height: 100vh;
+            background: var(--bg);
+            border-left: 1px solid var(--border);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+            transition: right 0.3s ease;
+            z-index: 1000;
+        }
+
+        .artifacts.open {
+            right: 0;
+        }
+
+        .artifacts-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .artifacts-title {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .artifacts-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background 0.2s;
+        }
+
+        .artifacts-close:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .artifacts-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .artifact-tab {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .artifact-tab:hover {
+            color: var(--text);
+        }
+
+        .artifact-tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .artifacts-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .artifact-item {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .artifact-item img {
+            width: 100%;
+            display: block;
+        }
+
+        .artifact-item pre {
+            padding: 16px;
+            margin: 0;
+            font-size: 13px;
+            overflow-x: auto;
+            font-family: 'SF Mono', monospace;
+        }
+
+        .artifacts-actions {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 8px;
+        }
+
+        .artifact-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .artifact-btn:hover {
+            border-color: var(--accent);
+            background: var(--bg-secondary);
+        }
+
+        .artifact-btn.primary {
+            background: var(--accent);
+            border: none;
+            color: white;
+        }
+
+        .artifact-btn.primary:hover {
+            background: var(--accent-hover);
+        }
+
+        /* Voice Overlay */
+        .voice-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 2000;
+        }
+
+        .voice-overlay.active {
+            display: flex;
+        }
+
+        .voice-circle {
+            width: 200px;
+            height: 200px;
+            background: var(--gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 72px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 40px rgba(102, 126, 234, 0);
+            }
+        }
+
+        .voice-text {
+            margin-top: 32px;
+            font-size: 24px;
+            color: white;
+            font-weight: 300;
+        }
+
+        .voice-transcript {
+            margin-top: 20px;
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.7);
+            max-width: 500px;
+            text-align: center;
+            min-height: 30px;
+        }
+
+        .voice-cancel {
+            margin-top: 48px;
+            padding: 12px 32px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 24px;
+            color: white;
+            font-size: 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .voice-cancel:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Command Palette */
+        .cmd-palette {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            max-width: 90%;
+            max-height: 70vh;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: none;
+            flex-direction: column;
+            z-index: 1500;
+            overflow: hidden;
+        }
+
+        .cmd-palette.open {
+            display: flex;
+        }
+
+        .cmd-input {
+            width: 100%;
+            padding: 20px 24px;
+            border: none;
+            border-bottom: 1px solid var(--border);
+            background: transparent;
+            color: var(--text);
+            font-size: 16px;
+        }
+
+        .cmd-input:focus {
+            outline: none;
+        }
+
+        .cmd-results {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .cmd-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 24px;
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+
+        .cmd-item:hover,
+        .cmd-item.selected {
+            background: var(--bg-secondary);
+        }
+
+        .cmd-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--bg-tertiary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .cmd-text {
+            flex: 1;
+        }
+
+        .cmd-title {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .cmd-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .cmd-shortcut {
+            padding: 4px 8px;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 16px 24px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 3000;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            border-left: 4px solid var(--success);
+        }
+
+        .toast.error {
+            border-left: 4px solid var(--error);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-tertiary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                height: 100vh;
+                z-index: 999;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .suggestions {
+                grid-template-columns: 1fr;
+            }
+
+            .artifacts {
+                width: 100%;
+                right: -100%;
+            }
+
+            .cmd-palette {
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+<body data-theme="dark">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <div class="logo-icon">✨</div>
+                <span>Otto</span>
+            </div>
+            <button class="new-chat-btn" onclick="newChat()">
+                <span>+</span> New Chat
+            </button>
+        </div>
+        <div class="chat-history" id="chatHistory"></div>
+        <div class="sidebar-footer">
+            <a href="workflows.html" class="nav-link">⚡ Workflows</a>
+            <a href="agents.html" class="nav-link">🤖 Agents</a>
+            <a href="files.html" class="nav-link">📁 Files</a>
+            <a href="settings.html" class="nav-link">⚙️ Settings</a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <button class="toggle-sidebar" onclick="toggleSidebar()">☰</button>
+                <select class="model-select" id="modelSelect">
+                    <option value="claude-sonnet-4">Claude Sonnet 4</option>
+                    <option value="claude-opus-4">Claude Opus 4</option>
+                    <option value="gpt-4o">GPT-4o</option>
+                </select>
+            </div>
+            <div class="header-actions">
+                <button class="header-btn" onclick="openArtifacts()" title="Artifacts">📋</button>
+                <button class="header-btn" onclick="toggleTheme()" title="Theme">🌙</button>
+            </div>
+        </header>
+
+        <!-- Chat Area -->
+        <div class="chat-container" id="chatContainer">
+            <div class="welcome" id="welcome">
+                <div class="welcome-icon">✨</div>
+                <h1>Hello, I'm Otto</h1>
+                <p>Your AI assistant with 63+ tools. I can generate images, research topics, write code, create products, and accomplish virtually any task through natural language.</p>
+                <div class="suggestions">
+                    <div class="suggestion" onclick="sendQuickPrompt('Create a minimalist mountain landscape design')">
+                        <div class="suggestion-icon">🎨</div>
+                        <div class="suggestion-title">Generate Design</div>
+                        <div class="suggestion-desc">Create images and artwork</div>
+                    </div>
+                    <div class="suggestion" onclick="sendQuickPrompt('Research current trends in sustainable fashion')">
+                        <div class="suggestion-icon">🔍</div>
+                        <div class="suggestion-title">Research Topic</div>
+                        <div class="suggestion-desc">Deep dive with sources</div>
+                    </div>
+                    <div class="suggestion" onclick="sendQuickPrompt('Write a Python function to analyze data')">
+                        <div class="suggestion-icon">💻</div>
+                        <div class="suggestion-title">Write Code</div>
+                        <div class="suggestion-desc">Any language, any task</div>
+                    </div>
+                    <div class="suggestion" onclick="sendQuickPrompt('Help me plan a product launch')">
+                        <div class="suggestion-icon">🚀</div>
+                        <div class="suggestion-title">Plan Strategy</div>
+                        <div class="suggestion-desc">Business and marketing</div>
+                    </div>
+                </div>
+            </div>
+            <div class="messages" id="messages"></div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="input-area">
+            <div class="quick-actions">
+                <button class="quick-action" onclick="prefillPrompt('Generate an image of ')">🖼️ Image</button>
+                <button class="quick-action" onclick="prefillPrompt('Research ')">🔍 Research</button>
+                <button class="quick-action" onclick="prefillPrompt('Write code to ')">💻 Code</button>
+                <button class="quick-action" onclick="prefillPrompt('Create a ')">⚡ Create</button>
+                <button class="quick-action" onclick="prefillPrompt('Browse ')">🌐 Browse</button>
+            </div>
+            <div class="input-wrapper">
+                <div class="input-container">
+                    <textarea id="messageInput" placeholder="Ask Otto anything... (Cmd+K for commands)" rows="1" onkeydown="handleKeyPress(event)" oninput="autoResize(this)"></textarea>
+                    <div class="input-buttons">
+                        <button class="input-btn" onclick="attachFile()" title="Attach">📎</button>
+                        <button class="input-btn" onclick="startVoice()" title="Voice">🎤</button>
+                        <button class="input-btn send" id="sendBtn" onclick="sendMessage()" title="Send">➤</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Artifacts Panel -->
+    <aside class="artifacts" id="artifacts">
+        <div class="artifacts-header">
+            <div class="artifacts-title">
+                <span>✨</span> Artifacts
+            </div>
+            <button class="artifacts-close" onclick="closeArtifacts()">✕</button>
+        </div>
+        <div class="artifacts-tabs">
+            <button class="artifact-tab active" data-type="all">All</button>
+            <button class="artifact-tab" data-type="code">Code</button>
+            <button class="artifact-tab" data-type="image">Images</button>
+            <button class="artifact-tab" data-type="data">Data</button>
+        </div>
+        <div class="artifacts-content" id="artifactsContent"></div>
+        <div class="artifacts-actions">
+            <button class="artifact-btn" onclick="copyArtifact()">📋 Copy</button>
+            <button class="artifact-btn" onclick="downloadArtifact()">⬇️ Download</button>
+            <button class="artifact-btn primary" onclick="editArtifact()">📝 Edit</button>
+        </div>
+    </aside>
+
+    <!-- Voice Overlay -->
+    <div class="voice-overlay" id="voiceOverlay">
+        <div class="voice-circle">🎤</div>
+        <div class="voice-text">Listening...</div>
+        <div class="voice-transcript" id="voiceTranscript"></div>
+        <button class="voice-cancel" onclick="stopVoice()">Cancel</button>
+    </div>
+
+    <!-- Command Palette -->
+    <div class="cmd-palette" id="cmdPalette">
+        <input class="cmd-input" id="cmdInput" placeholder="Type a command..." onkeydown="handleCmdKey(event)" oninput="filterCommands()">
+        <div class="cmd-results" id="cmdResults"></div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // State
+        let messages = [];
+        let artifacts = [];
+        let currentSession = generateId();
+        let recognition = null;
+        let ws = null;
+
+        // Commands
+        const COMMANDS = [
+            { icon: '🎨', title: 'Generate Image', desc: 'Create AI images', action: () => prefillPrompt('Generate an image of ') },
+            { icon: '🔍', title: 'Research', desc: 'Deep research with sources', action: () => prefillPrompt('Research ') },
+            { icon: '💻', title: 'Write Code', desc: 'Any language', action: () => prefillPrompt('Write code to ') },
+            { icon: '⚡', title: 'Create Workflow', desc: 'Automate tasks', action: () => location.href = 'workflows.html' },
+            { icon: '🤖', title: 'Manage Agents', desc: 'View agents', action: () => location.href = 'agents.html' },
+            { icon: '📁', title: 'Browse Files', desc: 'File management', action: () => location.href = 'files.html' },
+            { icon: '⚙️', title: 'Settings', desc: 'Configure Otto', action: () => location.href = 'settings.html' },
+            { icon: '🌙', title: 'Toggle Theme', desc: 'Light/Dark mode', action: toggleTheme },
+        ];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load theme (default to dark)
+            const theme = localStorage.getItem('otto-theme') || 'dark';
+            document.body.setAttribute('data-theme', theme);
+            
+            // Load history
+            loadChatHistory();
+            
+            // Render commands
+            renderCommands();
+            
+            // Setup WebSocket
+            connectWebSocket();
+            
+            // Setup keyboard shortcuts
+            document.addEventListener('keydown', e => {
+                if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                    e.preventDefault();
+                    toggleCommandPalette();
+                }
+                if (e.key === 'Escape') {
+                    closeAllPalettes();
+                }
+            });
+        });
+
+        // WebSocket
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws`;
+            
+            ws = new WebSocket(wsUrl);
+            
+            ws.onopen = () => {
+                console.log('WebSocket connected');
+            };
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                handleWebSocketMessage(data);
+            };
+            
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+            };
+            
+            ws.onclose = () => {
+                console.log('WebSocket disconnected');
+                // Reconnect after 3 seconds
+                setTimeout(connectWebSocket, 3000);
+            };
+        }
+
+        function handleWebSocketMessage(data) {
+            if (data.type === 'reasoning_step') {
+                updateReasoningDisplay(data);
+            } else if (data.type === 'tool_execution') {
+                updateToolDisplay(data);
+            } else if (data.type === 'response_chunk') {
+                appendResponseChunk(data.content);
+            }
+        }
+
+        // Chat functions
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Clear input
+            input.value = '';
+            autoResize(input);
+            
+            // Hide welcome
+            document.getElementById('welcome').style.display = 'none';
+            
+            // Add user message
+            addMessage('user', message);
+            
+            // Show typing indicator
+            const typingId = showTyping();
+            
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message,
+                        session_id: currentSession,
+                        model: document.getElementById('modelSelect').value,
+                        stream: true
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // Remove typing indicator
+                removeTyping(typingId);
+                
+                // Add assistant message
+                if (data.response) {
+                    addMessage('assistant', data.response, data);
+                }
+                
+                // Handle artifacts
+                if (data.artifacts) {
+                    data.artifacts.forEach(artifact => addArtifact(artifact));
+                }
+                
+                // Save to history
+                saveChatHistory();
+                
+            } catch (error) {
+                console.error('Error:', error);
+                removeTyping(typingId);
+                showToast('Error sending message', 'error');
+            }
+        }
+
+        function addMessage(role, content, data = {}) {
+            messages.push({ role, content, data, timestamp: Date.now() });
+            
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            let html = `
+                <div class="avatar">${role === 'user' ? '👤' : '✨'}</div>
+                <div class="message-content">
+                    <div class="message-bubble">${formatMessage(content)}</div>
+            `;
+            
+            // Add reasoning if present
+            if (data.reasoning) {
+                html += `
+                    <div class="thinking">
+                        <div class="thinking-title">
+                            <span>🧠</span> Reasoning
+                        </div>
+                        <div class="thinking-steps">
+                            ${data.reasoning.map((step, i) => `
+                                <div class="thinking-step">
+                                    <span class="step-icon">${i + 1}.</span>
+                                    <span>${escapeHtml(step)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Add tool execution if present
+            if (data.tools_used) {
+                data.tools_used.forEach(tool => {
+                    html += `
+                        <div class="tool-execution">
+                            <div class="tool-header">
+                                <div class="tool-icon">⚡</div>
+                                <div class="tool-name">${tool.name}</div>
+                                <div class="tool-status">✓ Complete</div>
+                            </div>
+                            ${tool.result ? `<div class="tool-result">${escapeHtml(JSON.stringify(tool.result, null, 2))}</div>` : ''}
+                        </div>
+                    `;
+                });
+            }
+            
+            html += '</div>';
+            messageDiv.innerHTML = html;
+            messagesDiv.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            const chatContainer = document.getElementById('chatContainer');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function showTyping() {
+            const messagesDiv = document.getElementById('messages');
+            const typingDiv = document.createElement('div');
+            const id = 'typing-' + Date.now();
+            typingDiv.id = id;
+            typingDiv.className = 'message assistant';
+            typingDiv.innerHTML = `
+                <div class="avatar">✨</div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <div class="typing-indicator">
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            messagesDiv.appendChild(typingDiv);
+            return id;
+        }
+
+        function removeTyping(id) {
+            const element = document.getElementById(id);
+            if (element) element.remove();
+        }
+
+        // Artifacts
+        function addArtifact(artifact) {
+            artifacts.push(artifact);
+            renderArtifacts();
+            // Auto-open artifacts panel when new artifacts arrive
+            if (artifacts.length > 0) {
+                openArtifacts();
+            }
+        }
+
+        function renderArtifacts() {
+            const content = document.getElementById('artifactsContent');
+            if (artifacts.length === 0) {
+                content.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-tertiary);">No artifacts yet. Generated images, code, and content will appear here.</div>';
+                return;
+            }
+            
+            content.innerHTML = artifacts.map((artifact, idx) => {
+                const name = artifact.name || artifact.title || `Artifact ${idx + 1}`;
+                const type = artifact.type || 'unknown';
+                const timestamp = artifact.created_at ? new Date(artifact.created_at).toLocaleTimeString() : '';
+                
+                let preview = '';
+                if (type === 'image' && artifact.url) {
+                    preview = `<img src="${artifact.url}" alt="${escapeHtml(name)}" style="max-width:100%;border-radius:8px;cursor:pointer;" onclick="window.open('${artifact.url}', '_blank')">`;
+                } else if (type === 'video' && artifact.url) {
+                    preview = `<video controls style="max-width:100%;border-radius:8px;"><source src="${artifact.url}"></video>`;
+                } else if (type === 'audio' && artifact.url) {
+                    preview = `<audio controls style="width:100%;"><source src="${artifact.url}"></audio>`;
+                } else if (type === 'code') {
+                    const lang = artifact.metadata?.language || 'plaintext';
+                    preview = `<pre style="background:var(--bg);padding:12px;border-radius:8px;overflow-x:auto;font-size:12px;"><code class="language-${lang}">${escapeHtml(artifact.content || '')}</code></pre>`;
+                } else if (type === 'text' && artifact.content) {
+                    preview = `<div style="background:var(--bg);padding:12px;border-radius:8px;font-size:13px;max-height:200px;overflow-y:auto;">${escapeHtml(artifact.content).substring(0, 500)}${artifact.content.length > 500 ? '...' : ''}</div>`;
+                } else {
+                    preview = `<div style="padding:20px;text-align:center;color:var(--text-tertiary);">📄 ${type}</div>`;
+                }
+                
+                return `
+                    <div class="artifact-item" data-type="${type}" style="margin-bottom:16px;border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+                        <div style="padding:12px;background:var(--bg-tertiary);display:flex;justify-content:space-between;align-items:center;">
+                            <div>
+                                <strong style="font-size:13px;">${escapeHtml(name)}</strong>
+                                <span style="font-size:11px;color:var(--text-tertiary);margin-left:8px;">${type}</span>
+                            </div>
+                            <div style="font-size:11px;color:var(--text-tertiary);">${timestamp}</div>
+                        </div>
+                        <div style="padding:12px;">${preview}</div>
+                        <div style="padding:8px 12px;border-top:1px solid var(--border);display:flex;gap:8px;">
+                            ${artifact.url ? `<button onclick="window.open('${artifact.url}', '_blank')" style="padding:6px 12px;border:none;background:var(--accent);color:white;border-radius:6px;font-size:11px;cursor:pointer;">Open</button>` : ''}
+                            <button onclick="copyArtifactById(${idx})" style="padding:6px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:6px;font-size:11px;cursor:pointer;">Copy</button>
+                            ${artifact.url ? `<button onclick="downloadArtifactById(${idx})" style="padding:6px 12px;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:6px;font-size:11px;cursor:pointer;">Download</button>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function copyArtifactById(idx) {
+            const artifact = artifacts[idx];
+            if (!artifact) return;
+            navigator.clipboard.writeText(artifact.content || artifact.url || '');
+            showToast('Copied to clipboard!', 'success');
+        }
+
+        function downloadArtifactById(idx) {
+            const artifact = artifacts[idx];
+            if (!artifact) return;
+            
+            const a = document.createElement('a');
+            if (artifact.url) {
+                a.href = artifact.url;
+                const ext = artifact.type === 'image' ? 'png' : artifact.type === 'video' ? 'mp4' : 'bin';
+                a.download = `${artifact.name || 'artifact'}.${ext}`;
+            } else if (artifact.content) {
+                const blob = new Blob([artifact.content], { type: 'text/plain' });
+                a.href = URL.createObjectURL(blob);
+                a.download = `${artifact.name || 'artifact'}.txt`;
+            }
+            a.click();
+        }
+
+        function openArtifacts() {
+            document.getElementById('artifacts').classList.add('open');
+        }
+
+        function closeArtifacts() {
+            document.getElementById('artifacts').classList.remove('open');
+        }
+
+        function copyArtifact() {
+            if (artifacts.length === 0) return;
+            const lastArtifact = artifacts[artifacts.length - 1];
+            navigator.clipboard.writeText(lastArtifact.content || lastArtifact.url);
+            showToast('Copied to clipboard!', 'success');
+        }
+
+        function downloadArtifact() {
+            if (artifacts.length === 0) return;
+            downloadArtifactById(artifacts.length - 1);
+        }
+
+        function editArtifact() {
+            location.href = 'files.html';
+        }
+
+        // Voice
+        function startVoice() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                showToast('Voice input not supported', 'error');
+                return;
+            }
+            
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            
+            recognition.onresult = (event) => {
+                let transcript = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    transcript += event.results[i][0].transcript;
+                }
+                document.getElementById('voiceTranscript').textContent = transcript;
+            };
+            
+            recognition.onend = () => {
+                const transcript = document.getElementById('voiceTranscript').textContent;
+                if (transcript) {
+                    document.getElementById('messageInput').value = transcript;
+                    sendMessage();
+                }
+                stopVoice();
+            };
+            
+            document.getElementById('voiceOverlay').classList.add('active');
+            recognition.start();
+        }
+
+        function stopVoice() {
+            if (recognition) recognition.stop();
+            document.getElementById('voiceOverlay').classList.remove('active');
+            document.getElementById('voiceTranscript').textContent = '';
+        }
+
+        // Command Palette
+        function toggleCommandPalette() {
+            const palette = document.getElementById('cmdPalette');
+            palette.classList.toggle('open');
+            if (palette.classList.contains('open')) {
+                document.getElementById('cmdInput').focus();
+            }
+        }
+
+        function renderCommands(filter = '') {
+            const results = document.getElementById('cmdResults');
+            const filtered = COMMANDS.filter(cmd => 
+                cmd.title.toLowerCase().includes(filter.toLowerCase()) ||
+                cmd.desc.toLowerCase().includes(filter.toLowerCase())
+            );
+            
+            results.innerHTML = filtered.map((cmd, i) => `
+                <div class="cmd-item ${i === 0 ? 'selected' : ''}" onclick="COMMANDS[${COMMANDS.indexOf(cmd)}].action(); closeAllPalettes();">
+                    <div class="cmd-icon">${cmd.icon}</div>
+                    <div class="cmd-text">
+                        <div class="cmd-title">${cmd.title}</div>
+                        <div class="cmd-desc">${cmd.desc}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterCommands() {
+            const input = document.getElementById('cmdInput').value;
+            renderCommands(input);
+        }
+
+        function handleCmdKey(e) {
+            if (e.key === 'Enter') {
+                const selected = document.querySelector('.cmd-item.selected');
+                if (selected) selected.click();
+            } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                const items = [...document.querySelectorAll('.cmd-item')];
+                const current = items.findIndex(i => i.classList.contains('selected'));
+                items[current]?.classList.remove('selected');
+                const next = e.key === 'ArrowDown' 
+                    ? (current + 1) % items.length 
+                    : (current - 1 + items.length) % items.length;
+                items[next]?.classList.add('selected');
+                items[next]?.scrollIntoView({ block: 'nearest' });
+            }
+        }
+
+        // UI Helpers
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+        }
+
+        function toggleTheme() {
+            const current = document.body.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.body.setAttribute('data-theme', next);
+            localStorage.setItem('otto-theme', next);
+        }
+
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function prefillPrompt(text) {
+            const input = document.getElementById('messageInput');
+            input.value = text;
+            input.focus();
+            input.setSelectionRange(text.length, text.length);
+        }
+
+        function sendQuickPrompt(text) {
+            const input = document.getElementById('messageInput');
+            input.value = text;
+            sendMessage();
+        }
+
+        function newChat() {
+            messages = [];
+            artifacts = [];
+            currentSession = generateId();
+            document.getElementById('messages').innerHTML = '';
+            document.getElementById('welcome').style.display = 'block';
+            saveChatHistory();
+        }
+
+        function closeAllPalettes() {
+            document.getElementById('cmdPalette').classList.remove('open');
+            stopVoice();
+        }
+
+        function attachFile() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                showToast('Uploading ' + file.name + '...');
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                try {
+                    const response = await fetch('/api/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+                    if (data.url) {
+                        prefillPrompt('I uploaded a file: ' + data.url + '. ');
+                    }
+                } catch (error) {
+                    showToast('Upload failed', 'error');
+                }
+            };
+            input.click();
+        }
+
+        function showToast(message, type = '') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show ' + type;
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Storage
+        function saveChatHistory() {
+            const history = JSON.parse(localStorage.getItem('otto-history') || '[]');
+            const title = messages[0]?.content?.substring(0, 50) || 'New Chat';
+            history.unshift({
+                id: currentSession,
+                title,
+                timestamp: Date.now(),
+                messages
+            });
+            localStorage.setItem('otto-history', JSON.stringify(history.slice(0, 50)));
+            loadChatHistory();
+        }
+
+        function loadChatHistory() {
+            const history = JSON.parse(localStorage.getItem('otto-history') || '[]');
+            const historyDiv = document.getElementById('chatHistory');
+            historyDiv.innerHTML = history.slice(0, 20).map((chat, i) => `
+                <div class="history-item ${chat.id === currentSession ? 'active' : ''}" data-id="${chat.id}">
+                    <div class="history-item-content" onclick="loadChat('${chat.id}')">
+                        <div class="history-title">${escapeHtml(chat.title)}</div>
+                        <div class="history-time">${formatRelativeTime(chat.timestamp)}</div>
+                    </div>
+                    <div class="history-item-actions">
+                        <button class="history-action-btn" onclick="event.stopPropagation(); renameChat('${chat.id}')" title="Rename">✏️</button>
+                        <button class="history-action-btn" onclick="event.stopPropagation(); deleteChat('${chat.id}')" title="Delete">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function formatRelativeTime(timestamp) {
+            const now = Date.now();
+            const diff = now - timestamp;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+            
+            if (minutes < 1) return 'Just now';
+            if (minutes < 60) return `${minutes}m ago`;
+            if (hours < 24) return `${hours}h ago`;
+            if (days < 7) return `${days}d ago`;
+            return new Date(timestamp).toLocaleDateString();
+        }
+
+        function deleteChat(chatId) {
+            if (!confirm('Delete this chat? This cannot be undone.')) return;
+            
+            let history = JSON.parse(localStorage.getItem('otto-history') || '[]');
+            history = history.filter(chat => chat.id !== chatId);
+            localStorage.setItem('otto-history', JSON.stringify(history));
+            
+            // If we deleted the current chat, start a new one
+            if (chatId === currentSession) {
+                newChat();
+            } else {
+                loadChatHistory();
+            }
+            
+            showToast('Chat deleted', 'success');
+        }
+
+        function renameChat(chatId) {
+            const history = JSON.parse(localStorage.getItem('otto-history') || '[]');
+            const chat = history.find(c => c.id === chatId);
+            if (!chat) return;
+            
+            // Create and show rename dialog
+            const overlay = document.createElement('div');
+            overlay.className = 'dialog-overlay';
+            overlay.onclick = () => closeRenameDialog();
+            
+            const dialog = document.createElement('div');
+            dialog.className = 'rename-dialog';
+            dialog.id = 'renameDialog';
+            dialog.innerHTML = `
+                <h3>Rename Chat</h3>
+                <input type="text" id="renameInput" value="${escapeHtml(chat.title)}" 
+                       onkeydown="if(event.key==='Enter')saveRename('${chatId}')" autofocus>
+                <div class="rename-dialog-actions">
+                    <button class="rename-cancel" onclick="closeRenameDialog()">Cancel</button>
+                    <button class="rename-save" onclick="saveRename('${chatId}')">Save</button>
+                </div>
+            `;
+            
+            document.body.appendChild(overlay);
+            document.body.appendChild(dialog);
+            
+            // Focus and select the input
+            setTimeout(() => {
+                const input = document.getElementById('renameInput');
+                input.focus();
+                input.select();
+            }, 50);
+        }
+
+        function closeRenameDialog() {
+            const dialog = document.getElementById('renameDialog');
+            const overlay = document.querySelector('.dialog-overlay');
+            if (dialog) dialog.remove();
+            if (overlay) overlay.remove();
+        }
+
+        function saveRename(chatId) {
+            const input = document.getElementById('renameInput');
+            const newTitle = input.value.trim();
+            
+            if (!newTitle) {
+                showToast('Please enter a title', 'error');
+                return;
+            }
+            
+            let history = JSON.parse(localStorage.getItem('otto-history') || '[]');
+            const chatIndex = history.findIndex(c => c.id === chatId);
+            
+            if (chatIndex !== -1) {
+                history[chatIndex].title = newTitle;
+                localStorage.setItem('otto-history', JSON.stringify(history));
+                loadChatHistory();
+                showToast('Chat renamed', 'success');
+            }
+            
+            closeRenameDialog();
+        }
+
+        function loadChat(id) {
+            const history = JSON.parse(localStorage.getItem('otto-history') || '[]');
+            const chat = history.find(c => c.id === id);
+            if (chat) {
+                messages = chat.messages || [];
+                currentSession = chat.id;
+                document.getElementById('messages').innerHTML = '';
+                messages.forEach(msg => addMessage(msg.role, msg.content, msg.data || {}));
+                document.getElementById('welcome').style.display = messages.length ? 'none' : 'block';
+            }
+        }
+
+        // Utils
+        function generateId() {
+            return 'chat_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function formatMessage(content) {
+            let formatted = content;
+            const urls = [];
+            // Extract URLs first
+            formatted = formatted.replace(/(https?:\/\/[^\s<>"']+|\/files\/[a-f0-9]+)/gi, function(url) {
+                urls.push(url);
+                return '__URL_' + (urls.length - 1) + '__';
+            });
+            // Escape HTML
+            formatted = escapeHtml(formatted);
+            // Markdown
+            formatted = formatted
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                .replace(/`(.+?)`/g, '<code>$1</code>')
+                .replace(/\n/g, '<br>');
+            // Render URLs
+            urls.forEach(function(url, i) {
+                var html;
+                var lower = url.toLowerCase();
+                if (lower.match(/\.(png|jpg|jpeg|gif|webp|svg|bmp)(\?|$)/) || lower.indexOf('replicate.delivery') >= 0) {
+                    html = '<div class="media-embed"><img src="' + url + '" style="max-width:100%;border-radius:12px"/></div>';
+                } else if (lower.match(/\.(mp4|webm|mov)(\?|$)/)) {
+                    html = '<div class="media-embed"><video controls style="max-width:100%;border-radius:12px"><source src="' + url + '"></video></div>';
+                } else if (lower.match(/\.(mp3|wav|ogg)(\?|$)/)) {
+                    html = '<div class="media-embed"><audio controls><source src="' + url + '"></audio></div>';
+                } else if (url.indexOf('/files/') === 0) {
+                    html = '<div class="media-embed"><img src="' + url + '" style="max-width:100%;border-radius:12px"/></div>';
+                } else {
+                    html = '<a href="' + url + '" target="_blank" style="color:var(--accent)">' + url + '</a>';
+                }
+                formatted = formatted.replace('__URL_' + i + '__', html);
+            });
+            return formatted;
+        }
+
+        // Tab switching for artifacts
+        document.querySelectorAll('.artifact-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.artifact-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

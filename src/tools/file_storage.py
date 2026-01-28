@@ -102,13 +102,15 @@ class FileStorageTools(ToolBase):
     
     @tool(
         name="save_generated_image",
-        description="Save an AI-generated image to storage",
+        description="Save an AI-generated image to storage with optional filename and description",
         category="files"
     )
     async def save_generated_image(
         self,
         image_url: str,
-        prompt: str,
+        prompt: str = "",
+        filename: str = None,
+        description: str = None,
         model: str = "unknown",
         tags: Optional[List[str]] = None
     ) -> Dict[str, Any]:
@@ -117,7 +119,9 @@ class FileStorageTools(ToolBase):
         
         Args:
             image_url: URL of the generated image
-            prompt: The prompt used to generate the image
+            prompt: The prompt used to generate the image (optional if description provided)
+            filename: Optional custom filename for the saved image
+            description: Optional description of the image
             model: The AI model used
             tags: Additional tags
         """
@@ -125,12 +129,17 @@ class FileStorageTools(ToolBase):
             all_tags = tags or []
             all_tags.extend(["ai-generated", model])
             
+            # Use description or prompt for metadata
+            image_description = description or prompt or "AI generated image"
+            
             metadata = await self.storage.store_from_url(
                 url=image_url,
                 category="generated",
+                filename=filename,  # Pass filename if provided
                 tags=all_tags,
                 metadata={
                     "prompt": prompt,
+                    "description": image_description,
                     "model": model,
                     "type": "ai_generated"
                 }
@@ -142,6 +151,7 @@ class FileStorageTools(ToolBase):
                 "filename": metadata.filename,
                 "url": metadata.url,
                 "prompt": prompt,
+                "description": image_description,
                 "model": model
             }
         except Exception as e:
@@ -190,7 +200,8 @@ class FileStorageTools(ToolBase):
         self,
         category: Optional[str] = None,
         tags: Optional[List[str]] = None,
-        limit: int = 50
+        limit: int = 50,
+        filter: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         List files in storage.
@@ -199,6 +210,7 @@ class FileStorageTools(ToolBase):
             category: Filter by category (images, documents, generated, etc.)
             tags: Filter by tags
             limit: Maximum number of files to return
+            filter: General text filter (searches filenames and descriptions)
         """
         try:
             files = await self.storage.list_files(
@@ -206,6 +218,15 @@ class FileStorageTools(ToolBase):
                 tags=tags,
                 limit=limit
             )
+            
+            # Apply text filter if provided
+            if filter and files:
+                filter_lower = filter.lower()
+                files = [
+                    f for f in files
+                    if filter_lower in f.get('filename', '').lower() or
+                       filter_lower in f.get('description', '').lower()
+                ]
             
             return {
                 "success": True,

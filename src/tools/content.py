@@ -102,7 +102,9 @@ Format the output clearly with sections."""
         keywords: Optional[List[str]] = None,
         word_count: int = 800,
         style: str = "informative",
-        include_outline: bool = True
+        tone: Optional[str] = None,
+        include_outline: bool = True,
+        length: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Generate a blog post.
@@ -112,8 +114,21 @@ Format the output clearly with sections."""
             keywords: SEO keywords to include
             word_count: Target word count
             style: Writing style (informative, entertaining, tutorial, listicle)
+            tone: Alias for style (informative, engaging, professional, casual)
             include_outline: Include outline before full post
+            length: Content length hint (short, medium, long-form) - adjusts word_count
         """
+        # Handle tone as alias for style
+        if tone and not style:
+            style = tone
+        elif tone:
+            style = tone  # Prefer tone if both provided
+            
+        # Handle length hint
+        if length:
+            length_map = {"short": 400, "medium": 800, "long-form": 1500, "long": 1500}
+            word_count = length_map.get(length.lower(), word_count)
+            
         keywords_text = ", ".join(keywords) if keywords else "relevant terms"
         
         system_prompt = f"""You are a skilled content writer specializing in {style} blog posts.

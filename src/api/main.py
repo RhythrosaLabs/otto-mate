@@ -25,6 +25,10 @@ from ..utils.logger import setup_logging
 from .settings import router as settings_router
 from .files import router as files_router
 from .connections import router as connections_router
+from .agents import router as agents_router, set_orchestrator as set_agents_orchestrator
+from .models import router as models_router, set_orchestrator as set_models_orchestrator
+from .workflows import router as workflows_router, set_orchestrator as set_workflows_orchestrator
+from .business import router as business_router, set_business_orchestrator
 
 # Load environment variables
 load_dotenv()
@@ -62,7 +66,27 @@ async def lifespan(app: FastAPI):
         }
     )
     
+    # Initialize autonomous business orchestrator
+    logger.info("Initializing Autonomous Business Orchestrator...")
+    from ..core.autonomous_orchestrator import AutonomousOrchestrator
+    from ..core.business_workflows import BusinessWorkflowGenerator
+    
+    autonomous_orchestrator = AutonomousOrchestrator(
+        anthropic_client=orchestrator.anthropic,
+        tool_registry=orchestrator.tool_registry,
+        memory_agent=orchestrator.memory_agent,
+        config=orchestrator.config
+    )
+    
+    workflow_generator = BusinessWorkflowGenerator(autonomous_orchestrator)
+    
+    set_agents_orchestrator(orchestrator)
+    set_models_orchestrator(orchestrator)
+    set_workflows_orchestrator(orchestrator)
+    set_business_orchestrator(autonomous_orchestrator, workflow_generator)
+    
     logger.info("Otto Universal API is ready!")
+    logger.info("✨ Autonomous Business Operations: ACTIVE")
     yield
     
     # Cleanup
@@ -81,6 +105,10 @@ app = FastAPI(
 app.include_router(settings_router)
 app.include_router(files_router)
 app.include_router(connections_router)
+app.include_router(agents_router)
+app.include_router(models_router)
+app.include_router(workflows_router)
+app.include_router(business_router)
 
 # Add CORS middleware
 app.add_middleware(
@@ -141,7 +169,7 @@ async def root():
     if is_first_run():
         return RedirectResponse(url="/onboarding", status_code=302)
     
-    web_path = Path(__file__).parent.parent / "web" / "index.html"
+    web_path = Path(__file__).parent.parent / "web" / "chat.html"
     if web_path.exists():
         return web_path.read_text()
     return """
@@ -173,8 +201,65 @@ async def files_page():
     return "<html><body><h1>Files page not found</h1></body></html>"
 
 
+@app.get("/chat.html", response_class=HTMLResponse)
+async def chat_interface():
+    """Serve the full-featured Otto Universal interface."""
+    web_path = Path(__file__).parent.parent / "web" / "chat.html"
+    if web_path.exists():
+        return web_path.read_text()
+    return "<html><body><h1>Chat interface not found</h1></body></html>"
+
+
+@app.get("/agents-page", response_class=HTMLResponse)
+async def agents_page():
+    """Serve the agents management page."""
+    web_path = Path(__file__).parent.parent / "web" / "agents.html"
+    if web_path.exists():
+        return web_path.read_text()
+    return "<html><body><h1>Agents page not found</h1></body></html>"
+
+
+
+
+
 @app.get("/onboarding", response_class=HTMLResponse)
 async def onboarding_page():
+    """Serve the onboarding wizard."""
+    web_path = Path(__file__).parent.parent / "web" / "onboarding.html"
+    if web_path.exists():
+        return web_path.read_text()
+    return "<html><body><h1>Onboarding page not found</h1></body></html>"
+
+
+@app.get("/agents.html", response_class=HTMLResponse)
+async def agents_html():
+    """Serve the agents management page."""
+    web_path = Path(__file__).parent.parent / "web" / "agents.html"
+    if web_path.exists():
+        return web_path.read_text()
+    return "<html><body><h1>Agents page not found</h1></body></html>"
+
+
+@app.get("/files.html", response_class=HTMLResponse)
+async def files_html():
+    """Serve the files management page."""
+    web_path = Path(__file__).parent.parent / "web" / "files.html"
+    if web_path.exists():
+        return web_path.read_text()
+    return "<html><body><h1>Files page not found</h1></body></html>"
+
+
+@app.get("/settings.html", response_class=HTMLResponse)
+async def settings_html():
+    """Serve the settings page."""
+    web_path = Path(__file__).parent.parent / "web" / "settings.html"
+    if web_path.exists():
+        return web_path.read_text()
+    return "<html><body><h1>Settings page not found</h1></body></html>"
+
+
+@app.get("/onboarding.html", response_class=HTMLResponse)
+async def onboarding_html():
     """Serve the onboarding wizard."""
     web_path = Path(__file__).parent.parent / "web" / "onboarding.html"
     if web_path.exists():
@@ -229,6 +314,53 @@ async def chat(
     except Exception as e:
         logger.error(f"Chat error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/chat/history/{session_id}")
+async def get_chat_history(
+    session_id: str,
+    limit: int = 50,
+    otto: AgentOrchestrator = Depends(get_orchestrator)
+):
+    """
+    Get chat history for a session.
+    
+    Args:
+        session_id: The session identifier
+        limit: Maximum number of messages to return
+        
+    Returns:
+        List of messages with role and content
+    """
+    try:
+        history = await otto.memory_agent.get_session_history(
+            session_id=session_id,
+            limit=limit
+        )
+        return {"messages": history, "session_id": session_id}
+    except Exception as e:
+        logger.error(f"Failed to get chat history: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/api/chat/history/{session_id}")
+async def clear_chat_history(
+    session_id: str,
+    otto: AgentOrchestrator = Depends(get_orchestrator)
+):
+    """Clear chat history for a session."""
+    try:
+        success = await otto.memory_agent.clear_session(session_id)
+        return {"success": success, "session_id": session_id}
+    except Exception as e:
+        logger.error(f"Failed to clear chat history: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/memory/stats")
+async def get_memory_stats(otto: AgentOrchestrator = Depends(get_orchestrator)):
+    """Get memory usage statistics."""
+    return otto.memory_agent.get_stats()
 
 
 @app.post("/voice")

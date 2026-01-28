@@ -3,19 +3,21 @@ Otto Universal Core - Agent Orchestrator
 ========================================
 
 The central brain that coordinates all agents and tool execution.
-This is where the magic happens - understanding intent, planning execution,
-and delivering results through natural conversation.
+SUPERCHARGED with autonomous problem solving, dynamic AI model discovery,
+and code execution capabilities.
 """
 
 import asyncio
 import logging
 import uuid
+import json
 from typing import Any, Dict, List, Optional
 from datetime import datetime
 from anthropic import Anthropic
 from openai import AsyncOpenAI
 
-from .planning_agent import PlanningAgent
+from .super_planning_agent import SuperPlanningAgent as PlanningAgent
+from .master_agent import MasterOrchestrator
 from .execution_agent import ExecutionAgent
 from .memory_agent import MemoryAgent
 from .tool_registry import ToolRegistry
@@ -38,14 +40,14 @@ class AgentOrchestrator:
     def __init__(
         self,
         anthropic_api_key: str,
-        openai_api_key: str,
+        openai_api_key: str = None,
         config: Optional[Dict[str, Any]] = None
     ):
         self.config = config or {}
         
-        # Initialize AI clients
+        # Initialize AI clients (OpenAI is optional - only needed for voice)
         self.anthropic = Anthropic(api_key=anthropic_api_key)
-        self.openai = AsyncOpenAI(api_key=openai_api_key)
+        self.openai = AsyncOpenAI(api_key=openai_api_key) if openai_api_key and not openai_api_key.startswith("your_") else None
         
         # Initialize agents
         self.planning_agent = PlanningAgent(self.anthropic)
@@ -55,6 +57,9 @@ class AgentOrchestrator:
         # Initialize tool registry
         self.tool_registry = ToolRegistry()
         self.tool_registry.discover_tools()
+        
+        # Initialize master orchestrator for multi-agent coordination
+        self.master = MasterOrchestrator(self.anthropic, self.tool_registry)
         
         # File storage reference (set during tool registration)
         self.file_storage = None
@@ -79,7 +84,31 @@ class AgentOrchestrator:
                 BrowserTools,
                 FileStorageTools
             )
+            from ..tools.replicate_universal import ReplicateUniversal
+            from ..tools.code_execution import CodeExecutionTools, DataProcessingTools
             from ..storage import FileStorage, StorageConfig
+            
+            # === CORE AUTONOMOUS TOOLS ===
+            
+            # Universal Replicate - access to ANY AI model
+            if self.config.get("replicate_api_token"):
+                replicate = ReplicateUniversal(
+                    api_token=self.config["replicate_api_token"]
+                )
+                self.tool_registry.register_tool_class(replicate)
+                logger.info("Registered Universal Replicate tools (ANY AI model access)")
+            
+            # Code execution - write and run code autonomously
+            code_tools = CodeExecutionTools(workspace_dir="./workspace")
+            self.tool_registry.register_tool_class(code_tools)
+            logger.info("Registered Code Execution tools")
+            
+            # Data processing
+            data_tools = DataProcessingTools(workspace_dir="./workspace")
+            self.tool_registry.register_tool_class(data_tools)
+            logger.info("Registered Data Processing tools")
+            
+            # === INTEGRATION TOOLS ===
             
             # Printify tools
             printify_key = self.config.get("printify_api_key") or self.config.get("printify_api_token")
@@ -163,12 +192,20 @@ class AgentOrchestrator:
             # Create or retrieve session
             session = self._get_or_create_session(session_id, context)
             
-            # Add to memory
+            # Add to memory (flatten context for ChromaDB compatibility)
+            flat_context = {}
+            if context:
+                for k, v in context.items():
+                    if isinstance(v, (str, int, float, bool)) or v is None:
+                        flat_context[k] = v
+                    else:
+                        flat_context[k] = str(v)[:500]  # Truncate complex values
+            
             await self.memory_agent.store_message(
                 session_id=session["id"],
                 role="user",
                 content=message,
-                metadata=context or {}
+                metadata=flat_context
             )
             
             # Get relevant memories
@@ -178,12 +215,19 @@ class AgentOrchestrator:
                 k=5
             )
             
-            # Create planning prompt with context
+            # Create planning prompt with context - limit tools to avoid token overflow
+            all_tools = self.tool_registry.list_tools()
+            # Only pass essential tool info
+            limited_tools = [
+                {"name": t["name"], "description": t.get("description", "")[:150], "category": t.get("category", "general")}
+                for t in all_tools[:50]  # Limit to 50 most important tools
+            ]
+            
             planning_context = {
                 "message": message,
-                "memories": memories,
-                "session": session,
-                "available_tools": self.tool_registry.list_tools()
+                "memories": memories[:5],  # Limit memories
+                "session": {"id": session["id"]},  # Only pass session ID
+                "available_tools": limited_tools
             }
             
             # Step 1: Planning - figure out what to do
@@ -221,15 +265,22 @@ class AgentOrchestrator:
                 memories=memories
             )
             
-            # Store response in memory
+            # Collect artifacts from execution
+            artifacts = []
+            if hasattr(self.execution_agent, 'get_artifacts'):
+                artifacts = self.execution_agent.get_artifacts()
+            
+            # Store response in memory (serialize complex objects for ChromaDB)
+            import json
             await self.memory_agent.store_message(
                 session_id=session["id"],
                 role="assistant",
                 content=response,
                 metadata={
                     "type": "tool_response",
-                    "plan": plan,
-                    "results": execution_result
+                    "plan_json": json.dumps(plan) if plan else None,
+                    "num_steps": len(plan.get("steps", [])) if plan else 0,
+                    "artifact_count": len(artifacts)
                 }
             )
             
@@ -238,7 +289,8 @@ class AgentOrchestrator:
                 "type": "tool_execution",
                 "session_id": session["id"],
                 "plan": plan,
-                "results": execution_result.get("results", [])
+                "results": execution_result.get("results", []),
+                "artifacts": artifacts
             }
             
         except Exception as e:
@@ -246,7 +298,7 @@ class AgentOrchestrator:
             return {
                 "response": f"I encountered an error: {str(e)}. Please try again.",
                 "type": "error",
-                "session_id": session_id
+                "session_id": session_id or "error_session"
             }
     
     async def process_voice(
@@ -397,15 +449,26 @@ If the request requires using tools you don't currently have access to, explain 
         memories: List[Dict]
     ) -> str:
         """Generate final response based on tool execution results."""
-        # Format results for the prompt
+        # Format results for the prompt with size limits
         results_text = ""
         for result in execution_result.get("results", []):
             results_text += f"\nTool: {result.get('tool', 'unknown')}\n"
-            results_text += f"Status: {'Success' if result.get('success') else 'Failed'}\n"
-            if result.get("data"):
-                results_text += f"Data: {result['data']}\n"
-            if result.get("error"):
-                results_text += f"Error: {result['error']}\n"
+            # Check both 'status' field and nested 'result.success' for success determination
+            is_success = result.get('status') == 'success' or result.get('result', {}).get('success', False)
+            results_text += f"Status: {'Success' if is_success else 'Failed'}\n"
+            # Extract data from nested result structure if present - TRUNCATE to prevent token overflow
+            data = result.get('data') or result.get('result', {}).get('data')
+            if data:
+                data_str = str(data)[:2000]  # Limit data size
+                results_text += f"Data: {data_str}\n"
+            error = result.get('error') or result.get('result', {}).get('error')
+            if error:
+                error_str = str(error)[:500]  # Limit error size
+                results_text += f"Error: {error_str}\n"
+        
+        # Truncate total results if too large
+        if len(results_text) > 10000:
+            results_text = results_text[:10000] + "\n... (truncated)"
         
         response = self.anthropic.messages.create(
             model="claude-sonnet-4-20250514",
