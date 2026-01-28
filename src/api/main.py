@@ -183,88 +183,27 @@ async def root():
     """
 
 
-@app.get("/settings-page", response_class=HTMLResponse)
-async def settings_page():
-    """Serve the settings page."""
-    web_path = Path(__file__).parent.parent / "web" / "settings.html"
+def serve_html_page(filename: str) -> str:
+    """Generic HTML page server."""
+    web_path = Path(__file__).parent.parent / "web" / filename
     if web_path.exists():
         return web_path.read_text()
-    return "<html><body><h1>Settings page not found</h1></body></html>"
-
-
-@app.get("/files-page", response_class=HTMLResponse)
-async def files_page():
-    """Serve the files management page."""
-    web_path = Path(__file__).parent.parent / "web" / "files.html"
-    if web_path.exists():
-        return web_path.read_text()
-    return "<html><body><h1>Files page not found</h1></body></html>"
-
-
-@app.get("/chat.html", response_class=HTMLResponse)
-async def chat_interface():
-    """Serve the full-featured Otto Universal interface."""
-    web_path = Path(__file__).parent.parent / "web" / "chat.html"
-    if web_path.exists():
-        return web_path.read_text()
-    return "<html><body><h1>Chat interface not found</h1></body></html>"
-
-
-@app.get("/agents-page", response_class=HTMLResponse)
-async def agents_page():
-    """Serve the agents management page."""
-    web_path = Path(__file__).parent.parent / "web" / "agents.html"
-    if web_path.exists():
-        return web_path.read_text()
-    return "<html><body><h1>Agents page not found</h1></body></html>"
-
-
-
+    return f"<html><body><h1>{filename} not found</h1></body></html>"
 
 
 @app.get("/onboarding", response_class=HTMLResponse)
 async def onboarding_page():
     """Serve the onboarding wizard."""
-    web_path = Path(__file__).parent.parent / "web" / "onboarding.html"
-    if web_path.exists():
-        return web_path.read_text()
-    return "<html><body><h1>Onboarding page not found</h1></body></html>"
+    return serve_html_page("onboarding.html")
 
 
-@app.get("/agents.html", response_class=HTMLResponse)
-async def agents_html():
-    """Serve the agents management page."""
-    web_path = Path(__file__).parent.parent / "web" / "agents.html"
-    if web_path.exists():
-        return web_path.read_text()
-    return "<html><body><h1>Agents page not found</h1></body></html>"
-
-
-@app.get("/files.html", response_class=HTMLResponse)
-async def files_html():
-    """Serve the files management page."""
-    web_path = Path(__file__).parent.parent / "web" / "files.html"
-    if web_path.exists():
-        return web_path.read_text()
-    return "<html><body><h1>Files page not found</h1></body></html>"
-
-
-@app.get("/settings.html", response_class=HTMLResponse)
-async def settings_html():
-    """Serve the settings page."""
-    web_path = Path(__file__).parent.parent / "web" / "settings.html"
-    if web_path.exists():
-        return web_path.read_text()
-    return "<html><body><h1>Settings page not found</h1></body></html>"
-
-
-@app.get("/onboarding.html", response_class=HTMLResponse)
-async def onboarding_html():
-    """Serve the onboarding wizard."""
-    web_path = Path(__file__).parent.parent / "web" / "onboarding.html"
-    if web_path.exists():
-        return web_path.read_text()
-    return "<html><body><h1>Onboarding page not found</h1></body></html>"
+@app.get("/{page}.html", response_class=HTMLResponse)
+async def html_pages(page: str):
+    """Serve HTML pages from web directory."""
+    allowed_pages = ["chat", "settings", "files", "agents", "workflows", "onboarding"]
+    if page in allowed_pages:
+        return serve_html_page(f"{page}.html")
+    raise HTTPException(status_code=404, detail="Page not found")
 
 
 @app.get("/api")
