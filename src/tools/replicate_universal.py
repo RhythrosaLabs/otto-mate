@@ -126,7 +126,8 @@ class ReplicateUniversal(ToolBase):
         self,
         model: str,
         version: str,
-        inputs: Dict[str, Any],
+        inputs: Dict[str, Any] = None,
+        input: Dict[str, Any] = None,  # Alias for inputs
         wait: bool = True,
         timeout: int = 300
     ) -> Dict[str, Any]:
@@ -337,8 +338,10 @@ class ReplicateUniversal(ToolBase):
     )
     async def run_model(
         self,
-        model_name: str,
-        inputs: Dict[str, Any],
+        model_name: str = None,
+        model: str = None,  # Alias for model_name
+        inputs: Dict[str, Any] = None,
+        input: Dict[str, Any] = None,  # Alias for inputs
         wait: bool = True
     ) -> Dict[str, Any]:
         """
@@ -350,6 +353,12 @@ class ReplicateUniversal(ToolBase):
             wait: Whether to wait for completion
         """
         try:
+            # Resolve aliases
+            model_name = model_name or model
+            inputs = inputs or input or {}
+            if not model_name:
+                return {"success": False, "error": "Must provide model_name or model parameter"}
+            
             # Resolve model name
             if model_name in self.model_shortcuts:
                 model_name = self.model_shortcuts[model_name]

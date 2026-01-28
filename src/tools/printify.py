@@ -175,7 +175,9 @@ class PrintifyTools(ToolBase):
         image_url: str = None,
         filename: str = "design.png",
         file_name: str = None,  # Alias for filename (accepts both)
-        image_path: str = None,  # Alias for image_url (accepts both)
+        image_path: str = None,  # Alias for image_url
+        design_url: str = None,  # Alias for image_url
+        design_image_url: str = None,  # Alias for image_url (accepts both)
         url: str = None  # Another alias for image_url
     ) -> Dict[str, Any]:
         """
@@ -196,7 +198,7 @@ class PrintifyTools(ToolBase):
             Dict with upload ID
         """
         # Handle aliases - resolve the actual image URL
-        actual_url = image_url or image_path or url
+        actual_url = image_url or image_path or design_url or design_image_url or url
         if not actual_url:
             raise ValueError("Must provide image_url, image_path, or url parameter")
         
@@ -396,6 +398,8 @@ class PrintifyTools(ToolBase):
         description: str,
         image_url: str = None,
         image_path: str = None,  # Alias for image_url
+        design_url: str = None,  # Alias for image_url
+        design_image_url: str = None,  # Alias for image_url
         price_cents: int = 2499,
         blueprint_id: int = 6,  # Gildan 5000 by default
         print_provider_id: int = 99  # Monster Digital by default
@@ -422,7 +426,7 @@ class PrintifyTools(ToolBase):
             Dict with created product info
         """
         # Handle image_url alias
-        actual_url = image_url or image_path
+        actual_url = image_url or image_path or design_url or design_image_url
         if not actual_url:
             raise ValueError("Must provide image_url or image_path parameter")
         
@@ -511,6 +515,8 @@ class PrintifyTools(ToolBase):
         description: str,
         image_url: str = None,
         image_path: str = None,  # Alias for image_url
+        design_url: str = None,  # Alias for image_url
+        design_image_url: str = None,  # Alias for image_url
         price_cents: int = 1499,
         blueprint_id: int = 12,  # Ceramic Mug 11oz by default
         print_provider_id: int = 28  # Duplium by default
@@ -537,7 +543,7 @@ class PrintifyTools(ToolBase):
             Dict with created product info
         """
         # Handle image_url alias
-        actual_url = image_url or image_path
+        actual_url = image_url or image_path or design_url or design_image_url
         if not actual_url:
             raise ValueError("Must provide image_url or image_path parameter")
         
