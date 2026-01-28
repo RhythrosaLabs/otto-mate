@@ -1,0 +1,296 @@
+# Agent Tool Permissions Configuration
+
+# This file defines which tools each agent can access and under what conditions
+
+agents:
+  planner:
+    description: "Strategic planning and task decomposition"
+    allowed_tools:
+      # Read-only analysis tools
+      - search_web
+      - research_topic
+      - browse_url
+      - get_trending_topics
+      - list_files
+      - get_storage_stats
+      # Planning helpers
+      - analyze_competitor
+      - get_trending_topics
+    
+    restrictions:
+      - no_write_operations
+      - no_api_calls_costing_money
+      - no_system_commands
+    
+    max_cost_per_operation: 0.10
+
+  executor:
+    description: "Tool execution and action implementation"
+    allowed_tools:
+      # All tools available to executor
+      - "*"
+    
+    restrictions:
+      # Level 4+ require verification
+      - require_verification_before_publish
+      - require_budget_check_above_1_dollar
+      - require_confirmation_for_destructive_ops
+    
+    max_cost_per_operation: 10.00
+    max_operations_per_minute: 10
+
+  verifier:
+    description: "Result validation and quality checking"
+    allowed_tools:
+      # Read-only verification
+      - browse_url
+      - get_file
+      - read_file
+      - search_web
+      # Can read but not modify
+      - printify_get_product
+      - printify_list_products
+      - shopify_list_products
+      - get_storage_stats
+      - list_files
+    
+    restrictions:
+      - read_only
+      - no_modifications
+    
+    max_cost_per_operation: 0.05
+
+  memory:
+    description: "Context management and learning storage"
+    allowed_tools:
+      # Memory operations only
+      - save_file
+      - read_file
+      - list_files
+      - get_file
+    
+    restrictions:
+      - memory_directory_only
+      - no_external_apis
+    
+    max_operations_per_minute: 100
+
+# Tool-specific permissions
+tools:
+  # === SAFE READ-ONLY TOOLS ===
+  search_web:
+    level: 1
+    requires_verification: false
+    requires_confirmation: false
+    cost_category: free
+    rate_limit: 100/hour
+
+  browse_url:
+    level: 1
+    requires_verification: false
+    requires_confirmation: false
+    cost_category: free
+    rate_limit: 50/hour
+  
+  research_topic:
+    level: 1
+    requires_verification: false
+    requires_confirmation: false
+    cost_category: low
+    max_cost: 0.50
+
+  # === CONTENT GENERATION ===
+  generate_image:
+    level: 2
+    requires_verification: false
+    requires_confirmation: false
+    cost_category: medium
+    max_cost: 2.00
+    rate_limit: 20/hour
+
+  generate_blog_post:
+    level: 2
+    requires_verification: false
+    requires_confirmation: false
+    cost_category: low
+    max_cost: 0.50
+
+  generate_ad_copy:
+    level: 2
+    requires_verification: false
+    requires_confirmation: false
+    cost_category: low
+    max_cost: 0.30
+
+  # === PRODUCT CREATION (DRAFT) ===
+  printify_create_product:
+    level: 3
+    requires_verification: false
+    requires_confirmation: false
+    requires_budget_check: true
+    cost_category: low
+    max_cost: 0.00  # Creating draft is free
+    rate_limit: 5/minute
+
+  printify_upload_image:
+    level: 3
+    requires_verification: false
+    requires_confirmation: false
+    cost_category: free
+    rate_limit: 10/minute
+
+  # === PUBLISHING (HIGH IMPACT) ===
+  printify_publish_product:
+    level: 4
+    requires_verification: true
+    requires_confirmation: false  # Verification is enough
+    prerequisites:
+      - product_created
+      - quality_verified
+      - pricing_validated
+    cost_category: low
+    max_cost: 0.00
+
+  shopify_create_product:
+    level: 4
+    requires_verification: true
+    requires_confirmation: false
+    prerequisites:
+      - product_details_complete
+      - images_uploaded
+      - pricing_set
+    cost_category: low
+    max_cost: 0.00
+
+  shopify_update_product:
+    level: 4
+    requires_verification: true
+    requires_confirmation: false
+    cost_category: free
+
+  # === DANGEROUS OPERATIONS ===
+  shopify_delete_product:
+    level: 5
+    requires_verification: true
+    requires_confirmation: true
+    requires_explanation: true
+    cost_category: free
+    
+  delete_file:
+    level: 5
+    requires_verification: true
+    requires_confirmation: true
+    requires_backup: true
+    cost_category: free
+
+  execute_shell:
+    level: 5
+    requires_verification: true
+    requires_confirmation: true
+    allowed_commands:
+      - ls
+      - cat
+      - grep
+      - find
+      - echo
+      - pwd
+    blocked_commands:
+      - rm
+      - sudo
+      - chmod
+      - chown
+      - mkfs
+      - dd
+    cost_category: free
+
+  browser_social_post:
+    level: 4
+    requires_verification: true
+    requires_confirmation: false
+    prerequisites:
+      - content_reviewed
+      - platform_authenticated
+    cost_category: free
+
+# Budget configuration
+budget:
+  daily_limit: 50.00
+  monthly_limit: 1000.00
+  
+  per_operation_limits:
+    image_generation: 5.00
+    model_inference: 10.00
+    video_generation: 20.00
+  
+  cost_categories:
+    free: 0.00
+    low: 0.50
+    medium: 2.00
+    high: 10.00
+  
+  alerts:
+    - threshold: 0.50
+      action: log_warning
+    - threshold: 0.80
+      action: notify_user
+    - threshold: 0.95
+      action: block_expensive_operations
+
+# Rate limiting
+rate_limits:
+  global:
+    requests_per_second: 10
+    requests_per_minute: 100
+    requests_per_hour: 1000
+  
+  by_service:
+    replicate: 10/minute
+    printify: 5/minute
+    shopify: 2/second
+    serper: 100/hour
+    anthropic: 50/minute
+
+# Safety constraints
+safety:
+  auto_approve_under: 0.10  # Auto-approve operations under $0.10
+  require_verification_above: 1.00  # Require verification above $1.00
+  require_confirmation_above: 10.00  # Require user confirmation above $10.00
+  
+  max_retries: 3
+  retry_delay_seconds: 2
+  exponential_backoff: true
+  
+  timeout_seconds:
+    quick_operations: 30
+    medium_operations: 120
+    long_operations: 300
+    
+  kill_switch_triggers:
+    - consecutive_failures: 5
+    - budget_exceeded_by_percent: 10
+    - dangerous_operation_detected: true
+    - user_command: ["stop", "cancel", "halt", "abort"]
+
+# Audit and logging
+audit:
+  log_all_operations: true
+  log_sensitive_data: false
+  
+  required_fields:
+    - timestamp
+    - agent_id
+    - tool_name
+    - parameters
+    - result_status
+    - cost
+    - user_session
+    - verification_result
+  
+  retention_days: 90
+  
+  log_levels:
+    level_1_tools: info
+    level_2_tools: info
+    level_3_tools: warning
+    level_4_tools: warning
+    level_5_tools: error
