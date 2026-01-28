@@ -339,10 +339,13 @@
 <body>
     <div class="chat-container">
         <div class="chat-header">
-            <h1>🤖 Otto Universal - Autonomous Business Platform</h1>
-            <div class="status-indicator">
-                <div class="status-dot"></div>
-                <span>Online</span>
+            <h1>🤖 Otto Universal</h1>
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <button onclick="clearChat()" style="padding: 8px 16px; background: rgba(255,255,255,0.2); border: none; border-radius: 20px; color: white; cursor: pointer; font-size: 14px;">🔄 New Chat</button>
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>Online</span>
+                </div>
             </div>
         </div>
         
@@ -403,6 +406,16 @@
         const userInput = document.getElementById('userInput');
         const sendBtn = document.getElementById('sendBtn');
         
+        // Session management for memory
+        let sessionId = localStorage.getItem('otto_session_id');
+        if (!sessionId) {
+            sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('otto_session_id', sessionId);
+        }
+        
+        // Chat history for context
+        let chatHistory = JSON.parse(localStorage.getItem('otto_chat_history') || '[]');
+        
         function handleKeyPress(event) {
             if (event.key === 'Enter' && !event.shiftKey) {
                 event.preventDefault();
@@ -413,6 +426,15 @@
         function sendQuickAction(message) {
             userInput.value = message;
             sendMessage();
+        }
+        
+        function clearChat() {
+            sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('otto_session_id', sessionId);
+            chatHistory = [];
+            localStorage.setItem('otto_chat_history', '[]');
+            messagesContainer.innerHTML = '';
+            location.reload();
         }
         
         async function sendMessage() {
@@ -427,6 +449,7 @@
             
             // Add user message
             addMessage(message, 'user');
+            chatHistory.push({ role: 'user', content: message });
             userInput.value = '';
             
             // Show loading
@@ -437,12 +460,18 @@
             sendBtn.disabled = true;
             
             try {
-                const response = await fetch('/api/chat/send', {
+                const response = await fetch('/chat', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ message })
+                    body: JSON.stringify({ 
+                        message,
+                        session_id: sessionId,
+                        context: {
+                            history: chatHistory.slice(-10) // Last 10 messages for context
+                        }
+                    })
                 });
                 
                 const data = await response.json();
@@ -452,7 +481,9 @@
                 
                 // Add assistant message
                 if (data.response) {
-                    addMessage(data.response, 'assistant', data.reasoning_chain, data.kpis);
+                    addMessage(data.response, 'assistant', data.results, data.artifacts);
+                    chatHistory.push({ role: 'assistant', content: data.response });
+                    localStorage.setItem('otto_chat_history', JSON.stringify(chatHistory.slice(-50)));
                 } else {
                     addMessage('Sorry, I encountered an error. Please try again.', 'assistant');
                 }
@@ -469,7 +500,54 @@
             }
         }
         
-        function addMessage(content, role, reasoning = null, kpis = null) {
+        // Parse content for images, videos, and links
+        function parseContent(content) {
+            if (!content) return '';
+            
+            // Find image URLs (common image hosting patterns)
+            const imageRegex = /(https?:\/\/[^\s]+\.(?:png|jpg|jpeg|gif|webp|svg)(?:\?[^\s]*)?|https?:\/\/(?:replicate\.delivery|pbxt\.replicate\.delivery|res\.cloudinary\.com|i\.imgur\.com)[^\s]+)/gi;
+            
+            // Find video URLs
+            const videoRegex = /(https?:\/\/[^\s]+\.(?:mp4|webm|mov)(?:\?[^\s]*)?)/gi;
+            
+            // Find general URLs
+            const urlRegex = /(https?:\/\/[^\s<]+)/gi;
+            
+            let parsed = content;
+            const images = [];
+            const videos = [];
+            
+            // Extract images
+            let match;
+            while ((match = imageRegex.exec(content)) !== null) {
+                images.push(match[1]);
+            }
+            
+            // Extract videos
+            while ((match = videoRegex.exec(content)) !== null) {
+                videos.push(match[1]);
+            }
+            
+            // Convert markdown-style formatting
+            parsed = parsed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            parsed = parsed.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            parsed = parsed.replace(/`(.*?)`/g, '<code>$1</code>');
+            
+            // Convert newlines to br
+            parsed = parsed.replace(/\n/g, '<br>');
+            
+            // Make URLs clickable (but not images/videos we'll render)
+            parsed = parsed.replace(urlRegex, (url) => {
+                if (images.includes(url) || videos.includes(url)) {
+                    return ''; // Remove, will render as media
+                }
+                return `<a href="${url}" target="_blank" style="color: #667eea;">${url}</a>`;
+            });
+            
+            return { html: parsed, images, videos };
+        }
+        
+        function addMessage(content, role, results = null, artifacts = null) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${role}`;
             
@@ -480,36 +558,108 @@
             const messageContent = document.createElement('div');
             messageContent.className = 'message-content';
             
-            const text = document.createElement('p');
-            text.textContent = content;
+            // Parse content for media
+            const { html, images, videos } = parseContent(content);
+            
+            const text = document.createElement('div');
+            text.innerHTML = html;
+            text.style.lineHeight = '1.6';
             messageContent.appendChild(text);
             
-            // Add reasoning chain if available
-            if (reasoning && reasoning.length > 0) {
-                const reasoningDiv = document.createElement('div');
-                reasoningDiv.className = 'reasoning-chain';
-                reasoningDiv.innerHTML = '<strong>🧠 Reasoning:</strong>';
+            // Render images inline
+            if (images.length > 0) {
+                const imageContainer = document.createElement('div');
+                imageContainer.style.cssText = 'margin-top: 15px; display: flex; flex-wrap: wrap; gap: 10px;';
                 
-                reasoning.forEach(step => {
-                    const stepDiv = document.createElement('div');
-                    stepDiv.className = 'reasoning-step';
-                    stepDiv.innerHTML = `<strong>${step.action}:</strong> ${step.reasoning}`;
-                    reasoningDiv.appendChild(stepDiv);
+                images.forEach(imgUrl => {
+                    const imgWrapper = document.createElement('div');
+                    imgWrapper.style.cssText = 'position: relative; max-width: 100%;';
+                    
+                    const img = document.createElement('img');
+                    img.src = imgUrl;
+                    img.style.cssText = 'max-width: 100%; max-height: 400px; border-radius: 12px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+                    img.onclick = () => window.open(imgUrl, '_blank');
+                    img.onerror = () => imgWrapper.remove();
+                    
+                    const downloadBtn = document.createElement('a');
+                    downloadBtn.href = imgUrl;
+                    downloadBtn.download = 'otto_image.png';
+                    downloadBtn.innerHTML = '⬇️';
+                    downloadBtn.style.cssText = 'position: absolute; top: 10px; right: 10px; background: white; padding: 5px 10px; border-radius: 8px; text-decoration: none; font-size: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);';
+                    
+                    imgWrapper.appendChild(img);
+                    imgWrapper.appendChild(downloadBtn);
+                    imageContainer.appendChild(imgWrapper);
                 });
                 
-                messageContent.appendChild(reasoningDiv);
+                messageContent.appendChild(imageContainer);
             }
             
-            // Add KPIs if available
-            if (kpis && kpis.length > 0) {
-                const kpiContainer = document.createElement('div');
-                kpis.forEach(kpi => {
-                    const badge = document.createElement('span');
-                    badge.className = 'kpi-badge';
-                    badge.textContent = `${kpi.name}: ${kpi.value}`;
-                    kpiContainer.appendChild(badge);
+            // Render videos inline
+            if (videos.length > 0) {
+                const videoContainer = document.createElement('div');
+                videoContainer.style.cssText = 'margin-top: 15px;';
+                
+                videos.forEach(vidUrl => {
+                    const video = document.createElement('video');
+                    video.src = vidUrl;
+                    video.controls = true;
+                    video.style.cssText = 'max-width: 100%; max-height: 400px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+                    videoContainer.appendChild(video);
                 });
-                messageContent.appendChild(kpiContainer);
+                
+                messageContent.appendChild(videoContainer);
+            }
+            
+            // Show results/artifacts if available
+            if (results && Array.isArray(results)) {
+                results.forEach(result => {
+                    if (result.result && typeof result.result === 'object') {
+                        // Check for image URLs in results
+                        const resultImages = result.result.images || result.result.output || [];
+                        if (Array.isArray(resultImages) && resultImages.length > 0) {
+                            const imgContainer = document.createElement('div');
+                            imgContainer.style.cssText = 'margin-top: 15px; display: flex; flex-wrap: wrap; gap: 10px;';
+                            
+                            resultImages.forEach(imgUrl => {
+                                if (typeof imgUrl === 'string' && imgUrl.startsWith('http')) {
+                                    const imgWrapper = document.createElement('div');
+                                    imgWrapper.style.cssText = 'position: relative;';
+                                    
+                                    const img = document.createElement('img');
+                                    img.src = imgUrl;
+                                    img.style.cssText = 'max-width: 100%; max-height: 400px; border-radius: 12px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+                                    img.onclick = () => window.open(imgUrl, '_blank');
+                                    
+                                    imgWrapper.appendChild(img);
+                                    imgContainer.appendChild(imgWrapper);
+                                }
+                            });
+                            
+                            if (imgContainer.children.length > 0) {
+                                messageContent.appendChild(imgContainer);
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Show artifacts
+            if (artifacts && Array.isArray(artifacts) && artifacts.length > 0) {
+                const artifactContainer = document.createElement('div');
+                artifactContainer.style.cssText = 'margin-top: 15px; padding: 15px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;';
+                artifactContainer.innerHTML = '<strong style="color: #667eea;">📎 Generated Files:</strong>';
+                
+                artifacts.forEach(artifact => {
+                    const link = document.createElement('a');
+                    link.href = artifact.url || artifact;
+                    link.target = '_blank';
+                    link.style.cssText = 'display: block; margin-top: 8px; color: #667eea;';
+                    link.textContent = artifact.name || artifact.filename || artifact;
+                    artifactContainer.appendChild(link);
+                });
+                
+                messageContent.appendChild(artifactContainer);
             }
             
             messageDiv.appendChild(avatar);
@@ -553,9 +703,21 @@
             }
         }
         
-        // Focus input on load
+        // Restore chat history on load
         window.addEventListener('load', () => {
             userInput.focus();
+            
+            // Restore previous messages if any
+            if (chatHistory.length > 0) {
+                const welcomeScreen = messagesContainer.querySelector('.welcome-screen');
+                if (welcomeScreen) {
+                    welcomeScreen.remove();
+                }
+                
+                chatHistory.forEach(msg => {
+                    addMessage(msg.content, msg.role);
+                });
+            }
         });
     </script>
 </body>
