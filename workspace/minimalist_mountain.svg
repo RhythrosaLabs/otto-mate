@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400" height="240" viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="400" height="240" fill="#f8f9fa"/>
+  
+  <!-- Back mountains -->
+  <polygon points="0,240 80,80 160,120 240,60 320,160 400,120 400,240" fill="#e9ecef"/>
+  
+  <!-- Middle mountains -->
+  <polygon points="0,240 60,160 120,100 200,140 280,80 360,180 400,160 400,240" fill="#ced4da"/>
+  
+  <!-- Front mountains -->
+  <polygon points="0,240 80,180 160,112 240,172 320,128 400,200 400,240" fill="#6c757d"/>
+</svg>

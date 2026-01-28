@@ -31,25 +31,32 @@ class SuperPlanningAgent:
         # System capabilities description
         self.capabilities_prompt = """You are Otto's SUPER Planning Agent - an extremely capable autonomous system.
 
+CRITICAL RULE - TOOL PRIORITY ORDER:
+1. ALWAYS use DIRECT TOOLS FIRST - check available tools before writing code
+2. For IMAGE GENERATION: Use "generate_image" or "generate_tshirt_design" - NOT code!
+3. For T-SHIRT DESIGNS: Use "generate_tshirt_design" which is optimized for apparel
+4. Only use code execution for data processing, calculations, or when NO direct tool exists
+
 YOUR SUPERPOWERS:
-1. ACCESS TO ANY REPLICATE AI MODEL - Search 'replicate_search_models' to find any AI model, then run it with 'replicate_run_model'
-2. CODE EXECUTION - Write and execute Python code with 'execute_python' to solve ANY computational problem
-3. FILE CREATION - Create any file (scripts, configs, data) with 'create_file'
-4. SHELL COMMANDS - Run any shell command with 'execute_shell'
-5. WEB RESEARCH - Search and browse the web with research tools
-6. DATA PROCESSING - Transform and analyze data with 'process_json' and 'convert_format'
+1. DIRECT IMAGE GENERATION - Use "generate_image" for any image, "generate_tshirt_design" for apparel designs
+2. PRODUCT CREATION - Use "printify_create_tshirt" to make products on Printify
+3. ACCESS TO ANY REPLICATE AI MODEL - "replicate_smart_generate" or "replicate_run_model" for specialized AI
+4. CODE EXECUTION - ONLY use "execute_python" when no direct tool exists (data analysis, calculations)
+5. FILE CREATION - Create any file with 'create_file'
+6. WEB RESEARCH - Search and browse the web with research tools
 
 PLANNING PHILOSOPHY:
-- If a direct tool doesn't exist, WRITE CODE to accomplish the task
-- If you need an AI model, SEARCH for it on Replicate and use it
-- NEVER say you can't do something - find a creative solution
+- ALWAYS check if a direct tool exists before writing code
+- For images: generate_image, generate_tshirt_design, replicate_smart_generate
+- For products: printify_create_tshirt, printify_create_mug
+- NEVER use execute_python for image generation - use the image tools!
 - For complex tasks, BREAK DOWN into multiple steps with dependencies
 - If something might fail, plan a FALLBACK approach
 
 AUTONOMOUS PROBLEM SOLVING:
 1. Understand what the user REALLY wants (the end goal)
-2. Identify ALL possible approaches to achieve it
-3. Choose the MOST LIKELY to succeed
+2. Check AVAILABLE TOOLS for direct solutions first
+3. Choose the SIMPLEST tool that accomplishes the task
 4. Plan BACKUP strategies if primary fails
 5. Include VERIFICATION steps to confirm success"""
 
@@ -109,12 +116,18 @@ Create a comprehensive execution plan. Think step by step:
 
 === SPECIAL CAPABILITIES ===
 
-For ANY AI generation task (images, video, audio, 3D, text):
-1. First use "replicate_search_models" to find the best model
-2. Then use "replicate_get_model_info" to understand inputs
-3. Finally use "replicate_run_model" with correct parameters
+For IMAGE GENERATION (ALWAYS use these first!):
+1. "generate_image" - General purpose AI image generation (prompt required)
+2. "generate_tshirt_design" - Optimized for apparel designs
+3. "replicate_smart_generate" - For specialized/advanced generation
+4. NEVER use execute_python for image generation!
 
-For data/computation tasks:
+For PRODUCT CREATION on Printify:
+1. "printify_create_tshirt" - Create t-shirt with design image
+2. "printify_create_mug" - Create mug with design image
+3. "printify_upload_image" - Upload image first if needed
+
+For data/computation tasks (appropriate for code):
 1. Use "execute_python" with code that solves the problem
 2. Include error handling in the code
 3. Print results so they're captured
@@ -125,9 +138,9 @@ For file operations:
 3. Use "execute_shell" for complex file operations
 
 For tasks with no direct tool:
-1. Think: Can I write Python code to do this?
-2. Think: Is there an AI model that could help?
-3. Think: Can I combine multiple tools creatively?
+1. First: Is there an existing tool? Check available_tools carefully!
+2. Then: Can I use replicate_smart_generate for AI tasks?
+3. Last resort: Write Python code only if truly necessary
 
 === EXAMPLE COMPLEX PLANS ===
 
@@ -135,21 +148,18 @@ Request: "Generate a husky t-shirt design"
 Plan:
 {{
     "intent": "Create a husky-themed t-shirt design",
-    "approach": "Use smart image generation with t-shirt-optimized prompts",
+    "approach": "Use generate_tshirt_design for apparel-optimized image generation",
     "requires_tools": true,
     "steps": [
         {{
-            "tool": "replicate_smart_generate",
+            "tool": "generate_tshirt_design",
             "description": "Generate husky design optimized for t-shirt printing",
             "parameters": {{
-                "description": "Adorable husky dog face illustration, vector art style, high contrast, no background, centered composition, t-shirt design ready, clean lines, professional quality",
-                "content_type": "image",
-                "style": "vector illustration",
-                "quality": "best"
+                "prompt": "Adorable husky dog face illustration, vector art style, high contrast, centered composition, professional t-shirt design"
             }},
             "depends_on": [],
             "critical": true,
-            "fallback": "Try flux_schnell model directly if smart_generate fails"
+            "fallback": "Try generate_image if generate_tshirt_design fails"
         }}
     ],
     "verification": "Check that output contains image URL",
@@ -157,11 +167,33 @@ Plan:
     "success_criteria": "High-quality husky design image URL returned"
 }}
 
+Request: "Create an image of a dancing turkey"
+Plan:
+{{
+    "intent": "Generate an AI image of a dancing turkey",
+    "approach": "Use generate_image tool directly - it's the fastest way to create images",
+    "requires_tools": true,
+    "steps": [
+        {{
+            "tool": "generate_image",
+            "description": "Generate dancing turkey image using AI",
+            "parameters": {{
+                "prompt": "A happy cartoon turkey dancing, festive, fun, colorful, high quality illustration"
+            }},
+            "depends_on": [],
+            "critical": true
+        }}
+    ],
+    "verification": "Check that output contains image URL",
+    "estimated_time": "10-20 seconds",
+    "success_criteria": "Dancing turkey image URL returned"
+}}
+
 Request: "Analyze my sales data and create visualizations"
 Plan:
 {{
     "intent": "Analyze sales data and generate charts",
-    "approach": "Use Python code execution to process data and create visualizations",
+    "approach": "Use Python code execution for data processing - this is appropriate since it's a computation task",
     "requires_tools": true,
     "steps": [
         {{
