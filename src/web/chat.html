@@ -569,35 +569,130 @@
             box-shadow: 0 8px 40px rgba(167, 139, 250, 0.3);
         }
         
-        .welcome h1 { font-size: 32px; font-weight: 600; margin-bottom: 12px; background: linear-gradient(90deg, var(--text), var(--accent-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .welcome p { color: var(--text-muted); font-size: 16px; margin-bottom: 32px; max-width: 400px; }
+        .welcome h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #fff 0%, var(--accent-purple) 50%, var(--accent-pink) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            background-size: 200% 200%;
+            animation: welcomeGradient 3s ease infinite;
+        }
+        
+        @keyframes welcomeGradient {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .welcome h1 .typing-text {
+            display: inline-block;
+            overflow: hidden;
+            white-space: nowrap;
+            border-right: 3px solid var(--accent-purple);
+            animation: typing 2s steps(20, end) forwards, blink-caret 0.75s step-end infinite;
+        }
+        
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+        
+        @keyframes blink-caret {
+            from, to { border-color: transparent; }
+            50% { border-color: var(--accent-purple); }
+        }
+        
+        .welcome p {
+            color: var(--text-muted);
+            font-size: 17px;
+            margin-bottom: 36px;
+            max-width: 500px;
+            opacity: 0;
+            animation: fadeInUp 0.6s ease 1.5s forwards;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
         
         .suggestions {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            max-width: 500px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            max-width: 700px;
+            opacity: 0;
+            animation: fadeInUp 0.6s ease 1.8s forwards;
         }
         
         .suggestion {
-            padding: 16px;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
+            padding: 18px 16px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.04) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.15);
+            border-radius: 14px;
             cursor: pointer;
             text-align: left;
-            transition: all 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .suggestion::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .suggestion:hover::before {
+            left: 100%;
         }
         
         .suggestion:hover {
             border-color: var(--accent-purple);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(167, 139, 250, 0.15);
-            background: rgba(167, 139, 250, 0.05);
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 
+                0 8px 30px rgba(139, 92, 246, 0.25),
+                0 0 0 1px rgba(139, 92, 246, 0.1);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(236, 72, 153, 0.08) 100%);
         }
         
-        .suggestion-icon { font-size: 20px; margin-bottom: 8px; }
-        .suggestion-text { font-size: 14px; font-weight: 500; }
+        .suggestion-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+        
+        .suggestion:hover .suggestion-icon {
+            transform: scale(1.2) rotate(-5deg);
+        }
+        
+        .suggestion-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.3;
+        }
+        
+        .suggestion-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            line-height: 1.4;
+        }
         
         /* Messages */
         .message {
@@ -2523,7 +2618,17 @@
                 width: 100%;
                 max-width: 320px;
             }
+            .suggestions { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .suggestion { padding: 14px 12px; }
+            .suggestion-icon { font-size: 20px; margin-bottom: 6px; }
+            .suggestion-text { font-size: 12px; }
+            .suggestion-desc { font-size: 10px; }
+            .welcome h1 { font-size: 28px; }
+        }
+        
+        @media (max-width: 480px) {
             .suggestions { grid-template-columns: 1fr; }
+            .welcome h1 { font-size: 24px; }
         }
         
         /* Context Menu */
@@ -2724,24 +2829,53 @@
                     <div class="messages" id="messages">
                         <div class="welcome" id="welcome">
                             <div class="welcome-icon">✦</div>
-                            <h1>How can I help you?</h1>
-                            <p>I can create images, videos, analyze data, write code, and much more.</p>
+                            <h1><span class="typing-text">How can I help you?</span></h1>
+                            <p>I can create images, videos, products, music, and automate your entire creative business.</p>
                             <div class="suggestions">
                                 <div class="suggestion" onclick="sendSuggestion('Design a cute cat illustration, put it on a mug and t-shirt on Printify, and write a marketing blog post about it')">
                                     <div class="suggestion-icon">🚀</div>
                                     <div class="suggestion-text">Design → Print → Blog</div>
+                                    <div class="suggestion-desc">Full product launch workflow</div>
                                 </div>
                                 <div class="suggestion" onclick="sendSuggestion('Research trending pet products, design 3 unique dog-themed graphics, and create products on my Printify store')">
-                                    <div class="suggestion-icon">🐕</div>
+                                    <div class="suggestion-icon">📊</div>
                                     <div class="suggestion-text">Research → Design → Sell</div>
+                                    <div class="suggestion-desc">Market-driven product creation</div>
                                 </div>
                                 <div class="suggestion" onclick="sendSuggestion('Create a professional logo for a coffee shop called Morning Brew, generate social media posts, and write website copy')">
                                     <div class="suggestion-icon">☕</div>
                                     <div class="suggestion-text">Brand Identity Package</div>
+                                    <div class="suggestion-desc">Logo, social, and website copy</div>
                                 </div>
-                                <div class="suggestion" onclick="sendSuggestion('Generate 5 unique space-themed wallpaper designs and create a video showcasing them with music')">
+                                <div class="suggestion" onclick="sendSuggestion('Generate 5 unique space-themed wallpaper designs in portrait mode using Flux Pro and create framed art products for each')">
                                     <div class="suggestion-icon">🌌</div>
-                                    <div class="suggestion-text">Art Collection + Video</div>
+                                    <div class="suggestion-text">Art Collection → Framed Prints</div>
+                                    <div class="suggestion-desc">Premium wall art products</div>
+                                </div>
+                                <div class="suggestion" onclick="sendSuggestion('Create a cinematic 10-second promo video for a luxury watch brand with dramatic lighting and epic music')">
+                                    <div class="suggestion-icon">🎬</div>
+                                    <div class="suggestion-text">Cinematic Promo Video</div>
+                                    <div class="suggestion-desc">Apple-quality commercial</div>
+                                </div>
+                                <div class="suggestion" onclick="sendSuggestion('Analyze my top 5 competitors in the wellness space, identify gaps, and create 3 unique product designs to fill them')">
+                                    <div class="suggestion-icon">🔍</div>
+                                    <div class="suggestion-text">Competitive Analysis</div>
+                                    <div class="suggestion-desc">Research and opportunity mapping</div>
+                                </div>
+                                <div class="suggestion" onclick="sendSuggestion('Generate ambient lo-fi music and create a 30-second video loop with calming nature visuals for my meditation app')">
+                                    <div class="suggestion-icon">🎵</div>
+                                    <div class="suggestion-text">Music + Video Creation</div>
+                                    <div class="suggestion-desc">Custom audio and visuals</div>
+                                </div>
+                                <div class="suggestion" onclick="sendSuggestion('Create a complete seasonal collection: 5 autumn-themed designs, put them on hoodies and mugs, write product descriptions, and publish to my store')">
+                                    <div class="suggestion-icon">🍂</div>
+                                    <div class="suggestion-text">Seasonal Collection Launch</div>
+                                    <div class="suggestion-desc">Multi-product store update</div>
+                                </div>
+                                <div class="suggestion" onclick="sendSuggestion('Design a mascot character for a kids education app, create 5 expressions/poses, and generate promotional materials')">
+                                    <div class="suggestion-icon">🎨</div>
+                                    <div class="suggestion-text">Character Design Suite</div>
+                                    <div class="suggestion-desc">Mascot with variations</div>
                                 </div>
                             </div>
                         </div>
