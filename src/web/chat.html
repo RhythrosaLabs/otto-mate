@@ -710,7 +710,7 @@
             justify-content: flex-start;
             min-height: 60vh;
             text-align: center;
-            padding: 80px 20px 40px;
+            padding: 30px 20px 40px;
         }
         
         .welcome-icon {
@@ -760,6 +760,12 @@
         .particle:nth-child(8) { left: 70%; top: 105%; animation-delay: -11s, -2s; background: var(--accent-pink); }
         .particle:nth-child(9) { left: -3%; top: 75%; animation-delay: -4s, -7s; background: var(--accent-cyan); width: 2px; height: 2px; }
         .particle:nth-child(10) { left: 103%; top: 70%; animation-delay: -7s, -4s; background: var(--accent-purple); }
+        .particle:nth-child(11) { left: 50%; top: -8%; animation-delay: -1s, -3s; background: var(--accent-cyan); }
+        .particle:nth-child(12) { left: -10%; top: 30%; animation-delay: -10s, -5s; background: var(--accent-pink); width: 2px; height: 2px; }
+        .particle:nth-child(13) { left: 110%; top: 65%; animation-delay: -7s, -1s; background: var(--accent-purple); }
+        .particle:nth-child(14) { left: 20%; top: 105%; animation-delay: -4s, -6s; background: var(--accent-cyan); width: 2px; height: 2px; }
+        .particle:nth-child(15) { left: 85%; top: -3%; animation-delay: -12s, -4s; background: var(--accent-pink); }
+        .particle:nth-child(16) { left: -7%; top: 95%; animation-delay: -5s, -8s; background: var(--accent-purple); width: 2px; height: 2px; }
         
         @keyframes particleDrift {
             0%, 100% { transform: translate(0, 0) rotate(0deg); }
@@ -1751,6 +1757,68 @@
             text-align: center;
             padding: 48px 24px;
             color: var(--text-muted);
+        }
+        
+        /* Files view modes */
+        .files-list.view-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 12px;
+        }
+        
+        .files-list.view-grid .file-item {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 12px 8px;
+            margin-bottom: 0;
+        }
+        
+        .files-list.view-grid .file-thumb {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 8px;
+        }
+        
+        .files-list.view-grid .file-details {
+            width: 100%;
+        }
+        
+        .files-list.view-grid .file-meta {
+            justify-content: center;
+            font-size: 10px;
+        }
+        
+        .files-list.view-list .file-item {
+            flex-direction: row;
+            padding: 10px 14px;
+        }
+        
+        .files-list.view-list .file-thumb {
+            width: 40px;
+            height: 40px;
+            font-size: 18px;
+        }
+        
+        .files-list.view-details .file-item {
+            flex-direction: row;
+            padding: 8px 14px;
+        }
+        
+        .files-list.view-details .file-thumb {
+            width: 32px;
+            height: 32px;
+            font-size: 14px;
+            border-radius: 6px;
+        }
+        
+        .files-list.view-details .file-name {
+            font-size: 12px;
+            margin-bottom: 2px;
+        }
+        
+        .files-list.view-details .file-meta {
+            font-size: 10px;
         }
         .files-empty-icon {
             font-size: 48px;
@@ -3227,6 +3295,12 @@
                                     <div class="particle"></div>
                                     <div class="particle"></div>
                                     <div class="particle"></div>
+                                    <div class="particle"></div>
+                                    <div class="particle"></div>
+                                    <div class="particle"></div>
+                                    <div class="particle"></div>
+                                    <div class="particle"></div>
+                                    <div class="particle"></div>
                                 </div>
                                 <h1><span class="typing-text">How can I help you?</span></h1>
                                 <p>I can create images, videos, design and publish products, perform complex workflows, research the web, and automate all ends of your entire business.</p>
@@ -3328,15 +3402,21 @@
                     </button>
                 </div>
                 <div class="files-sort-row">
-                    <label style="font-size: 12px; color: #888;">Sort by:</label>
+                    <label style="font-size: 12px; color: #888;">Sort:</label>
                     <select class="files-sort-select" id="filesSortSelect" onchange="sortFiles(this.value)">
-                        <option value="date-desc">Newest First</option>
-                        <option value="date-asc">Oldest First</option>
-                        <option value="name-asc">Name A-Z</option>
-                        <option value="name-desc">Name Z-A</option>
-                        <option value="type">File Type</option>
-                        <option value="size-desc">Size (Largest)</option>
-                        <option value="size-asc">Size (Smallest)</option>
+                        <option value="date-desc">Newest</option>
+                        <option value="date-asc">Oldest</option>
+                        <option value="name-asc">A-Z</option>
+                        <option value="name-desc">Z-A</option>
+                        <option value="type">Type</option>
+                        <option value="size-desc">Largest</option>
+                        <option value="size-asc">Smallest</option>
+                    </select>
+                    <label style="font-size: 12px; color: #888; margin-left: 12px;">View:</label>
+                    <select class="files-sort-select" id="filesViewSelect" onchange="changeFilesView(this.value)">
+                        <option value="grid">Grid</option>
+                        <option value="list">List</option>
+                        <option value="details">Details</option>
                     </select>
                 </div>
                 <div class="files-filters">
@@ -4619,26 +4699,61 @@
                         <div class="particle"></div>
                         <div class="particle"></div>
                         <div class="particle"></div>
+                        <div class="particle"></div>
+                        <div class="particle"></div>
+                        <div class="particle"></div>
+                        <div class="particle"></div>
+                        <div class="particle"></div>
+                        <div class="particle"></div>
                     </div>
                     <h1><span class="typing-text">How can I help you?</span></h1>
                     <p>I can create images, videos, design and publish products, perform complex workflows, research the web, and automate all ends of your entire business.</p>
                 </div>
                 <div class="suggestions">
-                    <div class="suggestion" onclick="sendSuggestion('Generate an image of a futuristic city')">
-                        <div class="suggestion-icon">🎨</div>
-                        <div class="suggestion-text">Generate an image</div>
+                    <div class="suggestion" onclick="sendSuggestion('Design a cute cat illustration, put it on a mug and t-shirt on Printify, and write a marketing blog post about it')">
+                        <div class="suggestion-icon">🚀</div>
+                        <div class="suggestion-text">Design → Print → Blog</div>
+                        <div class="suggestion-desc">Full product launch workflow</div>
                     </div>
-                    <div class="suggestion" onclick="sendSuggestion('Write a Python script')">
-                        <div class="suggestion-icon">💻</div>
-                        <div class="suggestion-text">Write code</div>
+                    <div class="suggestion" onclick="sendSuggestion('Research trending pet products, design 3 unique dog-themed graphics, and create products on my Printify store')">
+                        <div class="suggestion-icon">📊</div>
+                        <div class="suggestion-text">Research → Design → Sell</div>
+                        <div class="suggestion-desc">Market-driven product creation</div>
                     </div>
-                    <div class="suggestion" onclick="sendSuggestion('Research the latest AI news')">
-                        <div class="suggestion-icon">🔍</div>
-                        <div class="suggestion-text">Research a topic</div>
+                    <div class="suggestion" onclick="sendSuggestion('Create a professional logo for a coffee shop called Morning Brew, generate social media posts, and write website copy')">
+                        <div class="suggestion-icon">☕</div>
+                        <div class="suggestion-text">Brand Identity Package</div>
+                        <div class="suggestion-desc">Logo, social, and website copy</div>
                     </div>
-                    <div class="suggestion" onclick="sendSuggestion('Create a short video')">
+                    <div class="suggestion" onclick="sendSuggestion('Generate 5 unique space-themed wallpaper designs in portrait mode using Flux Pro and create framed art products for each')">
+                        <div class="suggestion-icon">🌌</div>
+                        <div class="suggestion-text">Art Collection → Framed Prints</div>
+                        <div class="suggestion-desc">Premium wall art products</div>
+                    </div>
+                    <div class="suggestion" onclick="sendSuggestion('Create a cinematic 10-second promo video for a luxury watch brand with dramatic lighting and epic music')">
                         <div class="suggestion-icon">🎬</div>
-                        <div class="suggestion-text">Create a video</div>
+                        <div class="suggestion-text">Cinematic Promo Video</div>
+                        <div class="suggestion-desc">Apple-quality commercial</div>
+                    </div>
+                    <div class="suggestion" onclick="sendSuggestion('Analyze my top 5 competitors in the wellness space, identify gaps, and create 3 unique product designs to fill them')">
+                        <div class="suggestion-icon">🔍</div>
+                        <div class="suggestion-text">Competitive Analysis</div>
+                        <div class="suggestion-desc">Research and opportunity mapping</div>
+                    </div>
+                    <div class="suggestion" onclick="sendSuggestion('Generate ambient lo-fi music and create a 30-second video loop with calming nature visuals for my meditation app')">
+                        <div class="suggestion-icon">🎵</div>
+                        <div class="suggestion-text">Music + Video Creation</div>
+                        <div class="suggestion-desc">Custom audio and visuals</div>
+                    </div>
+                    <div class="suggestion" onclick="sendSuggestion('Create a complete seasonal collection: 5 autumn-themed designs, put them on hoodies and mugs, write product descriptions, and publish to my store')">
+                        <div class="suggestion-icon">🍂</div>
+                        <div class="suggestion-text">Seasonal Collection Launch</div>
+                        <div class="suggestion-desc">Multi-product store update</div>
+                    </div>
+                    <div class="suggestion" onclick="sendSuggestion('Design a mascot character for a kids education app, create 5 expressions/poses, and generate promotional materials')">
+                        <div class="suggestion-icon">🎨</div>
+                        <div class="suggestion-text">Character Design Suite</div>
+                        <div class="suggestion-desc">Mascot with variations</div>
                     </div>
                 </div>
             </div>`;
@@ -5185,6 +5300,26 @@
             currentSortOrder = order;
             loadFiles();
         }
+        
+        let currentFilesView = 'grid';
+        
+        function changeFilesView(view) {
+            currentFilesView = view;
+            const filesList = document.getElementById('filesList');
+            filesList.classList.remove('view-grid', 'view-list', 'view-details');
+            filesList.classList.add('view-' + view);
+            localStorage.setItem('filesView', view);
+        }
+        
+        // Load saved view preference
+        (function() {
+            const savedView = localStorage.getItem('filesView');
+            if (savedView) {
+                currentFilesView = savedView;
+                const viewSelect = document.getElementById('filesViewSelect');
+                if (viewSelect) viewSelect.value = savedView;
+            }
+        })();
         
         function sortFilesList(files, order) {
             const sorted = [...files];
@@ -6146,7 +6281,21 @@
         document.addEventListener('DOMContentLoaded', () => {
             initEditorDropzone();
             initSidebarResize();
+            initFilesView();
         });
+        
+        // Initialize files view from localStorage
+        function initFilesView() {
+            const savedView = localStorage.getItem('filesView') || 'grid';
+            const filesList = document.getElementById('filesList');
+            const viewSelect = document.getElementById('filesViewSelect');
+            if (filesList) {
+                filesList.classList.add('view-' + savedView);
+            }
+            if (viewSelect) {
+                viewSelect.value = savedView;
+            }
+        }
         
         // Sidebar resize functionality
         function initSidebarResize() {
