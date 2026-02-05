@@ -970,18 +970,31 @@ class PrintifyTools(ToolBase):
             product_type_lower = product_type.lower().strip()
             query_words = set(product_type_lower.split())
             
-            # Common word normalizations
+            # Common word normalizations - EXPANDED for better matching
             word_aliases = {
-                "tee": "t-shirt", "top": "t-shirt",
-                "cup": "mug", "tumbler": "mug",
-                "cap": "hat", "beanie": "beanie",
+                # Apparel
+                "tee": "t-shirt", "top": "t-shirt", "shirt": "t-shirt",
+                "cap": "hat", 
                 "pullover": "hoodie", "sweater": "sweatshirt",
-                "poster": "poster", "print": "print", "art": "art",
+                # Drinkware
+                "cup": "mug", 
+                # Stationery  
                 "notebook": "notebook", "journal": "journal",
+                # Home
                 "pillow": "pillow", "cushion": "pillow",
                 "blanket": "blanket", "throw": "blanket",
                 "clock": "clock", "watch": "watch",
+                "poster": "poster", "print": "print", "art": "art",
+                # Accessories
                 "sock": "socks", "socks": "socks",
+                "beanie": "beanie", "knit": "beanie",
+                # Novelty - ADDED playing cards, puzzles, etc
+                "playing": "playing", "cards": "card", "card": "card", 
+                "deck": "card", "poker": "card",
+                "puzzle": "puzzle", "jigsaw": "puzzle",
+                "ornament": "ornament", "christmas": "ornament",
+                "flag": "flag", "garden": "garden",
+                "coaster": "coaster", "coasters": "coaster",
             }
             
             # Normalize query words
@@ -2338,47 +2351,81 @@ class PrintifyTools(ToolBase):
             Dict with product info including success status
         """
         logger.info(f"🔧 Universal product creator: '{product_type}' - '{title}'")
+        normalized = product_type.lower().strip()
         
-        # Step 1: ALWAYS use dynamic API search for the blueprint
-        # This ensures we search the full Printify catalog
+        # Common aliases for better matching - EXPANDED for all product types
+        search_aliases = {
+            # Clock/time products
+            "wall clock": "clock", "desk clock": "clock", "acrylic clock": "clock",
+            "wrist watch": "watch", "wristwatch": "watch",
+            # Home products
+            "drink coasters": "coaster", "coaster set": "coaster", "coasters": "coaster",
+            "cutting board": "cutting board", "cheese board": "cutting board",
+            "beach towel": "towel", "bath towel": "towel", "hand towel": "towel",
+            # Apparel accessories
+            "knit cap": "beanie", "winter cap": "beanie", "knit beanie": "beanie",
+            "crew sock": "socks", "dress socks": "socks", "athletic socks": "socks",
+            "sock": "socks", "ankle socks": "socks", "tube socks": "socks",
+            "dad cap": "dad hat", "baseball hat": "dad hat", "baseball cap": "cap",
+            # Wall art
+            "wall poster": "poster", "art poster": "poster",
+            "wall canvas": "canvas", "canvas art": "canvas", "canvas print": "canvas",
+            # Stationery
+            "hardcover journal": "journal", "lined journal": "journal",
+            "spiral notebook": "notebook", "ruled notebook": "notebook",
+            # Novelty - ADDED playing cards
+            "face mask": "mask", "fabric mask": "mask",
+            "jigsaw puzzle": "puzzle", "jigsaw": "puzzle",
+            "ornament": "ornament", "christmas ornament": "ornament", "xmas ornament": "ornament",
+            "garden flag": "flag", "yard flag": "flag", "house flag": "flag",
+            "playing cards": "playing card", "card deck": "playing card", "deck of cards": "playing card",
+            "poker cards": "playing card", "cards": "playing card",
+            # Bags
+            "tote": "tote bag", "canvas bag": "tote bag", "shopping bag": "tote bag",
+            "fanny pack": "fanny pack", "hip bag": "fanny pack", "belt bag": "fanny pack",
+        }
+        
+        # Step 1: Try dynamic API search for the blueprint
         search_result = await self.search_blueprint(product_type)
         
         if not search_result:
-            # Try again with normalized product type
-            normalized = product_type.lower().strip()
-            # Common aliases for better matching
-            search_aliases = {
-                "wall clock": "clock", "desk clock": "clock",
-                "wrist watch": "watch", "wristwatch": "watch",
-                "drink coasters": "coaster", "coaster set": "coaster",
-                "knit cap": "beanie", "winter cap": "beanie", "knit beanie": "beanie",
-                "crew sock": "socks", "dress socks": "socks", "athletic socks": "socks",
-                "wall poster": "poster", "art poster": "poster",
-                "wall canvas": "canvas", "canvas art": "canvas",
-                "hardcover journal": "journal", "lined journal": "journal",
-                "spiral notebook": "notebook", "ruled notebook": "notebook",
-                "face mask": "mask", "fabric mask": "mask",
-                "jigsaw puzzle": "puzzle", "puzzle": "puzzle",
-                "ornament": "ornament", "christmas ornament": "ornament",
-                "garden flag": "flag", "yard flag": "flag",
-                "cutting board": "cutting board", "cheese board": "cutting board",
-                "beach towel": "towel", "bath towel": "towel",
-                "tote": "tote bag", "canvas bag": "tote bag",
-                "fanny pack": "fanny pack", "hip bag": "fanny pack",
-                "dad cap": "dad hat", "baseball hat": "dad hat",
-            }
-            
+            # Try with alias
             alias = search_aliases.get(normalized, normalized)
             if alias != normalized:
                 logger.info(f"Trying alias: '{normalized}' → '{alias}'")
                 search_result = await self.search_blueprint(alias)
+        
+        # Step 2: If dynamic search fails, fall back to static catalog
+        if not search_result:
+            logger.warning(f"Dynamic search failed for '{product_type}', trying static catalog...")
+            
+            # Check static catalog with various forms of the product type
+            catalog_checks = [
+                normalized,
+                normalized.rstrip('s'),  # Remove trailing 's' (socks -> sock doesn't exist but try)
+                search_aliases.get(normalized, normalized),
+            ]
+            
+            for check in catalog_checks:
+                if check in PRINTIFY_PRODUCT_CATALOG:
+                    catalog_entry = PRINTIFY_PRODUCT_CATALOG[check]
+                    search_result = {
+                        "blueprint_id": catalog_entry["blueprint_id"],
+                        "print_provider_id": catalog_entry["print_provider_id"],
+                        "name": catalog_entry["name"],
+                        "matched_from": f"static_catalog:{check}",
+                        "all_providers": [catalog_entry["print_provider_id"]]
+                    }
+                    logger.info(f"✓ Found in static catalog: {catalog_entry['name']}")
+                    break
         
         if not search_result:
             return {
                 "success": False,
                 "error": f"Could not find a Printify product matching '{product_type}'",
                 "hint": "Try being more specific (e.g., 'knit beanie' instead of just 'hat')",
-                "suggestion": "Use printify_list_all_products to see available product types"
+                "suggestion": "Use printify_list_all_products to see available product types",
+                "tried": [product_type, normalized, search_aliases.get(normalized)]
             }
         
         blueprint_id = search_result["blueprint_id"]
@@ -2415,24 +2462,38 @@ class PrintifyTools(ToolBase):
             variants = variants_result.get("variants", [])
             
             if not variants:
-                # Try other providers
+                # Try other providers - first from the search result, then fetch all
                 logger.warning(f"No variants for provider {print_provider_id}, trying alternatives...")
                 all_providers = search_result.get("all_providers", [])
+                
+                # If no providers cached, fetch them from the API
+                if not all_providers or len(all_providers) <= 1:
+                    logger.info(f"Fetching all providers for blueprint {blueprint_id}...")
+                    providers = await self.get_print_providers(blueprint_id)
+                    all_providers = [p.get("id") for p in providers if p.get("id")]
+                    logger.info(f"Found {len(all_providers)} providers to try")
+                
                 for alt_provider in all_providers:
                     if alt_provider != print_provider_id:
-                        variants_result = await self.get_variants(blueprint_id, alt_provider)
-                        variants = variants_result.get("variants", [])
-                        if variants:
-                            print_provider_id = alt_provider
-                            logger.info(f"✓ Found variants with provider {alt_provider}")
-                            break
+                        try:
+                            variants_result = await self.get_variants(blueprint_id, alt_provider)
+                            variants = variants_result.get("variants", [])
+                            if variants:
+                                print_provider_id = alt_provider
+                                logger.info(f"✓ Found {len(variants)} variants with provider {alt_provider}")
+                                break
+                        except Exception as e:
+                            logger.debug(f"Provider {alt_provider} failed: {e}")
+                            continue
             
             if not variants:
                 return {
                     "success": False,
-                    "error": f"No variants available for {product_name}",
+                    "error": f"No variants available for {product_name}. This product may not be available for custom printing.",
                     "blueprint_id": blueprint_id,
-                    "print_provider_id": print_provider_id
+                    "print_provider_id": print_provider_id,
+                    "hint": "Try a different product type or check if the product is available in your region",
+                    "providers_tried": all_providers[:5] if all_providers else [print_provider_id]
                 }
             
             # Limit variants to avoid API limits (usually 50-100 max)
