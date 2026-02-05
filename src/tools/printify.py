@@ -164,14 +164,16 @@ PRODUCT_SYNONYMS = {
     "sleeveless": "tank top",
     "muscle": "tank top",
     
-    # Bags synonyms
-    "bag": "tote bag",
-    "carry": "tote bag",
+    # Bags synonyms - ONLY specific matches, not generic "bag"
     "shopping bag": "tote bag",
     "grocery bag": "tote bag",
+    "eco bag": "tote bag",
+    "market bag": "tote bag",
     "purse": "tote bag",
     "bookbag": "backpack",
     "rucksack": "backpack",
+    "gym bag": "drawstring bag",
+    "sports bag": "drawstring bag",
     
     # Home synonyms
     "cushion": "pillow",
@@ -196,27 +198,25 @@ PRODUCT_SYNONYMS = {
     "welcome mat": "doormat",
     
     # Stationery synonyms  
-    "book": "notebook",
     "notepad": "notebook",
     "diary": "journal",
     "planner": "journal",
     "label": "sticker",
     "decal": "sticker",
-    "card": "greeting card",
     "birthday card": "greeting card",
+    "thank you card": "greeting card",
+    "holiday card": "greeting card",
     "fridge magnet": "magnet",
-    "refrigerator": "magnet",
+    "refrigerator magnet": "magnet",
     
-    # Phone synonyms
-    "case": "phone case",
-    "cover": "phone case",
+    # Phone synonyms - specific, not generic "case" or "cover"
     "iphone": "iphone case",
     "samsung": "samsung case",
     "galaxy": "samsung case",
-    "android": "samsung case",
-    "mobile": "phone case",
-    "cell phone": "phone case",
-    "smartphone": "phone case",
+    "android case": "samsung case",
+    "mobile case": "phone case",
+    "cell phone case": "phone case",
+    "smartphone case": "phone case",
     
     # Accessories synonyms
     "baseball cap": "cap",
@@ -228,19 +228,22 @@ PRODUCT_SYNONYMS = {
     "footwear": "socks",
     "sandal": "flip flops",
     "thong": "flip flops",
-    "cooking": "apron",
-    "kitchen": "apron",
-    "chef": "apron",
-    "mask": "face mask",
+    "cooking apron": "apron",
+    "kitchen apron": "apron",
+    "chef apron": "apron",
     
-    # Pet synonyms
-    "dog": "pet bandana",
-    "cat": "pet bandana",
-    "pet": "pet bandana",
-    "puppy": "pet bandana",
-    "kitten": "pet bandana",
+    # Pet synonyms - specific, not generic "dog" or "pet"
+    "dog bandana": "pet bandana",
+    "cat bandana": "pet bandana",
+    "pet scarf": "pet bandana",
+    "puppy bandana": "pet bandana",
+    "kitten bandana": "pet bandana",
+    "dog accessory": "pet bandana",
+    "pet accessory": "pet bandana",
     "food bowl": "pet bowl",
     "water dish": "pet bowl",
+    "dog bowl": "pet bowl",
+    "cat bowl": "pet bowl",
     
     # Baby synonyms (compound terms first for priority matching)
     "baby clothes": "baby onesie",

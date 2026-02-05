@@ -8,6 +8,7 @@ Integrates with the chat system to automatically add contacts when researching.
 
 import logging
 import json
+import os
 from typing import Optional, Dict, Any, List
 from datetime import datetime
 from pathlib import Path
@@ -15,10 +16,30 @@ from .core import tool, ToolBase
 
 logger = logging.getLogger(__name__)
 
-# Data directory for contacts
-DATA_DIR = Path("data/contacts")
-DATA_DIR.mkdir(parents=True, exist_ok=True)
-CONTACTS_FILE = DATA_DIR / "contacts.json"
+
+def _get_contacts_file() -> Path:
+    """Get the contacts file path, creating directory if needed."""
+    # Try to find project root by looking for common markers
+    cwd = Path.cwd()
+    data_dir = cwd / "data" / "contacts"
+    
+    # Also try relative to this file's location
+    if not (cwd / "data").exists():
+        file_dir = Path(__file__).parent.parent.parent  # src/tools -> src -> project_root
+        data_dir = file_dir / "data" / "contacts"
+    
+    try:
+        data_dir.mkdir(parents=True, exist_ok=True)
+    except Exception as e:
+        logger.warning(f"Could not create data directory: {e}")
+        # Fallback to /tmp
+        data_dir = Path("/tmp/otto/contacts")
+        data_dir.mkdir(parents=True, exist_ok=True)
+    
+    return data_dir / "contacts.json"
+
+
+CONTACTS_FILE = _get_contacts_file()
 
 
 def load_contacts() -> List[Dict[str, Any]]:
@@ -54,19 +75,31 @@ class ContactsTools(ToolBase):
     
     @tool(
         name="add_contact",
-        description="Add a new contact to the CRM. Use this when you've researched someone and want to save their information.",
-        category="contacts"
+        description="Add a new contact to the CRM. Use this when you've researched someone and want to save their information. Only 'name' is required.",
+        category="contacts",
+        parameters={
+            "name": {"type": "string", "description": "Full name of the contact", "required": True},
+            "email": {"type": "string", "description": "Email address"},
+            "company": {"type": "string", "description": "Company/organization name"},
+            "phone": {"type": "string", "description": "Phone number"},
+            "contact_type": {"type": "string", "description": "Type: lead, customer, contact, influencer, or partner"},
+            "notes": {"type": "string", "description": "Additional notes about the contact"},
+            "source": {"type": "string", "description": "Where this contact was found"},
+            "linkedin": {"type": "string", "description": "LinkedIn URL"},
+            "twitter": {"type": "string", "description": "Twitter/X URL"}
+        }
     )
     async def add_contact(
         self,
         name: str,
-        email: Optional[str] = None,
-        company: Optional[str] = None,
-        phone: Optional[str] = None,
+        email: str = "",
+        company: str = "",
+        phone: str = "",
         contact_type: str = "lead",
-        notes: Optional[str] = None,
-        source: Optional[str] = None,
-        social_links: Optional[Dict[str, str]] = None
+        notes: str = "",
+        source: str = "",
+        linkedin: str = "",
+        twitter: str = ""
     ) -> Dict[str, Any]:
         """
         Add a new contact to the system.
@@ -79,7 +112,8 @@ class ContactsTools(ToolBase):
             contact_type: Type of contact (lead, customer, contact, influencer, partner)
             notes: Additional notes about the contact
             source: Where this contact was found (e.g., "web research", "referral")
-            social_links: Dictionary of social media links (e.g., {"linkedin": "url", "twitter": "url"})
+            linkedin: LinkedIn profile URL
+            twitter: Twitter/X profile URL
         
         Returns:
             The created contact object
@@ -95,6 +129,13 @@ class ContactsTools(ToolBase):
                     "error": f"Contact with email {email} already exists",
                     "existing_contact": existing
                 }
+        
+        # Build social links from individual params
+        social_links = {}
+        if linkedin:
+            social_links["linkedin"] = linkedin
+        if twitter:
+            social_links["twitter"] = twitter
         
         contact = {
             "id": generate_contact_id(),
@@ -123,22 +164,37 @@ class ContactsTools(ToolBase):
     
     @tool(
         name="add_multiple_contacts",
-        description="Add multiple contacts at once. Use this when you've researched a list of people/influencers.",
-        category="contacts"
+        description="Add multiple contacts at once. Pass a JSON array string of contacts. Each contact should have at least 'name', optionally 'email', 'company', 'type', 'notes', 'linkedin', 'twitter'.",
+        category="contacts",
+        parameters={
+            "contacts_json": {"type": "string", "description": "JSON array string of contacts, e.g. '[{\"name\": \"John Doe\", \"email\": \"john@example.com\"}]'", "required": True}
+        }
     )
     async def add_multiple_contacts(
         self,
-        contacts_list: List[Dict[str, Any]]
+        contacts_json: str
     ) -> Dict[str, Any]:
         """
         Add multiple contacts at once.
         
         Args:
-            contacts_list: List of contact dictionaries with name, email, company, etc.
+            contacts_json: JSON string containing array of contact objects
         
         Returns:
             Summary of added contacts
         """
+        # Parse the JSON string
+        try:
+            contacts_list = json.loads(contacts_json)
+            if not isinstance(contacts_list, list):
+                contacts_list = [contacts_list]  # Handle single object
+        except json.JSONDecodeError as e:
+            return {
+                "success": False,
+                "error": f"Invalid JSON: {str(e)}",
+                "hint": "Pass a valid JSON array like '[{\"name\": \"John\", \"email\": \"john@example.com\"}]'"
+            }
+        
         results = {
             "success": True,
             "added": [],
@@ -155,13 +211,14 @@ class ContactsTools(ToolBase):
                 
                 result = await self.add_contact(
                     name=name,
-                    email=contact_data.get("email"),
-                    company=contact_data.get("company"),
-                    phone=contact_data.get("phone"),
+                    email=contact_data.get("email", ""),
+                    company=contact_data.get("company", ""),
+                    phone=contact_data.get("phone", ""),
                     contact_type=contact_data.get("type", "lead"),
-                    notes=contact_data.get("notes"),
+                    notes=contact_data.get("notes", ""),
                     source=contact_data.get("source", "ai_research"),
-                    social_links=contact_data.get("social_links")
+                    linkedin=contact_data.get("linkedin", ""),
+                    twitter=contact_data.get("twitter", "")
                 )
                 
                 if result.get("success"):
