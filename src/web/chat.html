@@ -707,10 +707,10 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             min-height: 60vh;
             text-align: center;
-            padding: 40px 20px;
+            padding: 80px 20px 40px;
         }
         
         .welcome-icon {
@@ -718,15 +718,26 @@
             height: 80px;
             position: relative;
             margin-bottom: 24px;
+            display: none; /* Hidden, particles now wrap content */
         }
         
-        /* Particle system for welcome icon */
+        /* Particle wrapper for welcome content */
+        .welcome-content-wrapper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 60px;
+        }
+        
+        /* Particle system for welcome content */
         .particle-container {
             position: absolute;
             width: 100%;
             height: 100%;
             top: 0;
             left: 0;
+            pointer-events: none;
         }
         
         .particle {
@@ -738,16 +749,17 @@
             animation: particleDrift 15s ease-in-out infinite, particleFade 8s ease-in-out infinite;
         }
         
-        .particle:nth-child(1) { left: 20%; top: 30%; animation-delay: 0s, 0s; background: var(--accent-purple); }
-        .particle:nth-child(2) { left: 70%; top: 20%; animation-delay: -3s, -2s; background: var(--accent-pink); width: 2px; height: 2px; }
-        .particle:nth-child(3) { left: 40%; top: 60%; animation-delay: -6s, -4s; background: var(--accent-cyan); }
-        .particle:nth-child(4) { left: 80%; top: 50%; animation-delay: -9s, -1s; background: var(--accent-purple); width: 2px; height: 2px; }
-        .particle:nth-child(5) { left: 10%; top: 70%; animation-delay: -2s, -5s; background: var(--accent-pink); }
-        .particle:nth-child(6) { left: 55%; top: 15%; animation-delay: -5s, -3s; background: var(--accent-cyan); width: 2px; height: 2px; }
-        .particle:nth-child(7) { left: 35%; top: 80%; animation-delay: -8s, -6s; background: var(--accent-purple); width: 2px; height: 2px; }
-        .particle:nth-child(8) { left: 65%; top: 40%; animation-delay: -11s, -2s; background: var(--accent-pink); }
-        .particle:nth-child(9) { left: 25%; top: 45%; animation-delay: -4s, -7s; background: var(--accent-cyan); width: 2px; height: 2px; }
-        .particle:nth-child(10) { left: 50%; top: 35%; animation-delay: -7s, -4s; background: var(--accent-purple); }
+        /* Particles around edges of welcome content */
+        .particle:nth-child(1) { left: -5%; top: 15%; animation-delay: 0s, 0s; background: var(--accent-purple); }
+        .particle:nth-child(2) { left: 105%; top: 10%; animation-delay: -3s, -2s; background: var(--accent-pink); width: 2px; height: 2px; }
+        .particle:nth-child(3) { left: 10%; top: 90%; animation-delay: -6s, -4s; background: var(--accent-cyan); }
+        .particle:nth-child(4) { left: 95%; top: 85%; animation-delay: -9s, -1s; background: var(--accent-purple); width: 2px; height: 2px; }
+        .particle:nth-child(5) { left: -8%; top: 50%; animation-delay: -2s, -5s; background: var(--accent-pink); }
+        .particle:nth-child(6) { left: 108%; top: 45%; animation-delay: -5s, -3s; background: var(--accent-cyan); width: 2px; height: 2px; }
+        .particle:nth-child(7) { left: 30%; top: -5%; animation-delay: -8s, -6s; background: var(--accent-purple); width: 2px; height: 2px; }
+        .particle:nth-child(8) { left: 70%; top: 105%; animation-delay: -11s, -2s; background: var(--accent-pink); }
+        .particle:nth-child(9) { left: -3%; top: 75%; animation-delay: -4s, -7s; background: var(--accent-cyan); width: 2px; height: 2px; }
+        .particle:nth-child(10) { left: 103%; top: 70%; animation-delay: -7s, -4s; background: var(--accent-purple); }
         
         @keyframes particleDrift {
             0%, 100% { transform: translate(0, 0) rotate(0deg); }
@@ -765,7 +777,7 @@
             font-size: 36px;
             font-weight: 700;
             margin-bottom: 12px;
-            margin-top: -20px;
+            margin-top: 0;
             background: linear-gradient(135deg, #fff 0%, var(--accent-purple) 50%, var(--accent-pink) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -3203,7 +3215,7 @@
                 <div class="messages-container" id="messagesContainer">
                     <div class="messages" id="messages">
                         <div class="welcome" id="welcome">
-                            <div class="welcome-icon">
+                            <div class="welcome-content-wrapper">
                                 <div class="particle-container">
                                     <div class="particle"></div>
                                     <div class="particle"></div>
@@ -3216,9 +3228,9 @@
                                     <div class="particle"></div>
                                     <div class="particle"></div>
                                 </div>
+                                <h1><span class="typing-text">How can I help you?</span></h1>
+                                <p>I can create images, videos, design and publish, perform complex workflows, research the web, and automate all ends of your entire business.</p>
                             </div>
-                            <h1><span class="typing-text">How can I help you?</span></h1>
-                            <p>I can create images, videos, products, music, and automate your entire creative business.</p>
                             <div class="suggestions">
                                 <div class="suggestion" onclick="sendSuggestion('Design a cute cat illustration, put it on a mug and t-shirt on Printify, and write a marketing blog post about it')">
                                     <div class="suggestion-icon">🚀</div>
@@ -4595,7 +4607,7 @@
         
         function getWelcomeHtml() {
             return `<div class="welcome" id="welcome">
-                <div class="welcome-icon">
+                <div class="welcome-content-wrapper">
                     <div class="particle-container">
                         <div class="particle"></div>
                         <div class="particle"></div>
@@ -4608,9 +4620,9 @@
                         <div class="particle"></div>
                         <div class="particle"></div>
                     </div>
+                    <h1><span class="typing-text">How can I help you?</span></h1>
+                    <p>I can create images, videos, design and publish, perform complex workflows, research the web, and automate all ends of your entire business.</p>
                 </div>
-                <h1><span class="typing-text">How can I help you?</span></h1>
-                <p>I can create images, videos, analyze data, write code, and much more.</p>
                 <div class="suggestions">
                     <div class="suggestion" onclick="sendSuggestion('Generate an image of a futuristic city')">
                         <div class="suggestion-icon">🎨</div>
