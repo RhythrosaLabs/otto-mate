@@ -51,6 +51,9 @@ from .social_poster import (
 # Email marketing
 from .email_marketing import EmailMarketingService, get_email_service
 
+# Contacts management (CRM)
+from .contacts import ContactsTools, contacts_tools, load_contacts, save_contacts
+
 # Enhanced task queue engine
 from .task_queue_engine import (
     EnhancedTaskQueueEngine,
@@ -125,6 +128,8 @@ __all__ = [
     "get_available_platforms", "quick_post",
     # Email marketing
     "EmailMarketingService", "get_email_service",
+    # Contacts management (CRM)
+    "ContactsTools", "contacts_tools", "load_contacts", "save_contacts",
     # Enhanced task queue engine
     "EnhancedTaskQueueEngine", "get_task_queue_engine",
     "Task", "TaskStep", "TaskStatus", "TaskPriority",

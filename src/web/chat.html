@@ -48,41 +48,82 @@
         
         /* Theme: Aurora (Magenta/Indigo) - default */
         [data-theme="aurora"] {
-            --bg: #000000;
-            --bg-secondary: #1a1a2e;
+            --bg: #0a0a12;
+            --bg-secondary: #12121e;
+            --bg-sidebar: #0d0d16;
+            --bg-chat: #0f0f18;
+            --bg-card: #14142a;
             --accent-purple: #a78bfa;
             --accent-pink: #f472b6;
             --accent-cyan: #60a5fa;
         }
         
-        /* Theme: Light */
+        /* Theme: Light - True light mode with dark text */
         [data-theme="light"] {
-            --bg: #f8f9fa;
+            --bg: #f8fafc;
             --bg-secondary: #ffffff;
-            --bg-sidebar: #f0f0f5;
+            --bg-sidebar: #f1f5f9;
             --bg-chat: #ffffff;
-            --bg-card: #f5f5f8;
-            --text: #1a1a2e;
-            --text-muted: #6b7280;
-            --border: #e5e7eb;
-            --glow-purple: rgba(167, 139, 250, 0.08);
-            --glow-blue: rgba(96, 165, 250, 0.05);
-            --glow-cyan: rgba(34, 211, 238, 0.03);
+            --bg-card: #f8fafc;
+            --text: #0f172a;
+            --text-muted: #475569;
+            --border: #e2e8f0;
+            --accent-purple: #7c3aed;
+            --accent-pink: #db2777;
+            --accent-cyan: #0891b2;
+            --accent-orange: #ea580c;
+            --glow-purple: rgba(124, 58, 237, 0.06);
+            --glow-blue: rgba(8, 145, 178, 0.04);
+            --glow-cyan: rgba(8, 145, 178, 0.03);
             --sidebar-gradient: linear-gradient(180deg, 
-                rgba(99, 102, 241, 0.04) 0%, 
-                rgba(139, 92, 246, 0.02) 30%,
-                rgba(236, 72, 153, 0.02) 60%,
-                rgba(6, 182, 212, 0.02) 100%);
+                rgba(124, 58, 237, 0.03) 0%, 
+                rgba(8, 145, 178, 0.02) 50%,
+                rgba(236, 72, 153, 0.02) 100%);
         }
         
-        /* Theme: Dark */
+        /* Theme: Dark - True black and white */
         [data-theme="dark"] {
-            --bg: #0a0a0f;
-            --bg-secondary: #121218;
-            --bg-sidebar: #0d0d12;
-            --accent-purple: #8b5cf6;
-            --accent-pink: #ec4899;
-            --accent-cyan: #3b82f6;
+            --bg: #000000;
+            --bg-secondary: #0a0a0a;
+            --bg-sidebar: #050505;
+            --bg-chat: #000000;
+            --bg-card: #0f0f0f;
+            --text: #ffffff;
+            --text-muted: #a3a3a3;
+            --border: #262626;
+            --accent-purple: #a3a3a3;
+            --accent-pink: #d4d4d4;
+            --accent-cyan: #e5e5e5;
+            --accent-orange: #fafafa;
+            --glow-purple: rgba(255, 255, 255, 0.02);
+            --glow-blue: rgba(255, 255, 255, 0.01);
+            --glow-cyan: rgba(255, 255, 255, 0.01);
+            --sidebar-gradient: linear-gradient(180deg, 
+                rgba(255, 255, 255, 0.02) 0%, 
+                rgba(255, 255, 255, 0.01) 100%);
+        }
+        
+        /* Theme: Midnight - Deep blue night mode */
+        [data-theme="midnight"] {
+            --bg: #020617;
+            --bg-secondary: #0f172a;
+            --bg-sidebar: #0c1222;
+            --bg-chat: #020617;
+            --bg-card: #1e293b;
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --accent-purple: #818cf8;
+            --accent-pink: #c084fc;
+            --accent-cyan: #38bdf8;
+            --accent-orange: #fb923c;
+            --glow-purple: rgba(129, 140, 248, 0.12);
+            --glow-blue: rgba(56, 189, 248, 0.08);
+            --glow-cyan: rgba(56, 189, 248, 0.05);
+            --sidebar-gradient: linear-gradient(180deg, 
+                rgba(129, 140, 248, 0.06) 0%, 
+                rgba(56, 189, 248, 0.04) 50%,
+                rgba(192, 132, 252, 0.03) 100%);
         }
         
         /* Theme: Sunset (Teal/Orange) */
@@ -119,24 +160,30 @@
                 rgba(244, 114, 182, 0.03) 100%);
         }
         
-        /* Theme: Cosmic (Full spectrum) */
+        /* Theme: Cosmic (Full spectrum galaxy) */
         [data-theme="cosmic"] {
-            --bg: #05050a;
-            --bg-secondary: #10101a;
-            --bg-sidebar: #080810;
-            --accent-purple: #a78bfa;
+            --bg: #030108;
+            --bg-secondary: #0d0520;
+            --bg-sidebar: #080312;
+            --bg-chat: #030108;
+            --bg-card: #1a0830;
+            --text: #f0e6ff;
+            --text-muted: #b794f6;
+            --border: #4c1d95;
+            --accent-purple: #c084fc;
             --accent-pink: #f472b6;
-            --accent-cyan: #2dd4bf;
+            --accent-cyan: #22d3ee;
             --accent-orange: #fb923c;
-            --glow-purple: rgba(167, 139, 250, 0.12);
-            --glow-blue: rgba(45, 212, 191, 0.08);
-            --glow-cyan: rgba(251, 146, 60, 0.05);
+            --glow-purple: rgba(192, 132, 252, 0.2);
+            --glow-blue: rgba(34, 211, 238, 0.12);
+            --glow-cyan: rgba(251, 146, 60, 0.08);
             --sidebar-gradient: linear-gradient(180deg, 
-                rgba(167, 139, 250, 0.08) 0%, 
-                rgba(45, 212, 191, 0.05) 25%,
-                rgba(236, 72, 153, 0.04) 50%,
-                rgba(251, 146, 60, 0.03) 75%,
-                rgba(99, 102, 241, 0.04) 100%);
+                rgba(192, 132, 252, 0.12) 0%, 
+                rgba(244, 114, 182, 0.08) 20%,
+                rgba(34, 211, 238, 0.06) 40%,
+                rgba(34, 197, 94, 0.04) 60%,
+                rgba(251, 146, 60, 0.06) 80%,
+                rgba(239, 68, 68, 0.04) 100%);
         }
         
         body {
@@ -3055,11 +3102,11 @@
             justify-content: center;
         }
         
-        .modal-overlay.open { display: flex; }
+        .modal-overlay.open, .modal-overlay.dynamic { display: flex; }
         
         .modal {
-            background: linear-gradient(180deg, #1a1a2e 0%, #16162a 50%, #0f0f1a 100%);
-            border: 1px solid rgba(139, 92, 246, 0.3);
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg) 100%);
+            border: 1px solid var(--border);
             border-radius: 16px;
             padding: 24px;
             width: 380px;
@@ -4704,13 +4751,14 @@
                                 <div class="setting-desc">Customize colors and appearance</div>
                             </div>
                             <select class="setting-input" id="themeSelect" onchange="setTheme(this.value)" style="width:auto">
-                                <option value="aurora">Aurora (Magenta/Indigo)</option>
-                                <option value="light">Daylight (Light Mode)</option>
-                                <option value="dark">Midnight (Dark Mode)</option>
-                                <option value="system">System Default</option>
+                                <option value="aurora">Aurora (Default)</option>
+                                <option value="light">Light Mode</option>
+                                <option value="dark">Dark (Black/White)</option>
+                                <option value="midnight">Midnight (Deep Blue)</option>
                                 <option value="sunset">Sunset (Teal/Orange)</option>
                                 <option value="ocean">Ocean (Teal/Magenta)</option>
-                                <option value="cosmic">Cosmic (Full Spectrum)</option>
+                                <option value="cosmic">Cosmic (Galaxy)</option>
+                                <option value="system">System Default</option>
                             </select>
                         </div>
                         <div class="setting-row">
@@ -7482,7 +7530,7 @@
         function openAddContactModal() {
             // Create and show modal for adding contact
             const modalHtml = `
-                <div class="modal-overlay" id="addContactModal" onclick="closeAddContactModal(event)">
+                <div class="modal-overlay dynamic" id="addContactModal" onclick="closeAddContactModal(event)">
                     <div class="modal" onclick="event.stopPropagation()" style="max-width: 400px;">
                         <div class="modal-header">
                             <span class="modal-title">👥 Add New Contact</span>
@@ -7500,7 +7548,7 @@
                             </select>
                             <textarea class="modal-input" id="newContactNotes" placeholder="Notes (optional)" rows="3" style="resize: vertical;"></textarea>
                         </div>
-                        <div class="modal-footer" style="display: flex; gap: 8px; justify-content: flex-end; padding: 16px; border-top: 1px solid rgba(139, 92, 246, 0.1);">
+                        <div class="modal-footer" style="display: flex; gap: 8px; justify-content: flex-end; padding: 16px; border-top: 1px solid var(--border);">
                             <button class="btn" onclick="closeAddContactModal()">Cancel</button>
                             <button class="btn" style="background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));" onclick="saveNewContact()">✓ Save Contact</button>
                         </div>
@@ -7562,7 +7610,7 @@
             if (!contact) return;
             
             const modalHtml = `
-                <div class="modal-overlay" id="viewContactModal" onclick="closeViewContactModal(event)">
+                <div class="modal-overlay dynamic" id="viewContactModal" onclick="closeViewContactModal(event)">
                     <div class="modal" onclick="event.stopPropagation()" style="max-width: 450px;">
                         <div class="modal-header">
                             <span class="modal-title">👤 ${escapeHtml(contact.name || 'Contact')}</span>
@@ -7582,7 +7630,7 @@
                                 ${contact.notes ? `<div style="color: var(--text-muted); font-size: 13px; margin-top: 8px; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 8px;">📝 ${escapeHtml(contact.notes)}</div>` : ''}
                             </div>
                         </div>
-                        <div class="modal-footer" style="display: flex; gap: 8px; justify-content: center; padding: 16px; border-top: 1px solid rgba(139, 92, 246, 0.1);">
+                        <div class="modal-footer" style="display: flex; gap: 8px; justify-content: center; padding: 16px; border-top: 1px solid var(--border);">
                             <button class="btn" onclick="closeViewContactModal(); emailContact('${contact.id}')">📧 Email</button>
                             <button class="btn" onclick="closeViewContactModal(); chatAboutContact('${contact.id}')">💬 Chat</button>
                             <button class="btn" onclick="closeViewContactModal(); editContact('${contact.id}')">✏️ Edit</button>
@@ -7624,7 +7672,7 @@
             if (!contact) return;
             
             const modalHtml = `
-                <div class="modal-overlay" id="editContactModal" onclick="closeEditContactModal(event)">
+                <div class="modal-overlay dynamic" id="editContactModal" onclick="closeEditContactModal(event)">
                     <div class="modal" onclick="event.stopPropagation()" style="max-width: 400px;">
                         <div class="modal-header">
                             <span class="modal-title">✏️ Edit Contact</span>
@@ -7642,7 +7690,7 @@
                             </select>
                             <textarea class="modal-input" id="editContactNotes" placeholder="Notes (optional)" rows="3" style="resize: vertical;">${escapeHtml(contact.notes || '')}</textarea>
                         </div>
-                        <div class="modal-footer" style="display: flex; gap: 8px; justify-content: flex-end; padding: 16px; border-top: 1px solid rgba(139, 92, 246, 0.1);">
+                        <div class="modal-footer" style="display: flex; gap: 8px; justify-content: flex-end; padding: 16px; border-top: 1px solid var(--border);">
                             <button class="btn" onclick="closeEditContactModal()">Cancel</button>
                             <button class="btn" style="background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));" onclick="updateContact('${contact.id}')">✓ Save Changes</button>
                         </div>

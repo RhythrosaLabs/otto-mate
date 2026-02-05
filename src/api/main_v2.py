@@ -159,7 +159,27 @@ async def lifespan(app: FastAPI):
         
         # Initialize tool registry
         state.tool_registry = ToolRegistry()
-        # Register all tools here...
+        
+        # Discover tools from the tools package
+        state.tool_registry.discover_tools("src.tools")
+        
+        # Register tool class instances for API-key dependent tools
+        import os
+        
+        # Register Printify tools if API key available
+        printify_api_key = os.getenv("PRINTIFY_API_KEY") or os.getenv("PRINTIFY_TOKEN")
+        printify_shop_id = os.getenv("PRINTIFY_SHOP_ID")
+        if printify_api_key and printify_shop_id:
+            from src.tools.printify import PrintifyTools
+            printify_tools = PrintifyTools(printify_api_key, printify_shop_id)
+            state.tool_registry.register_tool_class(printify_tools)
+            logger.info("Printify tools registered")
+        
+        # Register contacts tools
+        from src.tools.contacts import ContactsTools
+        contacts_tools = ContactsTools()
+        state.tool_registry.register_tool_class(contacts_tools)
+        logger.info("Contacts tools registered")
         
         # Create default agent crew
         state.default_crew = AgentCrew(
@@ -575,6 +595,123 @@ async def list_agents():
             }
     
     return all_agents
+
+
+# ============================================================================
+# Contacts API
+# ============================================================================
+
+from src.tools.contacts import load_contacts, save_contacts, generate_contact_id
+
+
+class ContactCreate(BaseModel):
+    """Contact creation model."""
+    name: str
+    email: str = ""
+    company: str = ""
+    phone: str = ""
+    type: str = "contact"
+    notes: str = ""
+    source: str = ""
+    social_links: Dict[str, str] = {}
+
+
+class ContactUpdate(BaseModel):
+    """Contact update model."""
+    name: Optional[str] = None
+    email: Optional[str] = None
+    company: Optional[str] = None
+    phone: Optional[str] = None
+    type: Optional[str] = None
+    notes: Optional[str] = None
+    source: Optional[str] = None
+    social_links: Optional[Dict[str, str]] = None
+
+
+@app.get("/api/contacts")
+async def get_contacts():
+    """Get all contacts."""
+    contacts = load_contacts()
+    return contacts
+
+
+@app.post("/api/contacts")
+async def create_contact(contact: ContactCreate):
+    """Create a new contact."""
+    contacts = load_contacts()
+    
+    # Check for duplicate email
+    if contact.email:
+        existing = next((c for c in contacts if c.get('email', '').lower() == contact.email.lower()), None)
+        if existing:
+            raise HTTPException(status_code=400, detail=f"Contact with email {contact.email} already exists")
+    
+    new_contact = {
+        "id": generate_contact_id(),
+        "name": contact.name,
+        "email": contact.email,
+        "company": contact.company,
+        "phone": contact.phone,
+        "type": contact.type,
+        "notes": contact.notes,
+        "source": contact.source or "manual",
+        "social_links": contact.social_links,
+        "createdAt": datetime.now().isoformat(),
+        "updatedAt": datetime.now().isoformat()
+    }
+    
+    contacts.append(new_contact)
+    save_contacts(contacts)
+    
+    return new_contact
+
+
+@app.get("/api/contacts/{contact_id}")
+async def get_contact(contact_id: str):
+    """Get a single contact by ID."""
+    contacts = load_contacts()
+    contact = next((c for c in contacts if c['id'] == contact_id), None)
+    
+    if not contact:
+        raise HTTPException(status_code=404, detail="Contact not found")
+    
+    return contact
+
+
+@app.put("/api/contacts/{contact_id}")
+async def update_contact(contact_id: str, updates: ContactUpdate):
+    """Update a contact."""
+    contacts = load_contacts()
+    contact_idx = next((i for i, c in enumerate(contacts) if c['id'] == contact_id), None)
+    
+    if contact_idx is None:
+        raise HTTPException(status_code=404, detail="Contact not found")
+    
+    # Apply updates
+    update_data = updates.dict(exclude_unset=True)
+    for key, value in update_data.items():
+        if value is not None:
+            contacts[contact_idx][key] = value
+    
+    contacts[contact_idx]['updatedAt'] = datetime.now().isoformat()
+    save_contacts(contacts)
+    
+    return contacts[contact_idx]
+
+
+@app.delete("/api/contacts/{contact_id}")
+async def delete_contact(contact_id: str):
+    """Delete a contact."""
+    contacts = load_contacts()
+    original_count = len(contacts)
+    contacts = [c for c in contacts if c['id'] != contact_id]
+    
+    if len(contacts) == original_count:
+        raise HTTPException(status_code=404, detail="Contact not found")
+    
+    save_contacts(contacts)
+    
+    return {"success": True, "message": "Contact deleted"}
 
 
 # ============================================================================
