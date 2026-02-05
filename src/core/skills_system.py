@@ -171,10 +171,11 @@ class Skill:
 class SkillsRegistry:
     """Central registry for all skills."""
     
-    def __init__(self, skills_directory: str = None):
+    def __init__(self, skills_directory: Optional[str] = None):
         if skills_directory is None:
             # Default to skills/ in project root
-            skills_directory = Path(__file__).parent.parent.parent / "skills"
+            default_dir = Path(__file__).parent.parent.parent / "skills"
+            skills_directory = str(default_dir)
         
         self.skills_directory = Path(skills_directory)
         self.skills: Dict[str, Skill] = {}

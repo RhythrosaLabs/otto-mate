@@ -6,11 +6,13 @@ Main API server providing REST and WebSocket endpoints.
 """
 
 import logging
+import json
 from contextlib import asynccontextmanager
 from pathlib import Path
+from datetime import datetime
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.responses import JSONResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
@@ -31,6 +33,15 @@ from .workflows import router as workflows_router, set_orchestrator as set_workf
 from .business import router as business_router, set_business_orchestrator
 from .projects import router as projects_router
 from .skills import router as skills_router
+from .extensions import router as extensions_router
+from .profile import router as profile_router
+from .conversations import router as conversations_router
+from .brand import router as brand_router
+from .social import router as social_router
+from .email import router as email_router
+from .tasks import router as tasks_router
+from .webhooks import router as webhooks_router
+from .scheduler_routes import router as scheduler_router, set_scheduler
 
 # Load environment variables
 load_dotenv()
@@ -49,6 +60,13 @@ async def lifespan(app: FastAPI):
     global orchestrator
     
     settings = get_settings()
+    
+    # Initialize database
+    logger.info("Initializing Database...")
+    from ..database import init_db, get_db
+    database_url = settings.database_url if hasattr(settings, 'database_url') else "sqlite:///./data/otto.db"
+    db = init_db(database_url)
+    logger.info(f"✨ Database ready: {database_url.split('://')[0]}")
     
     # Initialize orchestrator with full config
     logger.info("Initializing Agent Orchestrator...")
@@ -98,6 +116,17 @@ async def lifespan(app: FastAPI):
     project_manager = get_project_manager()
     logger.info(f"✨ Project Manager ready: {len(project_manager.list_projects())} projects loaded")
     
+    # Initialize Task Scheduler
+    logger.info("Initializing Task Scheduler...")
+    from ..tools.scheduler import create_task_scheduler
+    task_scheduler = create_task_scheduler(
+        data_dir="data/task_queue",
+        tool_executor=lambda tool, params: orchestrator.execute_tool(tool, params) if orchestrator else None
+    )
+    task_scheduler.start()
+    set_scheduler(task_scheduler)
+    logger.info("✨ Task Scheduler: ACTIVE")
+    
     logger.info("Otto Universal API is ready!")
     logger.info("✨ Autonomous Business Operations: ACTIVE")
     logger.info(f"✨ Skills Available: {len(skills_registry.list_skills())}")
@@ -106,6 +135,7 @@ async def lifespan(app: FastAPI):
     
     # Cleanup
     logger.info("Shutting down...")
+    task_scheduler.stop()
 
 
 # Create FastAPI app
@@ -126,6 +156,15 @@ app.include_router(workflows_router)
 app.include_router(business_router)
 app.include_router(projects_router)
 app.include_router(skills_router)
+app.include_router(extensions_router)
+app.include_router(profile_router)
+app.include_router(conversations_router)
+app.include_router(brand_router)
+app.include_router(social_router)
+app.include_router(email_router)
+app.include_router(tasks_router)
+app.include_router(webhooks_router)
+app.include_router(scheduler_router)
 
 # Add CORS middleware
 app.add_middleware(
@@ -137,11 +176,28 @@ app.add_middleware(
 )
 
 
+# =====================
+# Root-level Upload Endpoint (convenience alias)
+# =====================
+
+from fastapi import UploadFile, File
+
+@app.post("/upload")
+async def upload_file_root(file: UploadFile = File(...)):
+    """
+    Convenience upload endpoint at root level.
+    Delegates to /files/upload for actual processing.
+    """
+    from .files import upload_file
+    return await upload_file(file=file)
+
+
 # Pydantic models
 class ChatRequest(BaseModel):
     message: str
     context: Optional[Dict[str, Any]] = None
     session_id: Optional[str] = None
+    user_id: Optional[str] = "default"
 
 
 class ChatResponse(BaseModel):
@@ -156,6 +212,14 @@ class VoiceRequest(BaseModel):
     audio_base64: str
     context: Optional[Dict[str, Any]] = None
     session_id: Optional[str] = None
+    format: Optional[str] = "webm"
+
+
+class TranscribeRequest(BaseModel):
+    """Request for speech-to-text only."""
+    audio_base64: str
+    format: Optional[str] = "webm"
+    language: Optional[str] = None
 
 
 class WorkflowRequest(BaseModel):
@@ -235,12 +299,33 @@ async def api_root():
 
 @app.get("/health")
 async def health():
-    """Detailed health check."""
-    otto = get_orchestrator()
+    """Simple health check."""
     return {
         "status": "healthy",
-        "capabilities": otto.get_capabilities()
+        "timestamp": str(datetime.now())
     }
+
+
+@app.get("/api/tasks/background")
+async def get_background_tasks():
+    """Get status of all background tasks."""
+    from ..core.background_tasks import get_task_manager
+    task_manager = get_task_manager()
+    return {
+        "tasks": task_manager.get_all_tasks(),
+        "pending": task_manager.get_pending_tasks()
+    }
+
+
+@app.get("/api/tasks/background/{task_id}")
+async def get_background_task(task_id: str):
+    """Get status of a specific background task."""
+    from ..core.background_tasks import get_task_manager
+    task_manager = get_task_manager()
+    status = task_manager.get_status(task_id)
+    if not status:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return status
 
 
 @app.post("/chat", response_model=ChatResponse)
@@ -249,20 +334,22 @@ async def chat(
     otto: AgentOrchestrator = Depends(get_orchestrator)
 ):
     """
-    Process a chat message.
+    Process a chat message (non-streaming).
     
     Example:
         POST /chat
         {
             "message": "Create a t-shirt design with mountains",
-            "session_id": "user123"
+            "session_id": "user123",
+            "user_id": "default"
         }
     """
     try:
         result = await otto.process(
             message=request.message,
             context=request.context,
-            session_id=request.session_id
+            session_id=request.session_id,
+            user_id=request.user_id or "default"
         )
         
         return ChatResponse(**result)
@@ -270,6 +357,31 @@ async def chat(
     except Exception as e:
         logger.error(f"Chat error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/chat/stream")
+async def chat_stream(
+    request: ChatRequest,
+    otto: AgentOrchestrator = Depends(get_orchestrator)
+):
+    """
+    Process a chat message with streaming responses.
+    Returns Server-Sent Events (SSE) stream.
+    """
+    async def generate():
+        try:
+            async for chunk in otto.process_streaming(
+                message=request.message,
+                context=request.context,
+                session_id=request.session_id
+            ):
+                yield f"data: {json.dumps(chunk)}\n\n"
+        except Exception as e:
+            logger.error(f"Streaming error: {e}", exc_info=True)
+            yield f"data: {{\"error\": \"{str(e)}\", \"type\": \"error\"}}\n\n"
+    
+    from fastapi.responses import StreamingResponse
+    return StreamingResponse(generate(), media_type="text/event-stream")
 
 
 @app.get("/api/chat/history/{session_id}")
@@ -319,6 +431,54 @@ async def get_memory_stats(otto: AgentOrchestrator = Depends(get_orchestrator)):
     return otto.memory_agent.get_stats()
 
 
+@app.post("/transcribe")
+async def transcribe_audio(
+    request: TranscribeRequest,
+    otto: AgentOrchestrator = Depends(get_orchestrator)
+):
+    """
+    Transcribe audio to text (speech-to-text only).
+    
+    Returns just the transcribed text without processing or TTS response.
+    Useful for voice input that user wants to review/edit before sending.
+    """
+    try:
+        import base64
+        from ..voice.speech_to_text import SpeechToText
+        
+        # Check if OpenAI client is available
+        if otto.openai is None:
+            raise HTTPException(
+                status_code=503,
+                detail="Voice transcription requires OpenAI API key. Please set OPENAI_API_KEY in your environment."
+            )
+        
+        # Decode audio
+        audio_data = base64.b64decode(request.audio_base64)
+        
+        # Create STT instance
+        stt = SpeechToText(otto.openai)
+        
+        # Transcribe
+        result = await stt.transcribe(
+            audio_data=audio_data,
+            format=request.format or "webm",
+            language=request.language
+        )
+        
+        return {
+            "success": result.get("success", False),
+            "text": result.get("text", ""),
+            "language": result.get("language"),
+            "duration": result.get("duration"),
+            "error": result.get("error")
+        }
+        
+    except Exception as e:
+        logger.error(f"Transcription error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/voice")
 async def voice(
     request: VoiceRequest,
@@ -328,6 +488,7 @@ async def voice(
     Process voice input and return voice output.
     
     Expects base64-encoded audio.
+    Full voice pipeline: Speech -> Text -> AI -> Text -> Speech
     """
     try:
         import base64
@@ -398,6 +559,254 @@ async def list_tools(
         "tools": otto.tool_registry.list_tools(category=category),
         "categories": otto.tool_registry.get_categories()
     }
+
+
+# =====================
+# AI File Editor API
+# =====================
+
+class AIEditRequest(BaseModel):
+    file_path: str
+    instruction: str
+    model: str = "qwen"
+
+class AIReviewRequest(BaseModel):
+    file_path: str
+    model: str = "qwen"
+
+class AIRefactorRequest(BaseModel):
+    file_path: str
+    refactor_type: str = "general"
+    model: str = "qwen"
+
+
+@app.get("/api/files/tree")
+async def get_file_tree(dir: Optional[str] = None):
+    """Get file tree for the project."""
+    try:
+        project_root = Path(__file__).parent.parent.parent
+        
+        if dir:
+            target = project_root / dir
+        else:
+            target = project_root
+        
+        if not target.exists():
+            return {"files": [], "error": "Directory not found"}
+        
+        # Only show certain directories and files
+        allowed_dirs = {'src', 'skills', 'config', 'scripts', 'docs', 'examples'}
+        allowed_extensions = {'.py', '.js', '.ts', '.html', '.css', '.json', '.yaml', '.yml', '.md', '.txt', '.sh'}
+        
+        files = []
+        items = sorted(target.iterdir(), key=lambda x: (not x.is_dir(), x.name.lower()))
+        
+        for item in items[:50]:  # Limit to 50 items
+            # Skip hidden and cache directories
+            if item.name.startswith(('.', '__pycache__')):
+                continue
+            
+            if item.is_dir():
+                # At root, only show allowed directories
+                if target == project_root and item.name not in allowed_dirs:
+                    continue
+                files.append({
+                    "name": item.name + "/",
+                    "path": str(item.relative_to(project_root)),
+                    "is_dir": True
+                })
+            else:
+                if item.suffix in allowed_extensions:
+                    files.append({
+                        "name": item.name,
+                        "path": str(item.relative_to(project_root)),
+                        "is_dir": False
+                    })
+        
+        return {"files": files, "directory": str(target.relative_to(project_root) if dir else ".")}
+        
+    except Exception as e:
+        logger.error(f"File tree error: {e}")
+        return {"files": [], "error": str(e)}
+
+
+@app.get("/api/files/content")
+async def get_file_content(path: str):
+    """Get content of a file."""
+    try:
+        project_root = Path(__file__).parent.parent.parent
+        file_path = project_root / path
+        
+        # Security: ensure path is within project
+        file_path.resolve().relative_to(project_root.resolve())
+        
+        if not file_path.exists():
+            return {"content": None, "error": "File not found"}
+        
+        if file_path.stat().st_size > 500000:  # 500KB limit
+            return {"content": None, "error": "File too large"}
+        
+        with open(file_path, 'r', errors='ignore') as f:
+            content = f.read()
+        
+        return {"content": content, "path": path, "lines": len(content.splitlines())}
+        
+    except Exception as e:
+        logger.error(f"File content error: {e}")
+        return {"content": None, "error": str(e)}
+
+
+@app.post("/api/ai/edit")
+async def ai_edit_file(request: AIEditRequest):
+    """Use AI to edit a file based on instructions."""
+    try:
+        from ..tools.ai_file_editor import AIFileEditor
+        
+        editor = AIFileEditor()
+        result = await editor.ai_edit_file(
+            file_path=request.file_path,
+            instruction=request.instruction,
+            model=request.model
+        )
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"AI edit error: {e}")
+        return {"success": False, "error": str(e)}
+
+
+@app.post("/api/ai/review")
+async def ai_review_code(request: AIReviewRequest):
+    """Use AI to review code."""
+    try:
+        from ..tools.ai_file_editor import AIFileEditor
+        
+        editor = AIFileEditor()
+        result = await editor.ai_code_review(
+            file_path=request.file_path,
+            model=request.model
+        )
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"AI review error: {e}")
+        return {"success": False, "error": str(e)}
+
+
+@app.post("/api/ai/explain")
+async def ai_explain_code(request: AIReviewRequest):
+    """Use AI to explain code."""
+    try:
+        from ..tools.ai_file_editor import AIFileEditor
+        
+        editor = AIFileEditor()
+        result = await editor.ai_explain_code(
+            file_path=request.file_path,
+            model=request.model
+        )
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"AI explain error: {e}")
+        return {"success": False, "error": str(e)}
+
+
+@app.post("/api/ai/refactor")
+async def ai_refactor_code(request: AIRefactorRequest):
+    """Use AI to refactor code."""
+    try:
+        from ..tools.ai_file_editor import AIFileEditor
+        
+        editor = AIFileEditor()
+        result = await editor.ai_refactor_code(
+            file_path=request.file_path,
+            refactor_type=request.refactor_type,
+            model=request.model
+        )
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"AI refactor error: {e}")
+        return {"success": False, "error": str(e)}
+
+
+@app.post("/api/ai/fix")
+async def ai_fix_code(request: AIReviewRequest):
+    """Use AI to fix bugs in code."""
+    try:
+        from ..tools.ai_file_editor import AIFileEditor
+        
+        editor = AIFileEditor()
+        result = await editor.ai_fix_code(
+            file_path=request.file_path,
+            model=request.model
+        )
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"AI fix error: {e}")
+        return {"success": False, "error": str(e)}
+
+
+# =====================
+# Universal Media Editor API
+# =====================
+
+class MediaEditRequest(BaseModel):
+    file_url: str
+    instruction: str
+    media_type: Optional[str] = None
+
+
+@app.post("/api/media/edit")
+async def edit_media(request: MediaEditRequest):
+    """
+    Universal media editor - edit images, videos, audio, 3D models with AI.
+    
+    Just describe what you want to do and it figures out the right models.
+    
+    Examples:
+    - "remove background" on an image
+    - "upscale 4x" on an image
+    - "animate this" on an image → creates video
+    - "separate vocals" on audio
+    - "make slow motion" on video
+    - "convert to 3D" on an image
+    """
+    try:
+        from ..tools.universal_editor import UniversalEditor
+        
+        editor = UniversalEditor()
+        result = await editor.edit(
+            file_path=request.file_url,
+            instruction=request.instruction
+        )
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Media edit error: {e}")
+        return {"success": False, "error": str(e)}
+
+
+@app.get("/api/media/capabilities")
+async def get_media_capabilities(media_type: Optional[str] = None):
+    """Get available media editing capabilities."""
+    try:
+        from ..tools.universal_editor import UniversalEditor
+        
+        editor = UniversalEditor()
+        result = await editor.list_capabilities(media_type=media_type)
+        
+        return result
+        
+    except Exception as e:
+        return {"error": str(e)}
 
 
 @app.websocket("/ws")

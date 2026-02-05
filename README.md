@@ -1,8 +1,8 @@
 # 🤖 Otto Chat
 
-> **Universal AI Assistant** — Control everything through conversation
+> **Universal AI Business Platform** — Automate everything through conversation
 
-Otto Chat is a powerful, extensible AI assistant that combines Claude's intelligence with real-world integrations. Create products, generate images, research topics, browse the web, manage files, and automate your business — all through natural conversation.
+Otto Chat is a sophisticated autonomous AI platform that combines Claude's intelligence with 80+ integrated tools. Generate stunning images and videos, create print-on-demand products, produce commercial content, manage e-commerce stores, and automate your entire creative business — all through natural conversation.
 
 ![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green?logo=fastapi)
@@ -10,8 +10,8 @@ Otto Chat is a powerful, extensible AI assistant that combines Claude's intellig
 ![License](https://img.shields.io/badge/License-Private-red)
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Tools-63+-orange" alt="63+ Tools">
-  <img src="https://img.shields.io/badge/Integrations-6-blue" alt="6 Integrations">
+  <img src="https://img.shields.io/badge/Tools-80+-orange" alt="80+ Tools">
+  <img src="https://img.shields.io/badge/AI%20Models-15+-blue" alt="15+ AI Models">
   <img src="https://img.shields.io/badge/Status-Active-success" alt="Active">
 </p>
 
@@ -19,35 +19,58 @@ Otto Chat is a powerful, extensible AI assistant that combines Claude's intellig
 
 ## ✨ Features
 
-### 🧠 AI-Powered Conversation
-- **Claude Integration** — Powered by Anthropic's Claude for intelligent, context-aware responses
-- **Multi-Step Planning** — Automatically breaks down complex tasks into executable steps
-- **Tool Selection** — Intelligently chooses the right tools for each task
-- **Context Memory** — Maintains conversation history across sessions
+### 🧠 Super Intelligent Planning Agent
+- **Claude Opus 4 Integration** — Powered by Anthropic's most capable model for complex reasoning
+- **Multi-Step Autonomous Execution** — Breaks down complex tasks into parallel and sequential steps
+- **Context Preservation** — Remembers your preferences (aspect ratios, styles, models) across conversations
+- **Smart Dependency Resolution** — Automatically chains outputs between steps (e.g., generated images → products)
+- **Batch Operations** — Create multiple products with different designs in a single request
 
-### 🎨 Image Generation
-- **Multiple Models** — Flux Pro, Flux Dev, SDXL, Recraft V3 via Replicate
-- **Style Control** — Specify artistic styles, aspect ratios, and quality settings
-- **Logo Generation** — Professional logos and icons with Recraft
-- **Automatic Storage** — Generated images saved to file storage with metadata
+### 🎨 Advanced Image Generation
+- **15+ AI Models** — Flux Pro 1.1, Flux Dev, SDXL, Recraft V3, Ideogram V2, and more
+- **Smart Aspect Ratios** — Portrait, landscape, square with automatic prompt mapping
+- **Style Presets** — Photorealistic, artistic, cinematic, product photography, and more
+- **Logo & Icon Generation** — Professional vector-style logos with Recraft V3
+- **Background Removal** — AI-powered background removal for product images
+
+### 🎬 Video Generation & Commercial Production
+- **AI Video Generation** — Multiple models including Runway, Luma, Minimax, Kling
+- **Cinematic Styles** — 5 premium presets: cinematic, commercial, luxury, dynamic, ambient
+- **Promo Video Creation** — Apple/Nike/Tesla-quality commercial scripts and production
+- **Automatic Enhancement** — AI prompts enhanced for professional film look
+- **Multi-Scene Support** — Complex video projects with multiple scenes and transitions
+
+### 🎵 Audio Generation
+- **AI Music Creation** — Generate custom music, ambient sounds, and soundscapes
+- **Voice Synthesis** — Text-to-speech with multiple voices and styles
+- **Audio Processing** — Mix, edit, and enhance audio content
+- **Commercial Audio** — Create jingles, background music, and voiceovers
 
 ### 🛍️ E-Commerce Integration
-- **Printify** — Create print-on-demand products, manage shops, publish listings
+- **Printify** — Full print-on-demand workflow: design → product → publish
+- **Smart Product Mapping** — Automatic mapping to 30+ product types (t-shirts, mugs, posters, framed art)
+- **Framed Art Products** — Support for premium framed prints with multiple frame options
+- **Multi-Product Batching** — Create multiple products with different designs simultaneously
 - **Shopify** — Manage products, orders, customers, and inventory
-- **Product Creation** — Generate designs and push directly to your stores
-- **Catalog Management** — Full CRUD operations on your product catalog
 
-### 🔍 Research & Web
-- **Web Search** — Google search via Serper API
-- **Web Scraping** — Extract content from any webpage
-- **News Search** — Stay updated with latest news
-- **Browser Automation** — Full browser control for complex web tasks
+### 🔍 Research & Intelligence
+- **Web Search** — Google search via Serper API with smart result parsing
+- **Competitive Intelligence** — Analyze competitors, market trends, and opportunities
+- **Web Scraping** — Extract structured content from any webpage
+- **News Aggregation** — Real-time news monitoring and summarization
+- **Deep Research** — Comprehensive multi-source research with citations
 
 ### 📁 File Management
-- **Local Storage** — Organize files by category (images, documents, audio, video)
+- **Smart Storage** — Organize files by category with automatic metadata
 - **Cloud Ready** — Architecture supports S3, Google Cloud Storage
-- **Metadata Tracking** — Full file history with tags and descriptions
-- **Web Interface** — Browse, upload, and manage files visually
+- **Asset Library** — Browse, search, and manage all generated content
+- **Version Tracking** — Full file history with tags and descriptions
+
+### 🎨 Modern UI/UX
+- **Sleek Interface** — Modern, colorful design inspired by Canva and Gemini
+- **Gradient Sidebars** — Beautiful purple/pink/teal color scheme with subtle animations
+- **Real-Time Updates** — Live progress tracking for multi-step operations
+- **Responsive Design** — Works seamlessly on desktop and tablet
 
 ### 🎙️ Voice Capabilities
 - **Speech-to-Text** — OpenAI Whisper integration
@@ -132,26 +155,42 @@ Visit **http://localhost:8000** to start chatting!
 ### Natural Language Commands
 
 ```
-💬 "Create a mountain landscape design for a t-shirt"
-   → Generates image with Flux, creates Printify product
+💬 "Create a tall portrait image of a mountain landscape using Flux Pro, 
+    then make it into a framed art print"
+   → Generates portrait image, maps to framed art product, publishes to Printify
 
-💬 "Research the top 10 AI startups in 2024"
-   → Searches web, compiles comprehensive report
+💬 "Create 3 different t-shirt designs for a sunset beach theme"
+   → Generates 3 unique images in parallel, creates 3 separate products
 
-💬 "Take a screenshot of tesla.com"
-   → Opens browser, captures screenshot, saves to files
+💬 "Make me a cinematic promo video for my new coffee brand"
+   → Creates premium commercial script, generates video with luxury styling
 
-💬 "Generate a logo for a coffee shop called 'Bean There'"
-   → Creates professional logo with Recraft V3
+💬 "Research the top AI startups of 2025 and create a detailed report"
+   → Multi-source research, competitive analysis, formatted report
 
-💬 "List all my Printify products"
-   → Fetches and displays your product catalog
+💬 "Generate a logo for 'Stellar Coffee' in a modern minimalist style"
+   → Creates professional vector-style logo with Recraft V3
 
-💬 "Create a product description for wireless earbuds"
-   → Generates compelling e-commerce copy
+💬 "Create ambient background music for a meditation app"
+   → Generates custom AI music with appropriate mood and duration
 
-💬 "What's the latest news about SpaceX?"
-   → Searches news, summarizes key stories
+💬 "Make me another image like that last one but in landscape"
+   → Remembers your previous style and model preferences
+```
+
+### Multi-Step Autonomous Workflows
+
+Otto excels at complex, multi-step tasks that chain together:
+
+```
+1. User: "Launch a new product line of nature-themed wall art"
+
+2. Otto automatically:
+   ├── Generates 5 unique nature images (forest, ocean, mountain, desert, aurora)
+   ├── Creates framed art products for each design
+   ├── Writes compelling product descriptions
+   ├── Sets appropriate pricing
+   └── Publishes all to your Printify store
 ```
 
 ### API Endpoints
@@ -204,17 +243,22 @@ otto-chat/
 │   │   └── connections.py       # Service connections API
 │   │
 │   ├── core/
-│   │   └── agent_orchestrator.py # AI orchestration & tool dispatch
+│   │   ├── super_planning_agent.py  # Autonomous planning & context preservation
+│   │   ├── execution_agent.py       # Step execution & dependency resolution
+│   │   └── agent_orchestrator.py    # AI orchestration & tool dispatch
 │   │
 │   ├── tools/
-│   │   ├── __init__.py          # Tool registry
-│   │   ├── printify.py          # Printify integration (13 tools)
-│   │   ├── shopify.py           # Shopify integration (12 tools)
-│   │   ├── image_generation.py  # AI image generation (8 tools)
-│   │   ├── research.py          # Web search & scraping (8 tools)
-│   │   ├── browser.py           # Browser automation (8 tools)
-│   │   ├── content.py           # Content generation (7 tools)
-│   │   └── file_storage.py      # File management (7 tools)
+│   │   ├── __init__.py          # Tool registry (80+ tools)
+│   │   ├── printify.py          # Printify integration
+│   │   ├── shopify.py           # Shopify integration
+│   │   ├── image_generation.py  # AI image generation (15+ models)
+│   │   ├── video_generation.py  # AI video generation (multiple models)
+│   │   ├── promo_video.py       # Commercial production
+│   │   ├── audio_generation.py  # AI audio & music generation
+│   │   ├── research.py          # Web search & scraping
+│   │   ├── browser.py           # Browser automation
+│   │   ├── content.py           # Content generation
+│   │   └── file_storage.py      # File management
 │   │
 │   ├── storage/
 │   │   └── file_storage.py      # File storage backend
@@ -224,18 +268,22 @@ otto-chat/
 │   │   └── logger.py            # Logging configuration
 │   │
 │   └── web/
-│       ├── index.html           # Main chat interface
+│       ├── chat.html            # Main chat interface (modern UI)
 │       ├── settings.html        # Settings page
 │       ├── files.html           # File browser
 │       └── onboarding.html      # Setup wizard
 │
+├── skills/                      # Modular skill packages
+│   ├── business_operations/
+│   ├── content_creation/
+│   ├── competitive_intelligence/
+│   └── ...
+│
 ├── data/
-│   ├── files/                   # File storage directory
-│   │   ├── images/
-│   │   ├── documents/
-│   │   ├── audio/
-│   │   └── video/
-│   └── settings.json            # User settings
+│   ├── files/                   # Generated content storage
+│   ├── brand_brain/             # Brand intelligence data
+│   ├── agents/                  # Agent configurations
+│   └── workflows/               # Saved workflows
 │
 ├── requirements.txt
 ├── Dockerfile
@@ -245,52 +293,60 @@ otto-chat/
 
 ---
 
-## 🔧 Available Tools (63 Total)
+## 🔧 Available Tools (80+ Total)
 
-### 🖨️ Printify Tools (13)
+### 🎨 Image Generation Tools (15+)
+| Tool | Description |
+|------|-------------|
+| `generate_image_flux_pro` | Flux Pro 1.1 (highest quality) |
+| `generate_image_flux_dev` | Flux Dev (fast iteration) |
+| `generate_image_sdxl` | Stable Diffusion XL |
+| `generate_image_recraft` | Recraft V3 (logos, icons) |
+| `generate_image_ideogram` | Ideogram V2 (text in images) |
+| `generate_logo` | Professional logo creation |
+| `generate_icon` | App/web icons |
+| `upscale_image` | AI image upscaling |
+| `remove_background` | Background removal |
+| Multiple aspect ratios | Portrait (2:3), Landscape (3:2), Square (1:1), Custom |
+
+### 🎬 Video Generation Tools (10+)
+| Tool | Description |
+|------|-------------|
+| `generate_ai_video` | Multi-model video generation |
+| `create_promo_video` | Commercial production |
+| `generate_video_runway` | Runway Gen-3 Alpha |
+| `generate_video_luma` | Luma Dream Machine |
+| `generate_video_minimax` | Minimax video model |
+| `generate_video_kling` | Kling AI video |
+| Style presets | Cinematic, Commercial, Luxury, Dynamic, Ambient |
+
+### 🎵 Audio Generation Tools
+| Tool | Description |
+|------|-------------|
+| `generate_music` | AI music composition |
+| `generate_ambient` | Ambient soundscapes |
+| `text_to_speech` | Voice synthesis |
+| `generate_voiceover` | Professional narration |
+
+### 🖨️ Printify Tools (15+)
 | Tool | Description |
 |------|-------------|
 | `get_printify_shops` | List all connected shops |
 | `get_printify_products` | Get products from a shop |
-| `get_printify_product` | Get single product details |
 | `create_printify_product` | Create new product |
-| `update_printify_product` | Update existing product |
-| `delete_printify_product` | Delete a product |
 | `upload_printify_image` | Upload design image |
 | `publish_printify_product` | Publish to sales channel |
-| `unpublish_printify_product` | Remove from sales channel |
-| `get_print_providers` | List print providers |
 | `get_blueprints` | Get product templates |
-| `get_blueprint_variants` | Get variant options |
-| `calculate_shipping` | Get shipping costs |
+| Product mapping | T-shirts, mugs, posters, framed art, hoodies, etc. |
 
 ### 🛒 Shopify Tools (12)
 | Tool | Description |
 |------|-------------|
 | `get_shopify_products` | List store products |
-| `get_shopify_product` | Get product details |
 | `create_shopify_product` | Create new product |
-| `update_shopify_product` | Update existing product |
-| `delete_shopify_product` | Delete a product |
 | `get_shopify_orders` | View orders |
-| `get_shopify_order` | Order details |
-| `update_shopify_order` | Update order |
 | `get_shopify_customers` | List customers |
-| `get_shopify_customer` | Customer details |
-| `get_shopify_inventory` | Inventory levels |
 | `update_shopify_inventory` | Adjust inventory |
-
-### 🎨 Image Generation Tools (8)
-| Tool | Description |
-|------|-------------|
-| `generate_image_flux_pro` | Flux Pro (highest quality) |
-| `generate_image_flux_dev` | Flux Dev (fast) |
-| `generate_image_sdxl` | Stable Diffusion XL |
-| `generate_image_recraft` | Recraft V3 (logos, icons) |
-| `generate_logo` | Professional logo creation |
-| `generate_icon` | App/web icons |
-| `upscale_image` | AI image upscaling |
-| `remove_background` | Background removal |
 
 ### 🔍 Research Tools (8)
 | Tool | Description |
@@ -473,19 +529,31 @@ echo ".env" >> .gitignore
 
 ## 🗺️ Roadmap
 
+### ✅ Recently Completed
+- [x] Super planning agent with autonomous execution
+- [x] Context preservation across conversations
+- [x] Multi-product batch creation with correct image mapping
+- [x] Video generation with 5+ AI models
+- [x] Cinematic video style presets
+- [x] Premium commercial script generation
+- [x] Framed art product support
+- [x] Modern UI with Canva/Gemini-inspired design
+- [x] Colorful gradient sidebars
+
 ### Coming Soon
 - [ ] Multi-user authentication
 - [ ] Workflow automation builder
 - [ ] Scheduled tasks / cron jobs
 - [ ] Plugin system for custom tools
 - [ ] Webhook integrations
+- [ ] Analytics dashboard
 
 ### Future
 - [ ] Mobile app companion
 - [ ] Voice-first mode
 - [ ] Team collaboration
-- [ ] Analytics dashboard
 - [ ] Custom AI model support
+- [ ] White-label deployment
 
 ---
 

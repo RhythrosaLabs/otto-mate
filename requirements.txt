@@ -15,6 +15,13 @@ chromadb==0.4.22
 playwright==1.41.2
 beautifulsoup4==4.12.3
 lxml==5.1.0
+browser-use>=0.1.0
+langchain-anthropic>=0.1.0
+langchain-openai>=0.1.0
+langchain>=0.1.0
+
+# Scheduling
+apscheduler>=3.10.0
 
 # Database & Storage
 sqlalchemy==2.0.25

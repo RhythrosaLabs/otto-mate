@@ -11,6 +11,7 @@ from typing import Any, Dict, List, Optional
 from datetime import datetime
 import chromadb
 from chromadb.config import Settings
+from .user_profile import get_profile_manager
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +38,9 @@ class MemoryAgent:
             name="knowledge",
             metadata={"description": "Long-term knowledge base"}
         )
+        
+        # Initialize profile manager
+        self.profile_manager = get_profile_manager()
         
         logger.info("Memory Agent initialized")
     
@@ -271,6 +275,144 @@ Business Impact: {impact.get('business_value', {})}
             logger.error(f"Failed to store knowledge: {e}")
             raise
     
+    async def store_file_analysis(
+        self,
+        file_id: str,
+        filename: str,
+        category: str,
+        mime_type: str,
+        summary: str,
+        key_points: List[str],
+        entities: List[str] = None,
+        tags: List[str] = None,
+        session_id: Optional[str] = None,
+        additional_metadata: Optional[Dict[str, Any]] = None
+    ) -> str:
+        """
+        Store file analysis in knowledge base for long-term context.
+        
+        This enables Otto to recall information from previously analyzed files
+        in future conversations, making the AI aware of uploaded content.
+        
+        Args:
+            file_id: Unique file identifier
+            filename: Original filename
+            category: File type category (image, audio, video, document, code, data)
+            mime_type: MIME type
+            summary: AI-generated summary of file contents
+            key_points: Key points extracted from the file
+            entities: Named entities found (names, places, dates, etc.)
+            tags: Relevant tags/keywords
+            session_id: Optional session for context
+            additional_metadata: Any extra metadata
+            
+        Returns:
+            Knowledge ID for the stored analysis
+        """
+        knowledge_id = f"file_analysis_{file_id}"
+        
+        try:
+            # Build comprehensive document for semantic search
+            document_parts = [
+                f"File: {filename}",
+                f"Type: {category} ({mime_type})",
+                f"Summary: {summary}",
+            ]
+            
+            if key_points:
+                document_parts.append("Key Points: " + "; ".join(key_points))
+            
+            if entities:
+                document_parts.append("Entities: " + ", ".join(entities))
+            
+            if tags:
+                document_parts.append("Tags: " + ", ".join(tags))
+            
+            document = "\n".join(document_parts)
+            
+            # Build metadata
+            metadata = {
+                "file_id": file_id,
+                "filename": filename,
+                "category": category,
+                "mime_type": mime_type,
+                "type": "file_analysis",
+                "timestamp": datetime.now().isoformat(),
+            }
+            
+            if session_id:
+                metadata["session_id"] = session_id
+            if tags:
+                metadata["tags"] = ",".join(tags[:10])  # Limit tags
+            if additional_metadata:
+                metadata.update(additional_metadata)
+            
+            self.knowledge.add(
+                documents=[document],
+                metadatas=[metadata],
+                ids=[knowledge_id]
+            )
+            
+            logger.info(f"Stored file analysis: {knowledge_id} ({filename})")
+            return knowledge_id
+            
+        except Exception as e:
+            logger.error(f"Failed to store file analysis: {e}")
+            raise
+    
+    async def recall_file_context(
+        self,
+        query: str,
+        file_types: Optional[List[str]] = None,
+        k: int = 5
+    ) -> List[Dict[str, Any]]:
+        """
+        Recall relevant file analysis context for a query.
+        
+        This allows Otto to remember and reference previously analyzed files
+        when answering questions.
+        
+        Args:
+            query: Search query
+            file_types: Optional filter by file categories (image, audio, etc.)
+            k: Number of results
+            
+        Returns:
+            List of relevant file analyses
+        """
+        try:
+            where_filter = {"type": "file_analysis"}
+            
+            if file_types:
+                # ChromaDB doesn't support $or easily, so we use $in for category
+                where_filter = {
+                    "$and": [
+                        {"type": "file_analysis"},
+                        {"category": {"$in": file_types}}
+                    ]
+                }
+            
+            results = self.knowledge.query(
+                query_texts=[query],
+                n_results=k,
+                where=where_filter
+            )
+            
+            file_contexts = []
+            if results["documents"]:
+                for idx in range(len(results["documents"][0])):
+                    file_contexts.append({
+                        "content": results["documents"][0][idx],
+                        "metadata": results["metadatas"][0][idx],
+                        "distance": results["distances"][0][idx]
+                    })
+            
+            return file_contexts
+            
+        except Exception as e:
+            logger.error(f"Failed to recall file context: {e}")
+            return []
+    
     async def search_knowledge(
         self,
         query: str,
@@ -378,6 +520,58 @@ Business Impact: {impact.get('business_value', {})}
         except Exception as e:
             logger.error(f"Failed to clear session: {e}")
             return False
+    
+    async def get_full_context(
+        self,
+        session_id: str,
+        query: str,
+        user_id: str = "default",
+        include_profile: bool = True,
+        include_session_history: bool = True,
+        include_global_knowledge: bool = True
+    ) -> str:
+        """
+        Get complete context including user profile and relevant memories.
+        
+        Args:
+            session_id: Current session ID
+            query: Query for semantic search
+            user_id: User ID for profile
+            include_profile: Include user profile context
+            include_session_history: Include recent session messages
+            include_global_knowledge: Include relevant knowledge from all sessions
+            
+        Returns:
+            Formatted context string
+        """
+        context_parts = []
+        
+        # User profile context
+        if include_profile:
+            profile_context = self.profile_manager.get_context(user_id)
+            if profile_context:
+                context_parts.append(f"=== USER PROFILE ===\n{profile_context}\n")
+        
+        # Recent session history
+        if include_session_history:
+            session_memories = await self.recall(query, session_id, k=5)
+            if session_memories:
+                context_parts.append("=== RECENT CONVERSATION ===")
+                for mem in session_memories:
+                    role = mem.get("metadata", {}).get("role", "unknown")
+                    content = mem.get("content", "")
+                    context_parts.append(f"{role}: {content[:200]}")
+                context_parts.append("")
+        
+        # Global knowledge
+        if include_global_knowledge:
+            global_memories = await self.recall(query, session_id=None, k=3)
+            if global_memories:
+                context_parts.append("=== RELATED KNOWLEDGE ===")
+                for mem in global_memories:
+                    context_parts.append(f"• {mem.get('content', '')[:150]}")
+        
+        return "\n".join(context_parts)
     
     def get_stats(self) -> Dict[str, Any]:
         """Get memory statistics."""

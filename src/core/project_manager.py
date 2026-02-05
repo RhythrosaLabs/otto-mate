@@ -74,9 +74,9 @@ class Project:
 class ProjectManager:
     """Manages projects and chat organization."""
     
-    def __init__(self, storage_path: str = None):
+    def __init__(self, storage_path: Optional[str] = None):
         if storage_path is None:
-            storage_path = Path(__file__).parent.parent.parent / "data" / "projects"
+            storage_path = str(Path(__file__).parent.parent.parent / "data" / "projects")
         
         self.storage_path = Path(storage_path)
         self.storage_path.mkdir(parents=True, exist_ok=True)
@@ -133,7 +133,7 @@ class ProjectManager:
         description: str = "",
         color: str = "#3b82f6",
         icon: str = "📁",
-        tags: List[str] = None
+        tags: Optional[List[str]] = None
     ) -> Project:
         """Create a new project."""
         project_id = str(uuid.uuid4())
@@ -167,11 +167,11 @@ class ProjectManager:
     def update_project(
         self,
         project_id: str,
-        name: str = None,
-        description: str = None,
-        color: str = None,
-        icon: str = None,
-        tags: List[str] = None
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        color: Optional[str] = None,
+        icon: Optional[str] = None,
+        tags: Optional[List[str]] = None
     ) -> Optional[Project]:
         """Update a project."""
         project = self.projects.get(project_id)

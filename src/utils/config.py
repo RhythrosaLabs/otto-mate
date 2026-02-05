@@ -42,6 +42,7 @@ class Settings(BaseSettings):
     youtube_client_id: Optional[str] = None
     youtube_client_secret: Optional[str] = None
     youtube_api_key: Optional[str] = None
+    youtube_refresh_token: Optional[str] = None
     
     # Database
     database_url: str = "sqlite:///./otto.db"

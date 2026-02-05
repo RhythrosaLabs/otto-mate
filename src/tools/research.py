@@ -301,14 +301,37 @@ class ResearchTools(ToolBase):
     )
     async def analyze_competitor(
         self,
-        url: str
+        url: str = None,
+        competitor: str = None,  # Alias for url or competitor name
+        name: str = None  # Alias for competitor name
     ) -> Dict[str, Any]:
         """
         Analyze a competitor's website.
         
         Args:
             url: Competitor website URL
+            competitor: Competitor name or URL (alias)
+            name: Competitor name (alias)
         """
+        # Handle aliases - if competitor is a name, search for their website
+        if not url:
+            competitor_name = competitor or name
+            if competitor_name:
+                # If it looks like a URL, use it directly
+                if "http" in competitor_name or "www." in competitor_name:
+                    url = competitor_name if competitor_name.startswith("http") else f"https://{competitor_name}"
+                else:
+                    # Search for the competitor's website
+                    search_results = await self.search_web(f"{competitor_name} official website", num_results=1)
+                    if search_results.get("success") and search_results.get("results"):
+                        url = search_results["results"][0].get("url", "")
+        
+        if not url:
+            return {
+                "success": False,
+                "error": "No competitor URL or name provided"
+            }
+        
         # Fetch main page
         main_page = await self.browse_url(url, extract_type="all")
         

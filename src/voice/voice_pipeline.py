@@ -31,7 +31,7 @@ class VoicePipeline:
     
     def __init__(
         self,
-        openai_client: AsyncOpenAI,
+        openai_client: AsyncOpenAI = None,
         elevenlabs_api_key: Optional[str] = None,
         tts_provider: str = "openai",
         tts_voice: Optional[str] = None

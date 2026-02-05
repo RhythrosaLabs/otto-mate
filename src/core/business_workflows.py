@@ -120,15 +120,27 @@ class BusinessWorkflowGenerator:
                     dependencies=["research"]
                 ),
                 WorkflowStep(
+                    id="save_design",
+                    name="Save Design Image",
+                    description="Save the generated design to file storage",
+                    action="save_generated_image",
+                    params={
+                        "image_url": "{design.images[0]}",
+                        "filename": "{product_title}_design.png",
+                        "category": "generated"
+                    },
+                    dependencies=["design"]
+                ),
+                WorkflowStep(
                     id="mockup",
                     name="Create Product Mockup",
                     description="Generate realistic product mockup",
                     action="generate_product_mockup",
                     params={
-                        "design_url": "{design.output_url}",
+                        "design_url": "{save_design.url}",
                         "product_type": "{product_type}"
                     },
-                    dependencies=["design"]
+                    dependencies=["save_design"]
                 ),
                 WorkflowStep(
                     id="printify_product",
@@ -138,9 +150,9 @@ class BusinessWorkflowGenerator:
                     params={
                         "title": "{product_title}",
                         "blueprint_id": "{blueprint_id}",
-                        "design_url": "{design.output_url}"
+                        "design_url": "{save_design.url}"
                     },
-                    dependencies=["design", "mockup"]
+                    dependencies=["save_design", "mockup"]
                 ),
                 WorkflowStep(
                     id="description",

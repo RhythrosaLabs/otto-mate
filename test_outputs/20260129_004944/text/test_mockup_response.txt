@@ -1,0 +1,12 @@
+I encountered a technical issue while attempting to create your coffee mug mockup. The product mockup generation failed due to an API configuration error - specifically, the system required a version parameter that wasn't properly specified in the request.
+
+**What happened:**
+- Attempted to generate a white coffee mug with minimalist mountain design
+- Planned wooden desk setup with morning coffee scene
+- Failed after 3 retry attempts due to API validation errors
+
+**The issue:** The mockup generation tool encountered a version requirement mismatch that prevented the image from being created.
+
+I'll need to use an alternative approach to create your coffee mug mockup. I can generate the design using a different image generation method that will produce a white ceramic mug featuring a clean, minimalist mountain silhouette design, positioned on a wooden desk with complementary morning coffee elements like coffee beans, a small plant, or warm lighting.
+
+Let me proceed with generating this mockup using the standard image creation tool instead.

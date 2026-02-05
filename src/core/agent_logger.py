@@ -70,9 +70,10 @@ class AgentLogger:
     def __init__(self, log_dir: Optional[str] = None):
         """Initialize agent logger."""
         if log_dir is None:
-            log_dir = Path(__file__).parent.parent.parent / "logs" / "agent_traces"
-        
-        self.log_dir = Path(log_dir)
+            default_dir = Path(__file__).parent.parent.parent / "logs" / "agent_traces"
+            self.log_dir = default_dir
+        else:
+            self.log_dir = Path(log_dir)
         self.log_dir.mkdir(parents=True, exist_ok=True)
         
         self.current_traces = {}  # session_id -> trace
@@ -192,7 +193,7 @@ class AgentLogger:
         agent_id: str,
         decision: str,
         reasoning: str,
-        alternatives: List[str] = None,
+        alternatives: Optional[List[str]] = None,
         confidence: float = 1.0
     ):
         """Log an agent decision point for analysis."""

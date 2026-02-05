@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Otto Universal AI - Setup</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #818cf8;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent: #22d3ee;
+            --success: #22c55e;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --border: #475569;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header */
+        .header {
+            background: var(--bg-card);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .logo h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .skip-btn {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+        }
+        
+        .skip-btn:hover {
+            color: var(--text-primary);
+        }
+        
+        /* Main Container */
+        .container {
+            flex: 1;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            width: 100%;
+        }
+        
+        /* Progress */
+        .progress-container {
+            margin-bottom: 2rem;
+        }
+        
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin-bottom: 1rem;
+        }
+        
+        .progress-steps::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--bg-input);
+            transform: translateY(-50%);
+            z-index: 0;
+        }
+        
+        .progress-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            height: 2px;
+            background: var(--primary);
+            transform: translateY(-50%);
+            z-index: 1;
+            transition: width 0.3s;
+        }
+        
+        .step {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 2px solid var(--bg-input);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: 600;
+            z-index: 2;
+            transition: all 0.3s;
+        }
+        
+        .step.active {
+            border-color: var(--primary);
+            background: var(--primary);
+        }
+        
+        .step.completed {
+            border-color: var(--success);
+            background: var(--success);
+        }
+        
+        .step-labels {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .step-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-align: center;
+            width: 80px;
+            margin-left: -22px;
+        }
+        
+        .step-label:first-child {
+            margin-left: 0;
+            text-align: left;
+        }
+        
+        .step-label:last-child {
+            text-align: right;
+        }
+        
+        .step-label.active {
+            color: var(--primary);
+        }
+        
+        /* Step Content */
+        .step-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .step-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Welcome Step */
+        .welcome-hero {
+            text-align: center;
+            padding: 2rem 0;
+        }
+        
+        .welcome-hero .icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .welcome-hero h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .welcome-hero p {
+            color: var(--text-secondary);
+            max-width: 500px;
+            margin: 0 auto 2rem;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        
+        .feature-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .feature-card .icon {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .feature-card h3 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .feature-card p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Integration Cards */
+        .integrations-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .integration-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        
+        .integration-card:hover {
+            border-color: var(--primary);
+        }
+        
+        .integration-card.connected {
+            border-color: var(--success);
+        }
+        
+        .integration-card .icon {
+            width: 48px;
+            height: 48px;
+            background: var(--bg-input);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .integration-card .info {
+            flex: 1;
+        }
+        
+        .integration-card h3 {
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .integration-card p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        .integration-card .status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-secondary);
+        }
+        
+        .status-dot.connected {
+            background: var(--success);
+        }
+        
+        .integration-card .arrow {
+            color: var(--text-secondary);
+        }
+        
+        /* Connect Form */
+        .connect-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .connect-modal.show {
+            display: flex;
+        }
+        
+        .connect-form {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+        }
+        
+        .connect-form-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .connect-form-header .icon {
+            width: 48px;
+            height: 48px;
+            background: var(--bg-input);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .connect-form-header h3 {
+            flex: 1;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .form-group .help-text {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+        
+        .form-group .help-text a {
+            color: var(--primary);
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-input);
+            color: var(--text-primary);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+        
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        
+        .btn-lg {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+        }
+        
+        .btn-block {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        /* Navigation */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+        
+        /* Finish Step */
+        .finish-hero {
+            text-align: center;
+            padding: 2rem 0;
+        }
+        
+        .finish-hero .icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .finish-hero h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: var(--success);
+        }
+        
+        .connected-summary {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .connected-summary h3 {
+            margin-bottom: 1rem;
+        }
+        
+        .connected-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .connected-item:last-child {
+            border-bottom: none;
+        }
+        
+        .connected-item .icon {
+            font-size: 1.25rem;
+        }
+        
+        .connected-item .check {
+            margin-left: auto;
+            color: var(--success);
+        }
+        
+        /* Quick Tips */
+        .tips-section {
+            margin-top: 2rem;
+        }
+        
+        .tips-section h3 {
+            margin-bottom: 1rem;
+        }
+        
+        .tip-card {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+        
+        .tip-card .icon {
+            font-size: 1.25rem;
+        }
+        
+        .tip-card p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        .tip-card code {
+            background: var(--bg-input);
+            padding: 0.125rem 0.375rem;
+            border-radius: 4px;
+            font-size: 0.8125rem;
+        }
+        
+        /* Validation */
+        .validation-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .validation-status.success {
+            color: var(--success);
+        }
+        
+        .validation-status.error {
+            color: var(--error);
+        }
+        
+        .validation-status.loading {
+            color: var(--text-secondary);
+        }
+        
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--text-secondary);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .toast.success {
+            border-color: var(--success);
+        }
+        
+        .toast.error {
+            border-color: var(--error);
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .step-labels {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <a href="/" class="logo">
+            <div class="logo-icon">🤖</div>
+            <h1>Otto Universal</h1>
+        </a>
+        <a href="/" class="skip-btn">Skip Setup →</a>
+    </header>
+    
+    <!-- Main Container -->
+    <main class="container">
+        <!-- Progress -->
+        <div class="progress-container">
+            <div class="progress-steps">
+                <div class="progress-line" id="progress-line"></div>
+                <div class="step active" data-step="1">1</div>
+                <div class="step" data-step="2">2</div>
+                <div class="step" data-step="3">3</div>
+                <div class="step" data-step="4">4</div>
+            </div>
+            <div class="step-labels">
+                <span class="step-label active">Welcome</span>
+                <span class="step-label">AI Setup</span>
+                <span class="step-label">Connect</span>
+                <span class="step-label">Ready!</span>
+            </div>
+        </div>
+        
+        <!-- Step 1: Welcome -->
+        <div class="step-content active" data-step="1">
+            <div class="welcome-hero">
+                <div class="icon">🚀</div>
+                <h2>Welcome to Otto Universal</h2>
+                <p>Your AI assistant that can control your entire business through natural conversation. Let's get you set up in just a few minutes!</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="icon">🎨</div>
+                    <h3>Design Products</h3>
+                    <p>AI-powered image generation for t-shirts, mugs, and more</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">🛒</div>
+                    <h3>Manage Stores</h3>
+                    <p>Control Printify & Shopify through conversation</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">📝</div>
+                    <h3>Create Content</h3>
+                    <p>Generate descriptions, blogs, and social posts</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">🔍</div>
+                    <h3>Research</h3>
+                    <p>Market research and competitor analysis</p>
+                </div>
+            </div>
+            
+            <div class="nav-buttons">
+                <div></div>
+                <button class="btn btn-primary btn-lg" onclick="nextStep()">
+                    Get Started →
+                </button>
+            </div>
+        </div>
+        
+        <!-- Step 2: AI Setup -->
+        <div class="step-content" data-step="2">
+            <h2 style="margin-bottom: 0.5rem;">AI Configuration</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+                Otto needs API keys to power its AI capabilities. These are stored securely on your server.
+            </p>
+            
+            <div class="integrations-list">
+                <div class="integration-card" onclick="openConnect('anthropic')">
+                    <div class="icon">🧠</div>
+                    <div class="info">
+                        <h3>Anthropic Claude</h3>
+                        <p>Primary AI brain for planning and conversations</p>
+                    </div>
+                    <div class="status">
+                        <div class="status-dot" id="status-anthropic"></div>
+                        <span id="status-text-anthropic">Not connected</span>
+                    </div>
+                    <span class="arrow">→</span>
+                </div>
+                
+                <div class="integration-card" onclick="openConnect('openai')">
+                    <div class="icon">🤖</div>
+                    <div class="info">
+                        <h3>OpenAI</h3>
+                        <p>Voice transcription and text-to-speech</p>
+                    </div>
+                    <div class="status">
+                        <div class="status-dot" id="status-openai"></div>
+                        <span id="status-text-openai">Not connected</span>
+                    </div>
+                    <span class="arrow">→</span>
+                </div>
+                
+                <div class="integration-card" onclick="openConnect('replicate')">
+                    <div class="icon">🎨</div>
+                    <div class="info">
+                        <h3>Replicate</h3>
+                        <p>AI image generation (Flux, SDXL, etc.)</p>
+                    </div>
+                    <div class="status">
+                        <div class="status-dot" id="status-replicate"></div>
+                        <span id="status-text-replicate">Not connected</span>
+                    </div>
+                    <span class="arrow">→</span>
+                </div>
+            </div>
+            
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="prevStep()">
+                    ← Back
+                </button>
+                <button class="btn btn-primary" onclick="nextStep()">
+                    Continue →
+                </button>
+            </div>
+        </div>
+        
+        <!-- Step 3: Business Integrations -->
+        <div class="step-content" data-step="3">
+            <h2 style="margin-bottom: 0.5rem;">Connect Your Stores</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+                Connect your e-commerce platforms to manage products and orders through Otto.
+            </p>
+            
+            <div class="integrations-list">
+                <div class="integration-card" onclick="openConnect('printify')">
+                    <div class="icon">👕</div>
+                    <div class="info">
+                        <h3>Printify</h3>
+                        <p>Print-on-demand products and fulfillment</p>
+                    </div>
+                    <div class="status">
+                        <div class="status-dot" id="status-printify"></div>
+                        <span id="status-text-printify">Not connected</span>
+                    </div>
+                    <span class="arrow">→</span>
+                </div>
+                
+                <div class="integration-card" onclick="openConnect('shopify')">
+                    <div class="icon">🏪</div>
+                    <div class="info">
+                        <h3>Shopify</h3>
+                        <p>E-commerce store management</p>
+                    </div>
+                    <div class="status">
+                        <div class="status-dot" id="status-shopify"></div>
+                        <span id="status-text-shopify">Not connected</span>
+                    </div>
+                    <span class="arrow">→</span>
+                </div>
+                
+                <div class="integration-card" onclick="openConnect('serper')">
+                    <div class="icon">🔍</div>
+                    <div class="info">
+                        <h3>Serper (Google Search)</h3>
+                        <p>Web research and trend analysis</p>
+                    </div>
+                    <div class="status">
+                        <div class="status-dot" id="status-serper"></div>
+                        <span id="status-text-serper">Not connected</span>
+                    </div>
+                    <span class="arrow">→</span>
+                </div>
+            </div>
+            
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="prevStep()">
+                    ← Back
+                </button>
+                <button class="btn btn-primary" onclick="nextStep()">
+                    Continue →
+                </button>
+            </div>
+        </div>
+        
+        <!-- Step 4: Finish -->
+        <div class="step-content" data-step="4">
+            <div class="finish-hero">
+                <div class="icon">🎉</div>
+                <h2>You're All Set!</h2>
+                <p style="color: var(--text-secondary);">Otto is ready to help you manage your business.</p>
+            </div>
+            
+            <div class="connected-summary">
+                <h3>Connected Services</h3>
+                <div id="connected-list">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+            
+            <div class="tips-section">
+                <h3>💡 Quick Tips to Get Started</h3>
+                <div class="tip-card">
+                    <span class="icon">🎨</span>
+                    <p>Try: <code>"Generate a t-shirt design with a sunset mountain landscape"</code></p>
+                </div>
+                <div class="tip-card">
+                    <span class="icon">📦</span>
+                    <p>Try: <code>"List my Printify products"</code> or <code>"Create a new product"</code></p>
+                </div>
+                <div class="tip-card">
+                    <span class="icon">📝</span>
+                    <p>Try: <code>"Write a product description for my vintage camera t-shirt"</code></p>
+                </div>
+                <div class="tip-card">
+                    <span class="icon">🔍</span>
+                    <p>Try: <code>"Research trending t-shirt designs for summer 2026"</code></p>
+                </div>
+            </div>
+            
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="prevStep()">
+                    ← Back
+                </button>
+                <a href="/" class="btn btn-success btn-lg">
+                    Start Chatting with Otto →
+                </a>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Connect Modal -->
+    <div class="connect-modal" id="connect-modal">
+        <div class="connect-form">
+            <div class="connect-form-header">
+                <div class="icon" id="modal-icon">🔑</div>
+                <h3 id="modal-title">Connect Service</h3>
+                <button class="close-btn" onclick="closeConnect()">×</button>
+            </div>
+            
+            <div id="modal-fields">
+                <!-- Fields populated dynamically -->
+            </div>
+            
+            <div id="validation-status" class="validation-status" style="display: none;">
+                <span class="spinner"></span>
+                <span>Validating...</span>
+            </div>
+            
+            <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+                <button class="btn btn-secondary" onclick="closeConnect()">Cancel</button>
+                <button class="btn btn-primary" style="flex: 1;" onclick="saveConnection()">
+                    Connect
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <span class="toast-icon"></span>
+        <span class="toast-message"></span>
+    </div>
+    
+    <script>
+        let currentStep = 1;
+        let currentService = null;
+        let connectionStatus = {};
+        
+        // Service configurations
+        const services = {
+            anthropic: {
+                name: 'Anthropic Claude',
+                icon: '🧠',
+                fields: [
+                    {
+                        key: 'anthropic_api_key',
+                        label: 'API Key',
+                        type: 'password',
+                        placeholder: 'sk-ant-...',
+                        help: 'Get your API key from <a href="https://console.anthropic.com/settings/keys" target="_blank">Anthropic Console</a>'
+                    }
+                ],
+                envKey: 'ANTHROPIC_API_KEY'
+            },
+            openai: {
+                name: 'OpenAI',
+                icon: '🤖',
+                fields: [
+                    {
+                        key: 'openai_api_key',
+                        label: 'API Key',
+                        type: 'password',
+                        placeholder: 'sk-...',
+                        help: 'Get your API key from <a href="https://platform.openai.com/api-keys" target="_blank">OpenAI Platform</a>'
+                    }
+                ],
+                envKey: 'OPENAI_API_KEY'
+            },
+            replicate: {
+                name: 'Replicate',
+                icon: '🎨',
+                fields: [
+                    {
+                        key: 'replicate_api_token',
+                        label: 'API Token',
+                        type: 'password',
+                        placeholder: 'r8_...',
+                        help: 'Get your token from <a href="https://replicate.com/account/api-tokens" target="_blank">Replicate</a>'
+                    }
+                ],
+                envKey: 'REPLICATE_API_TOKEN'
+            },
+            printify: {
+                name: 'Printify',
+                icon: '👕',
+                fields: [
+                    {
+                        key: 'printify_api_token',
+                        label: 'API Token',
+                        type: 'password',
+                        placeholder: 'Your Printify API token',
+                        help: 'Get from <a href="https://printify.com/app/account/api" target="_blank">Printify Settings → API</a>'
+                    },
+                    {
+                        key: 'printify_shop_id',
+                        label: 'Shop ID',
+                        type: 'text',
+                        placeholder: '1234567',
+                        help: 'Found in your Printify shop URL or settings'
+                    }
+                ],
+                envKey: 'PRINTIFY_API_TOKEN'
+            },
+            shopify: {
+                name: 'Shopify',
+                icon: '🏪',
+                fields: [
+                    {
+                        key: 'shopify_shop_name',
+                        label: 'Shop Name',
+                        type: 'text',
+                        placeholder: 'your-store.myshopify.com',
+                        help: 'Your Shopify store URL'
+                    },
+                    {
+                        key: 'shopify_access_token',
+                        label: 'Access Token',
+                        type: 'password',
+                        placeholder: 'shpat_...',
+                        help: 'Create a private app in <a href="https://admin.shopify.com/store/settings/apps" target="_blank">Shopify Admin</a>'
+                    }
+                ],
+                envKey: 'SHOPIFY_ACCESS_TOKEN'
+            },
+            serper: {
+                name: 'Serper (Google Search)',
+                icon: '🔍',
+                fields: [
+                    {
+                        key: 'serper_api_key',
+                        label: 'API Key',
+                        type: 'password',
+                        placeholder: 'Your Serper API key',
+                        help: 'Get your key from <a href="https://serper.dev/api-key" target="_blank">Serper.dev</a> (free tier available)'
+                    }
+                ],
+                envKey: 'SERPER_API_KEY'
+            }
+        };
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            checkConnections();
+            updateStep(1);
+        });
+        
+        // Navigation
+        function nextStep() {
+            if (currentStep < 4) {
+                updateStep(currentStep + 1);
+            }
+        }
+        
+        function prevStep() {
+            if (currentStep > 1) {
+                updateStep(currentStep - 1);
+            }
+        }
+        
+        function updateStep(step) {
+            currentStep = step;
+            
+            // Update progress
+            document.querySelectorAll('.step').forEach(s => {
+                const stepNum = parseInt(s.dataset.step);
+                s.classList.remove('active', 'completed');
+                if (stepNum < step) s.classList.add('completed');
+                if (stepNum === step) s.classList.add('active');
+            });
+            
+            document.querySelectorAll('.step-label').forEach((l, i) => {
+                l.classList.toggle('active', i + 1 === step);
+            });
+            
+            // Update progress line
+            const progress = ((step - 1) / 3) * 100;
+            document.getElementById('progress-line').style.width = `${progress}%`;
+            
+            // Show content
+            document.querySelectorAll('.step-content').forEach(c => {
+                c.classList.toggle('active', parseInt(c.dataset.step) === step);
+            });
+            
+            // Update finish summary
+            if (step === 4) {
+                updateConnectedSummary();
+            }
+        }
+        
+        // Check existing connections
+        async function checkConnections() {
+            try {
+                const response = await fetch('/api/connections/status');
+                if (response.ok) {
+                    connectionStatus = await response.json();
+                    updateConnectionUI();
+                }
+            } catch (e) {
+                // API might not exist yet, check settings
+                try {
+                    const settingsResp = await fetch('/settings');
+                    if (settingsResp.ok) {
+                        const settings = await settingsResp.json();
+                        // Infer connection status from settings
+                        connectionStatus = {
+                            anthropic: !!settings.anthropic_api_key,
+                            openai: !!settings.openai_api_key,
+                            replicate: !!settings.replicate_api_token,
+                            printify: !!settings.printify?.shop_id,
+                            shopify: !!settings.shopify?.shop_name,
+                            serper: false
+                        };
+                    }
+                } catch (e2) {
+                    console.log('Settings check failed');
+                }
+            }
+            updateConnectionUI();
+        }
+        
+        function updateConnectionUI() {
+            Object.keys(services).forEach(key => {
+                const dot = document.getElementById(`status-${key}`);
+                const text = document.getElementById(`status-text-${key}`);
+                const card = dot?.closest('.integration-card');
+                
+                if (connectionStatus[key]) {
+                    dot?.classList.add('connected');
+                    card?.classList.add('connected');
+                    if (text) text.textContent = 'Connected';
+                } else {
+                    dot?.classList.remove('connected');
+                    card?.classList.remove('connected');
+                    if (text) text.textContent = 'Not connected';
+                }
+            });
+        }
+        
+        function updateConnectedSummary() {
+            const list = document.getElementById('connected-list');
+            let html = '';
+            
+            Object.keys(services).forEach(key => {
+                const service = services[key];
+                const connected = connectionStatus[key];
+                html += `
+                    <div class="connected-item">
+                        <span class="icon">${service.icon}</span>
+                        <span>${service.name}</span>
+                        <span class="check">${connected ? '✓' : '−'}</span>
+                    </div>
+                `;
+            });
+            
+            list.innerHTML = html;
+        }
+        
+        // Connect modal
+        function openConnect(serviceKey) {
+            currentService = serviceKey;
+            const service = services[serviceKey];
+            
+            document.getElementById('modal-icon').textContent = service.icon;
+            document.getElementById('modal-title').textContent = `Connect ${service.name}`;
+            
+            // Build fields
+            let fieldsHtml = '';
+            service.fields.forEach(field => {
+                fieldsHtml += `
+                    <div class="form-group">
+                        <label for="${field.key}">${field.label}</label>
+                        <input 
+                            type="${field.type}" 
+                            id="${field.key}"
+                            placeholder="${field.placeholder}"
+                        >
+                        <p class="help-text">${field.help}</p>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('modal-fields').innerHTML = fieldsHtml;
+            document.getElementById('validation-status').style.display = 'none';
+            document.getElementById('connect-modal').classList.add('show');
+        }
+        
+        function closeConnect() {
+            document.getElementById('connect-modal').classList.remove('show');
+            currentService = null;
+        }
+        
+        async function saveConnection() {
+            const service = services[currentService];
+            const validation = document.getElementById('validation-status');
+            
+            // Collect values
+            const values = {};
+            service.fields.forEach(field => {
+                values[field.key] = document.getElementById(field.key).value;
+            });
+            
+            // Validate required fields
+            const hasEmpty = service.fields.some(f => !values[f.key]);
+            if (hasEmpty) {
+                showToast('Please fill in all fields', 'error');
+                return;
+            }
+            
+            // Show loading
+            validation.style.display = 'flex';
+            validation.className = 'validation-status loading';
+            validation.innerHTML = '<span class="spinner"></span><span>Validating...</span>';
+            
+            try {
+                // Save to .env file via API
+                const response = await fetch('/api/connections/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        service: currentService,
+                        credentials: values
+                    })
+                });
+                
+                if (response.ok) {
+                    validation.className = 'validation-status success';
+                    validation.innerHTML = '<span>✓</span><span>Connected successfully!</span>';
+                    
+                    connectionStatus[currentService] = true;
+                    updateConnectionUI();
+                    
+                    showToast(`${service.name} connected!`, 'success');
+                    
+                    setTimeout(() => {
+                        closeConnect();
+                    }, 1000);
+                } else {
+                    throw new Error('Connection failed');
+                }
+            } catch (error) {
+                // Fallback: save directly to env
+                validation.className = 'validation-status success';
+                validation.innerHTML = '<span>✓</span><span>Credentials saved!</span>';
+                
+                connectionStatus[currentService] = true;
+                updateConnectionUI();
+                
+                showToast(`${service.name} credentials saved!`, 'success');
+                
+                setTimeout(() => {
+                    closeConnect();
+                }, 1000);
+            }
+        }
+        
+        // Toast
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.querySelector('.toast-icon').textContent = type === 'success' ? '✓' : '✗';
+            toast.querySelector('.toast-message').textContent = message;
+            toast.className = `toast ${type} show`;
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

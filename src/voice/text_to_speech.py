@@ -22,7 +22,7 @@ class TextToSpeech:
     
     def __init__(
         self,
-        openai_client: AsyncOpenAI,
+        openai_client: AsyncOpenAI = None,
         elevenlabs_api_key: Optional[str] = None,
         default_provider: str = "openai"
     ):
@@ -70,6 +70,15 @@ class TextToSpeech:
         format: str = "mp3"
     ) -> Dict[str, Any]:
         """Synthesize using OpenAI TTS."""
+        # Check if client is available
+        if self.openai is None:
+            logger.error("OpenAI client not configured for text-to-speech")
+            return {
+                "audio": b"",
+                "error": "OpenAI API key not configured. Please set OPENAI_API_KEY environment variable.",
+                "success": False
+            }
+        
         try:
             voice = voice or "nova"
             if voice not in self.OPENAI_VOICES:

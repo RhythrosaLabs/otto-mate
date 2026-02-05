@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class SpeechToText:
     """Converts speech audio to text using OpenAI Whisper."""
     
-    def __init__(self, openai_client: AsyncOpenAI):
+    def __init__(self, openai_client: AsyncOpenAI = None):
         self.client = openai_client
         self.model = "whisper-1"
         self.supported_formats = ["mp3", "mp4", "mpeg", "mpga", "m4a", "wav", "webm"]
@@ -42,6 +42,15 @@ class SpeechToText:
         Returns:
             Dict with transcription and metadata
         """
+        # Check if client is available
+        if self.client is None:
+            logger.error("OpenAI client not configured for speech-to-text")
+            return {
+                "text": "",
+                "error": "OpenAI API key not configured. Please set OPENAI_API_KEY environment variable.",
+                "success": False
+            }
+        
         try:
             # Write audio to temp file (Whisper API requires file)
             with tempfile.NamedTemporaryFile(

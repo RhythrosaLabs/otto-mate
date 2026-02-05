@@ -88,11 +88,16 @@ class FileStorageTools(ToolBase):
                 tags=tags or []
             )
             
+            # Get full absolute path for local files
+            from pathlib import Path
+            full_path = str(Path(self.storage.base_path) / metadata.path)
+            
             return {
                 "success": True,
                 "file_id": metadata.id,
                 "filename": metadata.filename,
                 "url": metadata.url,
+                "path": full_path,  # Full absolute path
                 "original_url": url,
                 "size": metadata.size
             }
@@ -145,11 +150,16 @@ class FileStorageTools(ToolBase):
                 }
             )
             
+            # Get full absolute path for local files
+            from pathlib import Path
+            full_path = str(Path(self.storage.base_path) / metadata.path)
+            
             return {
                 "success": True,
                 "file_id": metadata.id,
                 "filename": metadata.filename,
                 "url": metadata.url,
+                "path": full_path,  # Full absolute path for local access
                 "prompt": prompt,
                 "description": image_description,
                 "model": model

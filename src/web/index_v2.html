@@ -1,0 +1,1905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Otto - AI Business Agent</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --bg-card: #1e293b;
+            --bg-card-hover: #334155;
+            --bg-input: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border: #334155;
+            --border-light: #475569;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --accent-light: rgba(59, 130, 246, 0.1);
+            --success: #22c55e;
+            --success-light: rgba(34, 197, 94, 0.1);
+            --warning: #f59e0b;
+            --warning-light: rgba(245, 158, 11, 0.1);
+            --error: #ef4444;
+            --purple: #a855f7;
+            --pink: #ec4899;
+            --cyan: #06b6d4;
+            --radius: 12px;
+            --radius-sm: 8px;
+            --radius-lg: 16px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            --sidebar-width: 280px;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+        
+        /* Left Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        
+        .sidebar-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .brand-logo {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent), var(--purple));
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .brand-name {
+            font-weight: 700;
+            font-size: 20px;
+            background: linear-gradient(135deg, var(--accent), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 0;
+        }
+        
+        .sidebar-section {
+            margin-bottom: 8px;
+        }
+        
+        .sidebar-section-header {
+            padding: 12px 20px 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .sidebar-section-header:hover {
+            background: var(--bg-tertiary);
+        }
+        
+        .sidebar-section-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+        
+        .sidebar-section-actions {
+            display: flex;
+            gap: 4px;
+        }
+        
+        .sidebar-section-btn {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .sidebar-section-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        .sidebar-section-items {
+            padding: 0 8px;
+        }
+        
+        .sidebar-section.collapsed .sidebar-section-items {
+            display: none;
+        }
+        
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        
+        .sidebar-item:hover {
+            background: var(--bg-tertiary);
+        }
+        
+        .sidebar-item.active {
+            background: var(--accent-light);
+            border: 1px solid var(--accent);
+        }
+        
+        .sidebar-item-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        
+        .sidebar-item-icon.shopify { background: #96bf48; }
+        .sidebar-item-icon.printify { background: #29b474; }
+        .sidebar-item-icon.youtube { background: #ff0000; }
+        .sidebar-item-icon.twitter { background: #1da1f2; }
+        .sidebar-item-icon.instagram { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+        .sidebar-item-icon.facebook { background: #1877f2; }
+        .sidebar-item-icon.linkedin { background: #0a66c2; }
+        .sidebar-item-icon.tiktok { background: #000; }
+        .sidebar-item-icon.replicate { background: var(--purple); }
+        .sidebar-item-icon.browser { background: var(--cyan); }
+        .sidebar-item-icon.email { background: var(--pink); }
+        .sidebar-item-icon.calendar { background: var(--accent); }
+        .sidebar-item-icon.tasks { background: var(--warning); }
+        .sidebar-item-icon.chat { background: var(--accent); }
+        .sidebar-item-icon.project { background: var(--purple); }
+        
+        .sidebar-item-details {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .sidebar-item-name {
+            font-size: 13px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .sidebar-item-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+        
+        .sidebar-item-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        
+        .sidebar-item-status.connected { background: var(--success); }
+        .sidebar-item-status.disconnected { background: var(--text-muted); }
+        .sidebar-item-status.error { background: var(--error); }
+        
+        .sidebar-empty {
+            padding: 20px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+        
+        .new-chat-btn {
+            margin: 12px;
+            padding: 12px 16px;
+            background: var(--accent);
+            border: none;
+            border-radius: var(--radius-sm);
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.15s ease;
+        }
+        
+        .new-chat-btn:hover {
+            background: var(--accent-hover);
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .main-header {
+            padding: 12px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-primary);
+        }
+        
+        .header-title {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .header-btn {
+            padding: 8px 14px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s ease;
+        }
+        
+        .header-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border-color: var(--border-light);
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--success-light);
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--success);
+        }
+        
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+        
+        /* Chat Area */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+        
+        .messages {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        
+        /* Welcome Screen */
+        .welcome {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100%;
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .welcome-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--accent), var(--purple));
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            margin-bottom: 28px;
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+        }
+        
+        .welcome h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .welcome p {
+            color: var(--text-secondary);
+            font-size: 16px;
+            margin-bottom: 48px;
+            max-width: 450px;
+            line-height: 1.6;
+        }
+        
+        .suggestions-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            max-width: 800px;
+            width: 100%;
+        }
+        
+        @media (max-width: 900px) {
+            .suggestions-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .suggestions-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .suggestion-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .suggestion-card:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+        
+        .suggestion-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        
+        .suggestion-icon.launch { background: var(--success-light); }
+        .suggestion-icon.design { background: var(--accent-light); }
+        .suggestion-icon.social { background: rgba(236, 72, 153, 0.1); }
+        .suggestion-icon.content { background: rgba(168, 85, 247, 0.1); }
+        .suggestion-icon.analyze { background: rgba(6, 182, 212, 0.1); }
+        .suggestion-icon.automate { background: var(--warning-light); }
+        
+        .suggestion-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .suggestion-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+        
+        /* Messages */
+        .message {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding: 16px;
+            border-radius: var(--radius);
+        }
+        
+        .message.user {
+            background: var(--bg-secondary);
+        }
+        
+        .message.assistant {
+            background: transparent;
+        }
+        
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 16px;
+        }
+        
+        .message.user .message-avatar {
+            background: var(--bg-tertiary);
+        }
+        
+        .message.assistant .message-avatar {
+            background: linear-gradient(135deg, var(--accent), var(--purple));
+        }
+        
+        .message-content {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .message-role {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+        
+        .message-text {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text-primary);
+        }
+        
+        .message-text p {
+            margin-bottom: 12px;
+        }
+        
+        .message-text p:last-child {
+            margin-bottom: 0;
+        }
+        
+        .message-text pre {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            overflow-x: auto;
+            margin: 12px 0;
+        }
+        
+        .message-text code {
+            font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+            font-size: 13px;
+        }
+        
+        .message-text pre code {
+            color: var(--text-primary);
+        }
+        
+        .message-text :not(pre) > code {
+            background: var(--bg-tertiary);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        /* Input Area */
+        .input-area {
+            padding: 20px 24px;
+            border-top: 1px solid var(--border);
+            background: var(--bg-primary);
+        }
+        
+        .input-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .input-wrapper {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            display: flex;
+            align-items: flex-end;
+            padding: 12px 16px;
+            gap: 12px;
+            transition: all 0.15s ease;
+        }
+        
+        .input-wrapper:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-light);
+        }
+        
+        .input-wrapper textarea {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-primary);
+            font-size: 14px;
+            line-height: 1.5;
+            resize: none;
+            min-height: 24px;
+            max-height: 200px;
+            font-family: inherit;
+        }
+        
+        .input-wrapper textarea::placeholder {
+            color: var(--text-muted);
+        }
+        
+        .input-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .input-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-size: 16px;
+        }
+        
+        .input-btn.attach {
+            background: transparent;
+            color: var(--text-muted);
+        }
+        
+        .input-btn.attach:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        .input-btn.mic {
+            background: transparent;
+            color: var(--text-muted);
+        }
+        
+        .input-btn.mic:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        .input-btn.mic.recording {
+            background: var(--error);
+            color: white;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .input-btn.send {
+            background: var(--accent);
+            color: white;
+        }
+        
+        .input-btn.send:hover {
+            background: var(--accent-hover);
+        }
+        
+        .input-btn.send:disabled {
+            background: var(--bg-tertiary);
+            color: var(--text-muted);
+            cursor: not-allowed;
+        }
+        
+        .input-hint {
+            text-align: center;
+            margin-top: 12px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        
+        /* Artifacts Panel */
+        .artifacts-panel {
+            width: 50%;
+            max-width: 700px;
+            border-left: 1px solid var(--border);
+            background: var(--bg-secondary);
+            display: none;
+            flex-direction: column;
+        }
+        
+        .artifacts-panel.open {
+            display: flex;
+        }
+        
+        .artifacts-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-primary);
+        }
+        
+        .artifacts-title {
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .artifacts-tabs {
+            display: flex;
+            gap: 4px;
+            padding: 8px 16px;
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+        }
+        
+        .artifact-tab {
+            padding: 6px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .artifact-tab:hover {
+            background: var(--bg-card-hover);
+        }
+        
+        .artifact-tab.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+        
+        .artifacts-content {
+            flex: 1;
+            overflow: auto;
+            padding: 16px;
+        }
+        
+        .artifact-editor {
+            width: 100%;
+            height: 100%;
+            font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            padding: 16px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            resize: none;
+            outline: none;
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border-light);
+        }
+        
+        /* Loading States */
+        .loading-dots {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+        
+        .loading-dots span {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        
+        .loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        
+        /* Context Menu */
+        .context-menu {
+            position: absolute;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 4px;
+            min-width: 160px;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            display: none;
+        }
+        
+        .context-menu.show {
+            display: block;
+        }
+        
+        .context-menu-item {
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .context-menu-item:hover {
+            background: var(--bg-tertiary);
+        }
+        
+        .context-menu-item.danger {
+            color: var(--error);
+        }
+        
+        .context-menu-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 4px 0;
+        }
+        
+        /* Search Bar */
+        .search-bar {
+            padding: 8px 12px;
+            margin: 8px 12px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .search-bar input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-primary);
+            font-size: 13px;
+        }
+        
+        .search-bar input::placeholder {
+            color: var(--text-muted);
+        }
+        
+        .search-bar-icon {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-overlay.show {
+            display: flex;
+        }
+        
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .modal-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 18px;
+        }
+        
+        .modal-close:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        .modal-content {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .modal-footer {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+        
+        .btn {
+            padding: 10px 18px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--bg-card-hover);
+        }
+        
+        .btn-primary {
+            background: var(--accent);
+            border: 1px solid var(--accent);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -100%;
+                height: 100%;
+                z-index: 100;
+                transition: left 0.3s ease;
+            }
+            
+            .sidebar.open {
+                left: 0;
+            }
+            
+            .welcome h1 {
+                font-size: 24px;
+            }
+            
+            .suggestions-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Left Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="brand-logo">⚡</div>
+            <span class="brand-name">Otto</span>
+        </div>
+        
+        <button class="new-chat-btn" onclick="startNewChat()">
+            <span>+</span>
+            <span>New Chat</span>
+        </button>
+        
+        <div class="search-bar">
+            <span class="search-bar-icon">🔍</span>
+            <input type="text" placeholder="Search..." id="sidebarSearch" oninput="handleSearch(this.value)">
+        </div>
+        
+        <div class="sidebar-content">
+            <!-- Chat History Section -->
+            <div class="sidebar-section" id="chatHistorySection">
+                <div class="sidebar-section-header" onclick="toggleSection('chatHistorySection')">
+                    <span class="sidebar-section-title">Chat History</span>
+                    <div class="sidebar-section-actions">
+                        <button class="sidebar-section-btn" onclick="event.stopPropagation(); refreshChatHistory()">↻</button>
+                    </div>
+                </div>
+                <div class="sidebar-section-items" id="chatHistoryItems">
+                    <div class="sidebar-empty">No conversations yet</div>
+                </div>
+            </div>
+            
+            <!-- Projects Section -->
+            <div class="sidebar-section" id="projectsSection">
+                <div class="sidebar-section-header" onclick="toggleSection('projectsSection')">
+                    <span class="sidebar-section-title">Projects</span>
+                    <div class="sidebar-section-actions">
+                        <button class="sidebar-section-btn" onclick="event.stopPropagation(); showNewProjectModal()">+</button>
+                    </div>
+                </div>
+                <div class="sidebar-section-items" id="projectItems">
+                    <div class="sidebar-empty">No projects yet</div>
+                </div>
+            </div>
+            
+            <!-- Integrations Section -->
+            <div class="sidebar-section" id="integrationsSection">
+                <div class="sidebar-section-header" onclick="toggleSection('integrationsSection')">
+                    <span class="sidebar-section-title">Integrations</span>
+                    <div class="sidebar-section-actions">
+                        <button class="sidebar-section-btn" onclick="event.stopPropagation(); showIntegrationsSettings()">⚙️</button>
+                    </div>
+                </div>
+                <div class="sidebar-section-items" id="integrationItems">
+                    <!-- E-commerce -->
+                    <div class="sidebar-item" data-integration="shopify">
+                        <div class="sidebar-item-icon shopify">🛒</div>
+                        <div class="sidebar-item-details">
+                            <div class="sidebar-item-name">Shopify</div>
+                            <div class="sidebar-item-meta">E-commerce</div>
+                        </div>
+                        <div class="sidebar-item-status disconnected"></div>
+                    </div>
+                    <div class="sidebar-item" data-integration="printify">
+                        <div class="sidebar-item-icon printify">👕</div>
+                        <div class="sidebar-item-details">
+                            <div class="sidebar-item-name">Printify</div>
+                            <div class="sidebar-item-meta">Print on Demand</div>
+                        </div>
+                        <div class="sidebar-item-status connected"></div>
+                    </div>
+                    
+                    <!-- Social Media -->
+                    <div class="sidebar-item" data-integration="youtube">
+                        <div class="sidebar-item-icon youtube">▶️</div>
+                        <div class="sidebar-item-details">
+                            <div class="sidebar-item-name">YouTube</div>
+                            <div class="sidebar-item-meta">Video Platform</div>
+                        </div>
+                        <div class="sidebar-item-status disconnected"></div>
+                    </div>
+                    <div class="sidebar-item" data-integration="twitter">
+                        <div class="sidebar-item-icon twitter">𝕏</div>
+                        <div class="sidebar-item-details">
+                            <div class="sidebar-item-name">Twitter/X</div>
+                            <div class="sidebar-item-meta">Social Media</div>
+                        </div>
+                        <div class="sidebar-item-status disconnected"></div>
+                    </div>
+                    <div class="sidebar-item" data-integration="instagram">
+                        <div class="sidebar-item-icon instagram">📷</div>
+                        <div class="sidebar-item-details">
+                            <div class="sidebar-item-name">Instagram</div>
+                            <div class="sidebar-item-meta">Social Media</div>
+                        </div>
+                        <div class="sidebar-item-status disconnected"></div>
+                    </div>
+                    <div class="sidebar-item" data-integration="facebook">
+                        <div class="sidebar-item-icon facebook">f</div>
+                        <div class="sidebar-item-details">
+                            <div class="sidebar-item-name">Facebook</div>
+                            <div class="sidebar-item-meta">Social Media</div>
+                        </div>
+                        <div class="sidebar-item-status disconnected"></div>
+                    </div>
+                    <div class="sidebar-item" data-integration="linkedin">
+                        <div class="sidebar-item-icon linkedin">in</div>
+                        <div class="sidebar-item-details">
+                            <div class="sidebar-item-name">LinkedIn</div>
+                            <div class="sidebar-item-meta">Professional</div>
+                        </div>
+                        <div class="sidebar-item-status disconnected"></div>
+                    </div>
+                    <div class="sidebar-item" data-integration="tiktok">
+                        <div class="sidebar-item-icon tiktok">♪</div>
+                        <div class="sidebar-item-details">
+                            <div class="sidebar-item-name">TikTok</div>
+                            <div class="sidebar-item-meta">Video Social</div>
+                        </div>
+                        <div class="sidebar-item-status disconnected"></div>
+                    </div>
+                    
+                    <!-- AI Services -->
+                    <div class="sidebar-item" data-integration="replicate">
+                        <div class="sidebar-item-icon replicate">🤖</div>
+                        <div class="sidebar-item-details">
+                            <div class="sidebar-item-name">Replicate AI</div>
+                            <div class="sidebar-item-meta">AI Models</div>
+                        </div>
+                        <div class="sidebar-item-status connected"></div>
+                    </div>
+                    <div class="sidebar-item" data-integration="browser">
+                        <div class="sidebar-item-icon browser">🌐</div>
+                        <div class="sidebar-item-details">
+                            <div class="sidebar-item-name">Browser Use</div>
+                            <div class="sidebar-item-meta">Web Automation</div>
+                        </div>
+                        <div class="sidebar-item-status connected"></div>
+                    </div>
+                    
+                    <!-- Productivity -->
+                    <div class="sidebar-item" data-integration="email">
+                        <div class="sidebar-item-icon email">✉️</div>
+                        <div class="sidebar-item-details">
+                            <div class="sidebar-item-name">Email</div>
+                            <div class="sidebar-item-meta">Communication</div>
+                        </div>
+                        <div class="sidebar-item-status disconnected"></div>
+                    </div>
+                    <div class="sidebar-item" data-integration="calendar">
+                        <div class="sidebar-item-icon calendar">📅</div>
+                        <div class="sidebar-item-details">
+                            <div class="sidebar-item-name">Google Calendar</div>
+                            <div class="sidebar-item-meta">Scheduling</div>
+                        </div>
+                        <div class="sidebar-item-status disconnected"></div>
+                    </div>
+                    <div class="sidebar-item" data-integration="tasks">
+                        <div class="sidebar-item-icon tasks">✅</div>
+                        <div class="sidebar-item-details">
+                            <div class="sidebar-item-name">Task Scheduler</div>
+                            <div class="sidebar-item-meta">Automation</div>
+                        </div>
+                        <div class="sidebar-item-status connected"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="main-header">
+            <div class="header-title">
+                <span id="currentChatTitle">New Chat</span>
+            </div>
+            <div class="header-actions">
+                <button class="header-btn" onclick="toggleArtifacts()">
+                    <span>📄</span>
+                    <span>Artifacts</span>
+                </button>
+                <button class="header-btn" onclick="showFilesPanel()">
+                    <span>📁</span>
+                    <span>Files</span>
+                </button>
+                <div class="status-indicator" id="statusIndicator">
+                    <span class="status-dot"></span>
+                    <span>Ready</span>
+                </div>
+            </div>
+        </header>
+        
+        <div class="chat-area">
+            <div class="messages-container" id="messagesContainer">
+                <div class="messages" id="messages">
+                    <!-- Welcome Screen -->
+                    <div class="welcome" id="welcomeScreen">
+                        <div class="welcome-icon">⚡</div>
+                        <h1>What can I help you build?</h1>
+                        <p>I'm Otto, your AI business agent. I can help you launch products, create content, manage marketing, and automate your business operations.</p>
+                        
+                        <div class="suggestions-grid">
+                            <div class="suggestion-card" onclick="useSuggestion('Launch a new product on Printify with AI-generated designs and marketing materials')">
+                                <div class="suggestion-icon launch">🚀</div>
+                                <div class="suggestion-title">Launch a Product</div>
+                                <div class="suggestion-desc">Create designs, mockups, and launch to your store</div>
+                            </div>
+                            
+                            <div class="suggestion-card" onclick="useSuggestion('Design a marketing campaign with social media posts, emails, and video content')">
+                                <div class="suggestion-icon design">🎨</div>
+                                <div class="suggestion-title">Design Campaign</div>
+                                <div class="suggestion-desc">Create a full marketing campaign with visuals</div>
+                            </div>
+                            
+                            <div class="suggestion-card" onclick="useSuggestion('Create a social media blitz with posts for Instagram, TikTok, Twitter, and Facebook')">
+                                <div class="suggestion-icon social">📱</div>
+                                <div class="suggestion-title">Social Media Blitz</div>
+                                <div class="suggestion-desc">Generate posts for all platforms at once</div>
+                            </div>
+                            
+                            <div class="suggestion-card" onclick="useSuggestion('Create a professional promotional video with voiceover and music for my product')">
+                                <div class="suggestion-icon content">🎬</div>
+                                <div class="suggestion-title">Create Video</div>
+                                <div class="suggestion-desc">Generate promo videos with AI voiceover</div>
+                            </div>
+                            
+                            <div class="suggestion-card" onclick="useSuggestion('Analyze my competitors and create a strategy to differentiate my brand')">
+                                <div class="suggestion-icon analyze">📊</div>
+                                <div class="suggestion-title">Analyze Market</div>
+                                <div class="suggestion-desc">Research competitors and find opportunities</div>
+                            </div>
+                            
+                            <div class="suggestion-card" onclick="useSuggestion('Set up automated workflows for order processing and customer follow-ups')">
+                                <div class="suggestion-icon automate">⚙️</div>
+                                <div class="suggestion-title">Automate Tasks</div>
+                                <div class="suggestion-desc">Create workflows for repetitive tasks</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="input-area">
+                <div class="input-container">
+                    <div class="input-wrapper">
+                        <textarea 
+                            id="messageInput" 
+                            placeholder="Describe what you want to create or accomplish..."
+                            rows="1"
+                            onkeydown="handleKeyDown(event)"
+                            oninput="autoResize(this)"
+                        ></textarea>
+                        <div class="input-actions">
+                            <button class="input-btn attach" onclick="handleAttach()" title="Attach file">
+                                📎
+                            </button>
+                            <button class="input-btn mic" id="micBtn" onclick="toggleVoice()" title="Voice input">
+                                🎤
+                            </button>
+                            <button class="input-btn send" id="sendBtn" onclick="sendMessage()" title="Send message">
+                                ➤
+                            </button>
+                        </div>
+                    </div>
+                    <div class="input-hint">
+                        Press Enter to send, Shift+Enter for new line
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Artifacts Panel -->
+    <aside class="artifacts-panel" id="artifactsPanel">
+        <div class="artifacts-header">
+            <div class="artifacts-title">
+                <span>📄</span>
+                <span>Artifacts</span>
+            </div>
+            <button class="modal-close" onclick="toggleArtifacts()">×</button>
+        </div>
+        <div class="artifacts-tabs" id="artifactTabs">
+            <!-- Tabs will be added dynamically -->
+        </div>
+        <div class="artifacts-content" id="artifactsContent">
+            <div class="sidebar-empty">No artifacts yet. Create code, documents, or designs during our conversation.</div>
+        </div>
+    </aside>
+    
+    <!-- Context Menu -->
+    <div class="context-menu" id="contextMenu">
+        <div class="context-menu-item" onclick="renameItem()">✏️ Rename</div>
+        <div class="context-menu-item" onclick="duplicateItem()">📋 Duplicate</div>
+        <div class="context-menu-item" onclick="exportItem()">📤 Export</div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item danger" onclick="deleteItem()">🗑️ Delete</div>
+    </div>
+    
+    <!-- New Project Modal -->
+    <div class="modal-overlay" id="newProjectModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">New Project</span>
+                <button class="modal-close" onclick="closeModal('newProjectModal')">×</button>
+            </div>
+            <div class="modal-content">
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px;">Project Name</label>
+                    <input type="text" id="projectName" placeholder="My Awesome Project" style="width: 100%; padding: 10px 12px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); font-size: 14px; outline: none;">
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px;">Description</label>
+                    <textarea id="projectDesc" placeholder="What's this project about?" rows="3" style="width: 100%; padding: 10px 12px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); font-size: 14px; outline: none; resize: none;"></textarea>
+                </div>
+                <div>
+                    <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px;">Type</label>
+                    <select id="projectType" style="width: 100%; padding: 10px 12px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); font-size: 14px; outline: none;">
+                        <option value="general">General</option>
+                        <option value="product_launch">Product Launch</option>
+                        <option value="marketing_campaign">Marketing Campaign</option>
+                        <option value="content_creation">Content Creation</option>
+                        <option value="automation">Automation</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('newProjectModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="createProject()">Create Project</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Hidden file input -->
+    <input type="file" id="fileInput" multiple style="display: none;" onchange="handleFileSelect(event)">
+    
+    <script>
+        // State
+        let currentConversationId = null;
+        let messages = [];
+        let artifacts = [];
+        let isProcessing = false;
+        let isRecording = false;
+        let mediaRecorder = null;
+        let audioChunks = [];
+        
+        // API base URL
+        const API_BASE = '/api';
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadChatHistory();
+            loadProjects();
+            checkIntegrationStatus();
+            
+            // Auto-resize textarea
+            const input = document.getElementById('messageInput');
+            input.addEventListener('input', () => autoResize(input));
+        });
+        
+        // Auto-resize textarea
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
+        }
+        
+        // Handle key down
+        function handleKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+        
+        // Send message
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            
+            if (!text || isProcessing) return;
+            
+            // Hide welcome screen
+            const welcomeScreen = document.getElementById('welcomeScreen');
+            if (welcomeScreen) {
+                welcomeScreen.style.display = 'none';
+            }
+            
+            // Add user message
+            addMessage('user', text);
+            input.value = '';
+            autoResize(input);
+            
+            // Show processing state
+            setProcessing(true);
+            
+            try {
+                const response = await fetch(`${API_BASE}/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: text,
+                        conversation_id: currentConversationId
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.conversation_id) {
+                    currentConversationId = data.conversation_id;
+                }
+                
+                // Add assistant response
+                addMessage('assistant', data.response || data.message || 'I received your message.');
+                
+                // Handle artifacts
+                if (data.artifacts) {
+                    data.artifacts.forEach(artifact => addArtifact(artifact));
+                }
+                
+                // Refresh history
+                loadChatHistory();
+                
+            } catch (error) {
+                console.error('Error sending message:', error);
+                addMessage('assistant', 'Sorry, I encountered an error. Please try again.');
+            } finally {
+                setProcessing(false);
+            }
+        }
+        
+        // Add message to chat
+        function addMessage(role, content) {
+            const messagesContainer = document.getElementById('messages');
+            const welcomeScreen = document.getElementById('welcomeScreen');
+            
+            if (welcomeScreen) {
+                welcomeScreen.style.display = 'none';
+            }
+            
+            const messageEl = document.createElement('div');
+            messageEl.className = `message ${role}`;
+            messageEl.innerHTML = `
+                <div class="message-avatar">
+                    ${role === 'user' ? '👤' : '⚡'}
+                </div>
+                <div class="message-content">
+                    <div class="message-role">${role === 'user' ? 'You' : 'Otto'}</div>
+                    <div class="message-text">${formatMessage(content)}</div>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(messageEl);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            messages.push({ role, content });
+        }
+        
+        // Format message content
+        function formatMessage(content) {
+            // Handle code blocks
+            content = content.replace(/```(\w*)\n([\s\S]*?)```/g, (match, lang, code) => {
+                return `<pre><code class="language-${lang}">${escapeHtml(code.trim())}</code></pre>`;
+            });
+            
+            // Handle inline code
+            content = content.replace(/`([^`]+)`/g, '<code>$1</code>');
+            
+            // Handle bold
+            content = content.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            
+            // Handle line breaks
+            content = content.replace(/\n/g, '<br>');
+            
+            return content;
+        }
+        
+        // Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Set processing state
+        function setProcessing(processing) {
+            isProcessing = processing;
+            const sendBtn = document.getElementById('sendBtn');
+            const status = document.getElementById('statusIndicator');
+            
+            sendBtn.disabled = processing;
+            
+            if (processing) {
+                status.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div><span>Processing...</span>';
+                status.style.background = 'var(--accent-light)';
+                status.style.color = 'var(--accent)';
+            } else {
+                status.innerHTML = '<span class="status-dot"></span><span>Ready</span>';
+                status.style.background = 'var(--success-light)';
+                status.style.color = 'var(--success)';
+            }
+        }
+        
+        // Use suggestion
+        function useSuggestion(text) {
+            const input = document.getElementById('messageInput');
+            input.value = text;
+            autoResize(input);
+            input.focus();
+        }
+        
+        // Start new chat
+        function startNewChat() {
+            currentConversationId = null;
+            messages = [];
+            artifacts = [];
+            
+            const messagesContainer = document.getElementById('messages');
+            messagesContainer.innerHTML = `
+                <div class="welcome" id="welcomeScreen">
+                    <div class="welcome-icon">⚡</div>
+                    <h1>What can I help you build?</h1>
+                    <p>I'm Otto, your AI business agent. I can help you launch products, create content, manage marketing, and automate your business operations.</p>
+                    
+                    <div class="suggestions-grid">
+                        <div class="suggestion-card" onclick="useSuggestion('Launch a new product on Printify with AI-generated designs and marketing materials')">
+                            <div class="suggestion-icon launch">🚀</div>
+                            <div class="suggestion-title">Launch a Product</div>
+                            <div class="suggestion-desc">Create designs, mockups, and launch to your store</div>
+                        </div>
+                        
+                        <div class="suggestion-card" onclick="useSuggestion('Design a marketing campaign with social media posts, emails, and video content')">
+                            <div class="suggestion-icon design">🎨</div>
+                            <div class="suggestion-title">Design Campaign</div>
+                            <div class="suggestion-desc">Create a full marketing campaign with visuals</div>
+                        </div>
+                        
+                        <div class="suggestion-card" onclick="useSuggestion('Create a social media blitz with posts for Instagram, TikTok, Twitter, and Facebook')">
+                            <div class="suggestion-icon social">📱</div>
+                            <div class="suggestion-title">Social Media Blitz</div>
+                            <div class="suggestion-desc">Generate posts for all platforms at once</div>
+                        </div>
+                        
+                        <div class="suggestion-card" onclick="useSuggestion('Create a professional promotional video with voiceover and music for my product')">
+                            <div class="suggestion-icon content">🎬</div>
+                            <div class="suggestion-title">Create Video</div>
+                            <div class="suggestion-desc">Generate promo videos with AI voiceover</div>
+                        </div>
+                        
+                        <div class="suggestion-card" onclick="useSuggestion('Analyze my competitors and create a strategy to differentiate my brand')">
+                            <div class="suggestion-icon analyze">📊</div>
+                            <div class="suggestion-title">Analyze Market</div>
+                            <div class="suggestion-desc">Research competitors and find opportunities</div>
+                        </div>
+                        
+                        <div class="suggestion-card" onclick="useSuggestion('Set up automated workflows for order processing and customer follow-ups')">
+                            <div class="suggestion-icon automate">⚙️</div>
+                            <div class="suggestion-title">Automate Tasks</div>
+                            <div class="suggestion-desc">Create workflows for repetitive tasks</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('currentChatTitle').textContent = 'New Chat';
+        }
+        
+        // Load chat history
+        async function loadChatHistory() {
+            try {
+                const response = await fetch(`${API_BASE}/conversations`);
+                const conversations = await response.json();
+                
+                const container = document.getElementById('chatHistoryItems');
+                
+                if (!conversations || conversations.length === 0) {
+                    container.innerHTML = '<div class="sidebar-empty">No conversations yet</div>';
+                    return;
+                }
+                
+                container.innerHTML = conversations.map(conv => `
+                    <div class="sidebar-item ${conv.id === currentConversationId ? 'active' : ''}" 
+                         onclick="loadConversation('${conv.id}')"
+                         oncontextmenu="showContextMenu(event, 'chat', '${conv.id}')">
+                        <div class="sidebar-item-icon chat">💬</div>
+                        <div class="sidebar-item-details">
+                            <div class="sidebar-item-name">${escapeHtml(conv.title)}</div>
+                            <div class="sidebar-item-meta">${conv.message_count || 0} messages</div>
+                        </div>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Error loading chat history:', error);
+            }
+        }
+        
+        // Refresh chat history
+        function refreshChatHistory() {
+            loadChatHistory();
+        }
+        
+        // Load conversation
+        async function loadConversation(conversationId) {
+            try {
+                const response = await fetch(`${API_BASE}/conversations/${conversationId}`);
+                const data = await response.json();
+                
+                if (data.success && data.conversation) {
+                    currentConversationId = conversationId;
+                    messages = data.conversation.messages || [];
+                    
+                    const messagesContainer = document.getElementById('messages');
+                    messagesContainer.innerHTML = '';
+                    
+                    messages.forEach(msg => {
+                        addMessage(msg.role, msg.content);
+                    });
+                    
+                    document.getElementById('currentChatTitle').textContent = data.conversation.title || 'Conversation';
+                    
+                    // Update active state in sidebar
+                    document.querySelectorAll('#chatHistoryItems .sidebar-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    event.target.closest('.sidebar-item')?.classList.add('active');
+                }
+            } catch (error) {
+                console.error('Error loading conversation:', error);
+            }
+        }
+        
+        // Load projects
+        async function loadProjects() {
+            try {
+                const response = await fetch(`${API_BASE}/projects`);
+                const projects = await response.json();
+                
+                const container = document.getElementById('projectItems');
+                
+                if (!projects || projects.length === 0) {
+                    container.innerHTML = '<div class="sidebar-empty">No projects yet</div>';
+                    return;
+                }
+                
+                container.innerHTML = projects.map(proj => `
+                    <div class="sidebar-item" 
+                         onclick="loadProject('${proj.id}')"
+                         oncontextmenu="showContextMenu(event, 'project', '${proj.id}')">
+                        <div class="sidebar-item-icon project">📁</div>
+                        <div class="sidebar-item-details">
+                            <div class="sidebar-item-name">${escapeHtml(proj.name)}</div>
+                            <div class="sidebar-item-meta">${proj.status || 'planning'}</div>
+                        </div>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Error loading projects:', error);
+            }
+        }
+        
+        // Show new project modal
+        function showNewProjectModal() {
+            document.getElementById('newProjectModal').classList.add('show');
+            document.getElementById('projectName').focus();
+        }
+        
+        // Close modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+        
+        // Create project
+        async function createProject() {
+            const name = document.getElementById('projectName').value.trim();
+            const description = document.getElementById('projectDesc').value.trim();
+            const type = document.getElementById('projectType').value;
+            
+            if (!name) {
+                alert('Please enter a project name');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/projects`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, description, type })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    closeModal('newProjectModal');
+                    loadProjects();
+                    
+                    // Clear form
+                    document.getElementById('projectName').value = '';
+                    document.getElementById('projectDesc').value = '';
+                    document.getElementById('projectType').value = 'general';
+                }
+            } catch (error) {
+                console.error('Error creating project:', error);
+            }
+        }
+        
+        // Load project
+        function loadProject(projectId) {
+            // TODO: Implement project loading
+            console.log('Loading project:', projectId);
+        }
+        
+        // Check integration status
+        async function checkIntegrationStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/integrations/status`);
+                const statuses = await response.json();
+                
+                // Update integration status indicators
+                Object.entries(statuses).forEach(([integration, status]) => {
+                    const item = document.querySelector(`[data-integration="${integration}"]`);
+                    if (item) {
+                        const statusEl = item.querySelector('.sidebar-item-status');
+                        statusEl.className = `sidebar-item-status ${status ? 'connected' : 'disconnected'}`;
+                    }
+                });
+            } catch (error) {
+                console.error('Error checking integration status:', error);
+            }
+        }
+        
+        // Toggle section
+        function toggleSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            section.classList.toggle('collapsed');
+        }
+        
+        // Show integrations settings
+        function showIntegrationsSettings() {
+            // TODO: Implement integrations settings modal
+            console.log('Show integrations settings');
+        }
+        
+        // Toggle artifacts panel
+        function toggleArtifacts() {
+            const panel = document.getElementById('artifactsPanel');
+            panel.classList.toggle('open');
+        }
+        
+        // Add artifact
+        function addArtifact(artifact) {
+            artifacts.push(artifact);
+            updateArtifactsPanel();
+        }
+        
+        // Update artifacts panel
+        function updateArtifactsPanel() {
+            const tabs = document.getElementById('artifactTabs');
+            const content = document.getElementById('artifactsContent');
+            
+            if (artifacts.length === 0) {
+                content.innerHTML = '<div class="sidebar-empty">No artifacts yet. Create code, documents, or designs during our conversation.</div>';
+                tabs.innerHTML = '';
+                return;
+            }
+            
+            tabs.innerHTML = artifacts.map((a, i) => `
+                <div class="artifact-tab ${i === 0 ? 'active' : ''}" onclick="showArtifact(${i})">
+                    ${a.type === 'code' ? '📝' : a.type === 'image' ? '🖼️' : '📄'}
+                    ${escapeHtml(a.title || `Artifact ${i + 1}`)}
+                </div>
+            `).join('');
+            
+            showArtifact(0);
+        }
+        
+        // Show artifact
+        function showArtifact(index) {
+            const artifact = artifacts[index];
+            const content = document.getElementById('artifactsContent');
+            
+            document.querySelectorAll('.artifact-tab').forEach((t, i) => {
+                t.classList.toggle('active', i === index);
+            });
+            
+            if (artifact.type === 'code') {
+                content.innerHTML = `<textarea class="artifact-editor">${escapeHtml(artifact.content)}</textarea>`;
+            } else if (artifact.type === 'image') {
+                content.innerHTML = `<img src="${artifact.url}" alt="${artifact.title}" style="max-width: 100%; border-radius: 8px;">`;
+            } else {
+                content.innerHTML = `<div class="artifact-preview markdown">${formatMessage(artifact.content)}</div>`;
+            }
+        }
+        
+        // Show files panel
+        function showFilesPanel() {
+            // TODO: Implement files panel
+            console.log('Show files panel');
+        }
+        
+        // Handle file attachment
+        function handleAttach() {
+            document.getElementById('fileInput').click();
+        }
+        
+        // Handle file selection
+        async function handleFileSelect(event) {
+            const files = event.target.files;
+            if (!files.length) return;
+            
+            // TODO: Implement file upload
+            console.log('Files selected:', files);
+        }
+        
+        // Toggle voice recording
+        async function toggleVoice() {
+            const micBtn = document.getElementById('micBtn');
+            
+            if (isRecording) {
+                // Stop recording
+                mediaRecorder?.stop();
+                micBtn.classList.remove('recording');
+                isRecording = false;
+            } else {
+                // Start recording
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+                    
+                    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                    mediaRecorder.onstop = async () => {
+                        const blob = new Blob(audioChunks, { type: 'audio/webm' });
+                        // TODO: Send to transcription API
+                        console.log('Audio recorded:', blob);
+                        stream.getTracks().forEach(t => t.stop());
+                    };
+                    
+                    mediaRecorder.start();
+                    micBtn.classList.add('recording');
+                    isRecording = true;
+                } catch (error) {
+                    console.error('Error accessing microphone:', error);
+                    alert('Could not access microphone');
+                }
+            }
+        }
+        
+        // Search
+        function handleSearch(query) {
+            if (!query) {
+                loadChatHistory();
+                loadProjects();
+                return;
+            }
+            
+            // TODO: Implement search
+            console.log('Searching:', query);
+        }
+        
+        // Context menu
+        let contextMenuTarget = null;
+        
+        function showContextMenu(event, type, id) {
+            event.preventDefault();
+            contextMenuTarget = { type, id };
+            
+            const menu = document.getElementById('contextMenu');
+            menu.style.left = event.pageX + 'px';
+            menu.style.top = event.pageY + 'px';
+            menu.classList.add('show');
+        }
+        
+        // Hide context menu
+        document.addEventListener('click', () => {
+            document.getElementById('contextMenu').classList.remove('show');
+        });
+        
+        // Context menu actions
+        function renameItem() {
+            // TODO: Implement rename
+            console.log('Rename:', contextMenuTarget);
+        }
+        
+        function duplicateItem() {
+            // TODO: Implement duplicate
+            console.log('Duplicate:', contextMenuTarget);
+        }
+        
+        function exportItem() {
+            // TODO: Implement export
+            console.log('Export:', contextMenuTarget);
+        }
+        
+        async function deleteItem() {
+            if (!contextMenuTarget) return;
+            
+            const confirmed = confirm('Are you sure you want to delete this item?');
+            if (!confirmed) return;
+            
+            try {
+                const endpoint = contextMenuTarget.type === 'chat' 
+                    ? `${API_BASE}/conversations/${contextMenuTarget.id}`
+                    : `${API_BASE}/projects/${contextMenuTarget.id}`;
+                
+                await fetch(endpoint, { method: 'DELETE' });
+                
+                if (contextMenuTarget.type === 'chat') {
+                    loadChatHistory();
+                    if (contextMenuTarget.id === currentConversationId) {
+                        startNewChat();
+                    }
+                } else {
+                    loadProjects();
+                }
+            } catch (error) {
+                console.error('Error deleting item:', error);
+            }
+        }
+    </script>
+</body>
+</html>

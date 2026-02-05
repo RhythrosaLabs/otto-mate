@@ -17,8 +17,19 @@ import traceback
 from typing import Optional, Dict, Any, List
 from pathlib import Path
 from .core import tool, ToolBase
+from ..storage import FileStorage, StorageConfig
 
 logger = logging.getLogger(__name__)
+
+# File storage for saving created files
+_file_storage: Optional[FileStorage] = None
+
+def get_file_storage() -> FileStorage:
+    """Get or create file storage instance."""
+    global _file_storage
+    if _file_storage is None:
+        _file_storage = FileStorage(StorageConfig())
+    return _file_storage
 
 
 class CodeExecutionTools(ToolBase):
@@ -199,9 +210,24 @@ class CodeExecutionTools(ToolBase):
                 "details": result.get("stderr", "")
             }
     
+    def _get_code_category(self, filename: str) -> Optional[str]:
+        """Get category for code files based on extension."""
+        ext = Path(filename).suffix.lower()
+        code_extensions = {
+            '.py': 'code', '.js': 'code', '.ts': 'code', '.jsx': 'code', '.tsx': 'code',
+            '.html': 'code', '.css': 'code', '.scss': 'code', '.sass': 'code',
+            '.sql': 'code', '.sh': 'code', '.bash': 'code', '.zsh': 'code',
+            '.json': 'code', '.yaml': 'code', '.yml': 'code', '.xml': 'code',
+            '.java': 'code', '.c': 'code', '.cpp': 'code', '.h': 'code', '.hpp': 'code',
+            '.go': 'code', '.rs': 'code', '.rb': 'code', '.php': 'code', '.swift': 'code',
+            '.kt': 'code', '.scala': 'code', '.r': 'code', '.R': 'code',
+            '.md': 'documents', '.txt': 'documents', '.csv': 'data',
+        }
+        return code_extensions.get(ext, 'code')
+    
     @tool(
         name="create_file",
-        description="Create a file with specified content. Use for generating scripts, configs, data files, or any other file type.",
+        description="Create a file with specified content. Use for generating scripts, configs, data files, or any other file type. IMPORTANT: Always include the file content in your response so users can see the code.",
         category="code"
     )
     async def create_file(
@@ -235,15 +261,46 @@ class CodeExecutionTools(ToolBase):
                     "error": f"File already exists: {filepath}. Set overwrite=True to replace."
                 }
             
-            # Write file
+            # Write file locally
             filepath.write_text(content)
             self.created_files.append(str(filepath))
+            
+            # Also save to file storage so it appears in Files sidebar
+            file_id = None
+            try:
+                storage = get_file_storage()
+                category = self._get_code_category(filename)
+                metadata = await storage.store(
+                    data=content.encode('utf-8'),
+                    filename=filename,
+                    category=category,
+                    tags=['generated', 'code']
+                )
+                file_id = metadata.id
+                logger.info(f"Saved file to storage: {filename} (id={file_id}, category={category})")
+            except Exception as e:
+                logger.warning(f"Could not save to file storage: {e}")
+            
+            # Determine language for syntax highlighting
+            ext = filepath.suffix.lower()
+            lang_map = {
+                '.py': 'python', '.js': 'javascript', '.ts': 'typescript',
+                '.html': 'html', '.css': 'css', '.json': 'json', '.yaml': 'yaml',
+                '.yml': 'yaml', '.sql': 'sql', '.sh': 'bash', '.md': 'markdown',
+                '.java': 'java', '.c': 'c', '.cpp': 'cpp', '.go': 'go', '.rs': 'rust',
+                '.rb': 'ruby', '.php': 'php', '.swift': 'swift', '.kt': 'kotlin'
+            }
+            language = lang_map.get(ext, 'text')
             
             return {
                 "success": True,
                 "path": str(filepath),
                 "size": len(content),
-                "message": f"Created file: {filepath}"
+                "file_id": file_id,
+                "content": content,  # Include content so AI can show it in response
+                "language": language,  # Include language for syntax highlighting
+                "message": f"Created file: {filepath}",
+                "display_hint": f"Show the code in a ```{language}``` code block"
             }
             
         except Exception as e:

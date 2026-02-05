@@ -37,11 +37,22 @@ class StorageConfig:
     base_path: str = "./data/files"
     max_file_size: int = 100 * 1024 * 1024  # 100MB
     allowed_extensions: List[str] = field(default_factory=lambda: [
-        ".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg",
-        ".mp4", ".mov", ".avi", ".webm",
-        ".mp3", ".wav", ".ogg", ".m4a",
-        ".pdf", ".doc", ".docx", ".txt", ".md",
-        ".json", ".csv", ".xlsx"
+        # Images
+        ".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg", ".bmp", ".tiff",
+        # Videos
+        ".mp4", ".mov", ".avi", ".webm", ".mkv",
+        # Audio
+        ".mp3", ".wav", ".ogg", ".m4a", ".flac", ".aac",
+        # Documents
+        ".pdf", ".doc", ".docx", ".txt", ".md", ".rtf",
+        # Data
+        ".json", ".csv", ".xlsx", ".xml", ".yaml", ".yml",
+        # Code files
+        ".py", ".js", ".ts", ".jsx", ".tsx", ".html", ".css", ".scss", ".sass",
+        ".java", ".c", ".cpp", ".h", ".hpp", ".go", ".rs", ".rb", ".php",
+        ".swift", ".kt", ".scala", ".sql", ".sh", ".bash", ".zsh",
+        # 3D Models
+        ".glb", ".gltf", ".obj", ".fbx", ".stl", ".ply", ".usdz"
     ])
     
     # S3 config
@@ -169,8 +180,22 @@ class FileStorage:
         except Exception as e:
             logger.error(f"Failed to save metadata index: {e}")
     
-    def _get_category_path(self, mime_type: str) -> Path:
-        """Get storage path based on MIME type."""
+    def _get_category_path(self, mime_type: str, filename: str = "") -> Path:
+        """Get storage path based on MIME type and filename."""
+        # Check filename extension for code files
+        if filename:
+            ext = Path(filename).suffix.lower()
+            code_extensions = {'.py', '.js', '.ts', '.jsx', '.tsx', '.html', '.css', '.scss',
+                            '.json', '.yaml', '.yml', '.xml', '.sql', '.sh', '.bash',
+                            '.java', '.c', '.cpp', '.h', '.hpp', '.go', '.rs', '.rb', '.php'}
+            if ext in code_extensions:
+                return self.base_path / "code"
+            
+            # 3D model extensions
+            model_extensions = {'.glb', '.gltf', '.obj', '.fbx', '.stl', '.ply', '.usdz'}
+            if ext in model_extensions:
+                return self.base_path / "3d_models"
+        
         if mime_type.startswith("image/"):
             return self.base_path / "images"
         elif mime_type.startswith("video/"):
@@ -182,8 +207,22 @@ class FileStorage:
         else:
             return self.base_path / "uploads"
     
-    def _get_category(self, mime_type: str) -> str:
-        """Get category based on MIME type."""
+    def _get_category(self, mime_type: str, filename: str = "") -> str:
+        """Get category based on MIME type and filename."""
+        # Check filename extension for code files
+        if filename:
+            ext = Path(filename).suffix.lower()
+            code_extensions = {'.py', '.js', '.ts', '.jsx', '.tsx', '.html', '.css', '.scss',
+                            '.json', '.yaml', '.yml', '.xml', '.sql', '.sh', '.bash',
+                            '.java', '.c', '.cpp', '.h', '.hpp', '.go', '.rs', '.rb', '.php'}
+            if ext in code_extensions:
+                return "code"
+            
+            # 3D model extensions
+            model_extensions = {'.glb', '.gltf', '.obj', '.fbx', '.stl', '.ply', '.usdz'}
+            if ext in model_extensions:
+                return "3d_models"
+        
         if mime_type.startswith("image/"):
             return "images"
         elif mime_type.startswith("video/"):
@@ -245,7 +284,7 @@ class FileStorage:
         mime_type = mime_type or "application/octet-stream"
         
         if category is None:
-            category = self._get_category(mime_type)
+            category = self._get_category(mime_type, filename)
         
         # Generate unique filename
         stored_filename = self._generate_filename(filename)
@@ -253,8 +292,12 @@ class FileStorage:
         # Determine storage path
         if category == "generated":
             storage_path = self.base_path / "generated"
+        elif category == "code":
+            storage_path = self.base_path / "code"
+        elif category == "3d_models":
+            storage_path = self.base_path / "3d_models"
         else:
-            storage_path = self._get_category_path(mime_type)
+            storage_path = self._get_category_path(mime_type, filename)
         
         file_path = storage_path / stored_filename
         

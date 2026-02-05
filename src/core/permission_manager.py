@@ -42,7 +42,7 @@ class PermissionCheck:
     requires_confirmation: bool = False
     requires_verification: bool = False
     estimated_cost: float = 0.0
-    restrictions: List[str] = None
+    restrictions: Optional[List[str]] = None
 
 
 class PermissionManager:
@@ -53,9 +53,10 @@ class PermissionManager:
     def __init__(self, config_path: Optional[str] = None):
         """Initialize with permissions config."""
         if config_path is None:
-            config_path = Path(__file__).parent.parent.parent / "policies" / "permissions.yaml"
+            default_path = Path(__file__).parent.parent.parent / "policies" / "permissions.yaml"
+            config_path = str(default_path)
         
-        self.config = self._load_config(config_path)
+        self.config = self._load_config(Path(config_path))
         self.budget_tracker = BudgetTracker(self.config.get("budget", {}))
         self.rate_limiter = RateLimiter(self.config.get("rate_limits", {}))
         self.audit_log = []

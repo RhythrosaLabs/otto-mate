@@ -10,6 +10,7 @@ ENHANCED with:
 - Smart fallback strategies
 - Artifact collection
 - Context propagation between steps
+- Background task handling for rate limits
 """
 
 import asyncio
@@ -84,13 +85,25 @@ class ExecutionAgent:
     - Smart fallback strategies for common failures
     - Artifact collection for UI display
     - Better context propagation between steps
+    - Intelligence System integration for learning from failures
     """
     
     def __init__(self, anthropic_client: Anthropic):
         self.anthropic = anthropic_client
         self.artifacts: List[Artifact] = []  # Collected artifacts from execution
-        self.max_retries = 3
-        self.retry_delay_base = 1  # Base delay in seconds
+        self.max_retries = 5  # Increased from 3 to 5 for rate limits
+        self.retry_delay_base = 2  # Increased base delay to 2 seconds
+        self.rate_limit_delay = 60  # Special delay for rate limits (1 minute)
+        self.progress_callback = None  # Optional callback for streaming updates
+        self.tool_registry = None  # Set during execution for fallback access
+        
+        # Initialize Intelligence System integration
+        try:
+            from .intelligence_system import get_intelligence_system
+            self.intelligence = get_intelligence_system()
+        except Exception as e:
+            logger.warning(f"Intelligence system not available: {e}")
+            self.intelligence = None
         
     async def execute_plan(
         self,
@@ -100,15 +113,17 @@ class ExecutionAgent:
     ) -> Dict[str, Any]:
         """
         Execute a plan created by the Planning Agent.
+        Supports parallel execution of independent steps.
         
         Args:
-            plan: Execution plan with steps
+            plan: Execution plan with steps and parallel_groups
             tool_registry: Registry of available tools
             context: Execution context
             
         Returns:
             Dict with execution results and collected artifacts
         """
+        self.tool_registry = tool_registry  # Store for fallback access
         steps = plan.get("steps", [])
         if not steps:
             return {"status": "no_steps", "results": [], "artifacts": []}
@@ -120,50 +135,216 @@ class ExecutionAgent:
         # Context that gets updated as steps execute
         running_context = dict(context)
         
+        # Get parallel groups if available
+        parallel_groups = plan.get("parallel_groups", [])
+        
         try:
-            for idx, step in enumerate(steps):
-                logger.info(f"Executing step {idx + 1}/{len(steps)}: {step.get('description')}")
+            if parallel_groups and len(parallel_groups) > 1:
+                # Execute with parallel groups
+                logger.info(f"🚀 Executing plan with {len(parallel_groups)} parallel groups")
+                results = await self._execute_parallel_groups(
+                    steps=steps,
+                    parallel_groups=parallel_groups,
+                    tool_registry=tool_registry,
+                    context=running_context,
+                    step_outputs=step_outputs
+                )
+            else:
+                # Sequential execution (fallback)
+                results = await self._execute_sequential(
+                    steps=steps,
+                    tool_registry=tool_registry,
+                    context=running_context,
+                    step_outputs=step_outputs
+                )
+            
+            return {
+                "status": "completed",
+                "results": results,
+                "artifacts": [a.to_dict() for a in self.artifacts],
+                "step_outputs": step_outputs
+            }
+            
+        except Exception as e:
+            logger.error(f"Plan execution failed: {e}", exc_info=True)
+            return {
+                "status": "error",
+                "error": str(e),
+                "results": results,
+                "artifacts": [a.to_dict() for a in self.artifacts]
+            }
+    
+    async def _execute_parallel_groups(
+        self,
+        steps: List[Dict],
+        parallel_groups: List[List[int]],
+        tool_registry: Any,
+        context: Dict[str, Any],
+        step_outputs: Dict
+    ) -> List[Dict]:
+        """Execute steps in parallel groups."""
+        results = [None] * len(steps)
+        running_context = dict(context)
+        
+        for group_idx, group in enumerate(parallel_groups):
+            logger.info(f"⚡ Executing parallel group {group_idx + 1}/{len(parallel_groups)}: steps {group}")
+            
+            # Create tasks for all steps in this group
+            tasks = []
+            for step_idx in group:
+                if step_idx >= len(steps):
+                    continue
+                step = steps[step_idx]
                 
-                # Check dependencies
+                # Prepare dependency data
                 depends_on = step.get("depends_on", [])
                 if depends_on:
-                    # Wait for dependencies and gather their outputs
                     dependency_data = {
                         f"step_{dep}": step_outputs.get(dep)
                         for dep in depends_on
                     }
                     step["dependency_data"] = dependency_data
                 
-                # Execute the tool WITH RETRY
-                result = await self._execute_with_retry(
-                    tool_name=step["tool"],
-                    parameters=step.get("parameters", {}),
+                # Create async task
+                task = self._execute_step_async(
+                    step_idx=step_idx,
+                    step=step,
                     tool_registry=tool_registry,
-                    context=running_context,
-                    step_data=step
+                    context=running_context
+                )
+                tasks.append((step_idx, task))
+            
+            # Execute all tasks in parallel
+            if tasks:
+                task_results = await asyncio.gather(
+                    *[t[1] for t in tasks],
+                    return_exceptions=True
                 )
                 
-                # Collect artifacts from result
-                self._collect_artifacts(result, step)
+                # Process results
+                for (step_idx, _), result in zip(tasks, task_results):
+                    step = steps[step_idx]
+                    
+                    if isinstance(result, Exception):
+                        result = {"success": False, "error": str(result)}
+                    
+                    # Collect artifacts
+                    self._collect_artifacts(result, step)
+                    
+                    # Update context
+                    if result.get("success") and result.get("data"):
+                        running_context = self._update_context(running_context, result["data"], step["tool"])
+                    
+                    # Store result
+                    step_outputs[step_idx] = result
+                    results[step_idx] = {
+                        "step": step_idx,
+                        "tool": step["tool"],
+                        "description": step.get("description"),
+                        "status": "success" if result.get("success") else "failed",
+                        "result": result
+                    }
+        
+        # Filter out None results
+        return [r for r in results if r is not None]
+    
+    async def _execute_step_async(
+        self,
+        step_idx: int,
+        step: Dict,
+        tool_registry: Any,
+        context: Dict
+    ) -> Dict:
+        """Execute a single step asynchronously."""
+        logger.info(f"  → Step {step_idx}: {step.get('description', step['tool'])}")
+        
+        result = await self._execute_with_retry(
+            tool_name=step["tool"],
+            parameters=step.get("parameters", {}),
+            tool_registry=tool_registry,
+            context=context,
+            step_data=step
+        )
+        
+        return result
+    
+    async def _execute_sequential(
+        self,
+        steps: List[Dict],
+        tool_registry: Any,
+        context: Dict[str, Any],
+        step_outputs: Dict
+    ) -> List[Dict]:
+        """Execute steps sequentially (fallback mode)."""
+        results = []
+        running_context = dict(context)
+        
+        for idx, step in enumerate(steps):
+            logger.info(f"Executing step {idx + 1}/{len(steps)}: {step.get('description')}")
+            
+            # Check dependencies
+            depends_on = step.get("depends_on", [])
+            if depends_on:
+                # Wait for dependencies and gather their outputs
+                dependency_data = {
+                    f"step_{dep}": step_outputs.get(dep)
+                    for dep in depends_on
+                }
+                step["dependency_data"] = dependency_data
+            
+            # Execute the tool WITH RETRY
+            result = await self._execute_with_retry(
+                tool_name=step["tool"],
+                parameters=step.get("parameters", {}),
+                tool_registry=tool_registry,
+                context=running_context,
+                step_data=step
+            )
+            
+            # Collect artifacts from result
+            self._collect_artifacts(result, step)
+            
+            # Update running context with outputs
+            if result.get("success") and result.get("data"):
+                running_context = self._update_context(running_context, result["data"], step["tool"])
+            
+            # Store result
+            step_outputs[idx] = result
+            results.append({
+                "step": idx,
+                "tool": step["tool"],
+                "description": step.get("description"),
+                "status": "success" if result.get("success") else "failed",
+                "result": result
+            })
+            
+            # Handle failures intelligently
+            is_critical = step.get("critical", step.get("required", False))  # Default to non-critical
+            if not result.get("success"):
+                error_msg = result.get("error", "")
                 
-                # Update running context with outputs
-                if result.get("success") and result.get("data"):
-                    running_context = self._update_context(running_context, result["data"], step["tool"])
-                
-                # Store result
-                step_outputs[idx] = result
-                results.append({
-                    "step": idx,
-                    "tool": step["tool"],
-                    "description": step.get("description"),
-                    "status": "success" if result.get("success") else "failed",
-                    "result": result
-                })
-                
-                # If this step failed and it's critical/required, try fallback or stop
-                is_critical = step.get("critical", step.get("required", True))
-                if not result.get("success") and is_critical:
-                    # Try fallback strategy
+                # Check if it's a rate limit (should auto-retry in background)
+                if self._is_rate_limit_error(str(error_msg)):
+                    logger.info(f"⏳ Step {idx} hit rate limit, scheduling background retry...")
+                    results[-1]["status"] = "background_processing"
+                    results[-1]["message"] = "Working on it in the background - will complete automatically"
+                    
+                    # Create background task to retry this step
+                    from .background_tasks import get_task_manager
+                    task_manager = get_task_manager()
+                    task_id = task_manager.create_task(
+                        step=step,
+                        tool_registry=tool_registry,
+                        execution_agent=self,
+                        retry_delay=60
+                    )
+                    results[-1]["background_task_id"] = task_id
+                    results[-1]["task_name"] = step.get("description", step["tool"])
+                    logger.info(f"📋 Created background task {task_id} for step {idx}")
+                    # Continue with other steps
+                    
+                elif is_critical:
+                    # Only stop for critical non-rate-limit failures
                     fallback_result = await self._try_fallback(step, tool_registry, running_context)
                     if fallback_result and fallback_result.get("success"):
                         logger.info(f"Fallback succeeded for step {idx}")
@@ -172,24 +353,11 @@ class ExecutionAgent:
                         step_outputs[idx] = fallback_result
                         self._collect_artifacts(fallback_result, step)
                     else:
-                        logger.error(f"Critical step {idx} failed, stopping execution")
-                        break
-                elif not result.get("success"):
-                    logger.warning(f"Non-critical step {idx} failed, continuing to next steps")
-            
-            return {
-                "status": "completed",
-                "results": results,
-                "step_outputs": step_outputs
-            }
-            
-        except Exception as e:
-            logger.error(f"Execution failed: {e}", exc_info=True)
-            return {
-                "status": "failed",
-                "error": str(e),
-                "results": results
-            }
+                        logger.warning(f"Critical step {idx} failed, but continuing with remaining work")
+                else:
+                    logger.info(f"Non-critical step {idx} failed, continuing to next steps")
+        
+        return results
     
     async def execute_tool(
         self,
@@ -197,10 +365,18 @@ class ExecutionAgent:
         parameters: Dict[str, Any],
         tool_registry: Any,
         context: Dict[str, Any],
-        step_data: Optional[Dict[str, Any]] = None
+        step_data: Optional[Dict[str, Any]] = None,
+        max_retries: int = 3
     ) -> Dict[str, Any]:
         """
-        Execute a single tool.
+        Execute a single tool with smart retry logic and auto-healing.
+        
+        Smart Features:
+        - Automatically fixes parameter mismatches by inspecting function signatures
+        - Adds missing parameters with intelligent defaults
+        - Detects and handles known API errors (Printify 10300, rate limits, etc.)
+        - Applies exponential backoff for temporary failures
+        - Converts image formats when needed (WebP → PNG for Printify)
         
         Args:
             tool_name: Name of tool to execute
@@ -208,39 +384,167 @@ class ExecutionAgent:
             tool_registry: Registry of available tools
             context: Execution context
             step_data: Additional step data including dependencies
+            max_retries: Maximum number of retry attempts
             
         Returns:
             Tool execution result
         """
-        try:
-            # Get tool from registry
-            tool_func = tool_registry.get_tool(tool_name)
-            if not tool_func:
-                raise ValueError(f"Tool '{tool_name}' not found")
-            
-            # Resolve parameters with dependency data
-            if step_data and "dependency_data" in step_data:
-                parameters = self._resolve_parameters(
-                    parameters,
-                    step_data["dependency_data"]
-                )
-            
-            # Execute tool
-            logger.info(f"Executing {tool_name} with params: {parameters}")
-            result = await tool_func(**parameters)
-            
-            logger.info(f"Tool {tool_name} completed successfully")
-            return {
-                "success": True,
-                "data": result
-            }
-            
-        except Exception as e:
-            logger.error(f"Tool execution failed: {e}", exc_info=True)
-            return {
-                "success": False,
-                "error": str(e)
-            }
+        last_error = None
+        
+        for attempt in range(max_retries):
+            try:
+                # Get tool from registry
+                tool_func = tool_registry.get_tool(tool_name)
+                if not tool_func:
+                    raise ValueError(f"Tool '{tool_name}' not found")
+                
+                # Resolve parameters with dependency data
+                if step_data and "dependency_data" in step_data:
+                    parameters = self._resolve_parameters(
+                        parameters,
+                        step_data["dependency_data"]
+                    )
+                
+                # Execute tool
+                logger.info(f"Executing {tool_name} (attempt {attempt + 1}/{max_retries}) with params: {parameters}")
+                result = await tool_func(**parameters)
+                
+                # UNIVERSAL FILE CAPTURE: Auto-save ALL generated files
+                # This captures images, videos, audio, documents, 3D models, etc.
+                try:
+                    from ..storage.universal_capture import auto_capture_result
+                    prompt = parameters.get("prompt") or parameters.get("description") or parameters.get("text")
+                    session_id = context.get("session_id") or context.get("user_id")
+                    result = await auto_capture_result(
+                        result=result if isinstance(result, dict) else {"output": result},
+                        tool_name=tool_name,
+                        session_id=session_id,
+                        prompt=prompt
+                    )
+                    if result.get("_captured"):
+                        logger.info(f"✓ File auto-captured: {result['_captured'].get('local_path')}")
+                except Exception as e:
+                    logger.debug(f"Universal capture skipped: {e}")
+                
+                # LEGACY: Also save Replicate images via old method (backup)
+                if "replicate" in tool_name.lower() and isinstance(result, dict):
+                    image_url = result.get("image_url") or result.get("url")
+                    if image_url and image_url.startswith("http"):
+                        logger.info(f"Auto-saving Replicate image to permanent storage: {image_url}")
+                        try:
+                            save_tool = self.tool_registry.get_tool("save_image_from_url")
+                            if save_tool:
+                                save_result = await save_tool(
+                                    url=image_url,
+                                    filename=f"replicate_{tool_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png",
+                                    tags=["replicate", "auto-saved"]
+                                )
+                                if save_result.get("success"):
+                                    # Replace the temporary Replicate URL with the permanent file URL
+                                    result["saved_image_url"] = save_result["url"]
+                                    result["file_id"] = save_result["file_id"]
+                                    logger.info(f"✓ Image saved to permanent storage: {save_result['url']}")
+                        except Exception as e:
+                            logger.warning(f"Could not auto-save image (continuing anyway): {e}")
+                
+                logger.info(f"Tool {tool_name} completed successfully")
+                return {
+                    "success": True,
+                    "data": result
+                }
+                
+            except TypeError as e:
+                # Parameter mismatch - try to fix it
+                error_msg = str(e)
+                logger.warning(f"Parameter error on attempt {attempt + 1}: {error_msg}")
+                
+                if attempt < max_retries - 1:
+                    fixed_params = await self._fix_parameter_error(
+                        tool_name, parameters, error_msg, tool_func
+                    )
+                    if fixed_params:
+                        logger.info(f"Auto-fixed parameters, retrying...")
+                        parameters = fixed_params
+                        continue
+                
+                last_error = e
+                
+            except Exception as e:
+                error_msg = str(e)
+                logger.error(f"Tool execution failed (attempt {attempt + 1}): {error_msg}", exc_info=True)
+                
+                # INTELLIGENCE: Record failure for learning
+                if self.intelligence:
+                    try:
+                        self.intelligence.record_failure(tool_name, error_msg, parameters)
+                        
+                        # Check if we have a known fix from past learnings
+                        known_fix = self.intelligence.get_known_fix(tool_name, error_msg)
+                        if known_fix and attempt < max_retries - 1:
+                            logger.info(f"Applying learned fix: {known_fix}")
+                            parameters.update(known_fix)
+                            await asyncio.sleep(1)
+                            continue
+                        
+                        # Try intelligent parameter fix
+                        param_fix = self.intelligence.get_parameter_fix(tool_name, error_msg, parameters)
+                        if param_fix and attempt < max_retries - 1:
+                            logger.info(f"Applying intelligent parameter fix")
+                            parameters = param_fix
+                            await asyncio.sleep(1)
+                            continue
+                    except Exception as intel_e:
+                        logger.debug(f"Intelligence fix attempt failed: {intel_e}")
+                
+                # Check if it's a known API error we can fix
+                if attempt < max_retries - 1:
+                    should_retry, fixed_params = await self._analyze_and_fix_error(
+                        tool_name, parameters, error_msg, e
+                    )
+                    if should_retry:
+                        if fixed_params:
+                            parameters = fixed_params
+                        logger.info(f"Error analyzed, retrying with adjusted approach...")
+                        await asyncio.sleep(2 ** attempt)  # Exponential backoff
+                        continue
+                
+                last_error = e
+        
+        # All retries failed - try intelligent fallback
+        if self.intelligence and self.tool_registry:
+            try:
+                fallback_options = self.intelligence.get_fallback_options(tool_name)
+                for fallback in fallback_options[:2]:  # Try up to 2 fallbacks
+                    fallback_tool = fallback.get("tool")
+                    param_map = fallback.get("param_map", {})
+                    
+                    logger.info(f"Trying fallback tool: {fallback_tool}")
+                    fallback_func = self.tool_registry.get_tool(fallback_tool)
+                    if fallback_func:
+                        # Transform parameters
+                        fallback_params = {}
+                        for k, v in parameters.items():
+                            new_key = param_map.get(k, k)
+                            fallback_params[new_key] = v
+                        
+                        try:
+                            result = await fallback_func(**fallback_params)
+                            self.intelligence.record_fallback_result(tool_name, fallback_tool, True)
+                            logger.info(f"Fallback {fallback_tool} succeeded!")
+                            return {"success": True, "data": result, "fallback_used": fallback_tool}
+                        except Exception as fb_e:
+                            self.intelligence.record_fallback_result(tool_name, fallback_tool, False)
+                            logger.warning(f"Fallback {fallback_tool} failed: {fb_e}")
+            except Exception as fallback_e:
+                logger.debug(f"Fallback system error: {fallback_e}")
+        
+        # All retries and fallbacks failed
+        logger.error(f"Tool {tool_name} failed after {max_retries} attempts")
+        return {
+            "success": False,
+            "error": str(last_error),
+            "retries": max_retries
+        }
     
     def _resolve_parameters(
         self,
@@ -249,52 +553,110 @@ class ExecutionAgent:
     ) -> Dict[str, Any]:
         """
         Resolve parameter values that reference previous step outputs.
-        Also auto-injects image_url from dependencies if not provided.
+        Only auto-injects image_url if explicitly referenced in parameters.
+        Detects failed dependency steps and raises appropriate errors.
         """
+        logger.info(f"Resolving parameters: {parameters}")
+        logger.info(f"Available dependency data keys: {list(dependency_data.keys())}")
         resolved = {}
         
-        # First, check if we need to auto-resolve image_url
-        # This handles cases where save_generated_image follows generate_* tools
-        if "image_url" not in parameters:
-            for step_key, step_output in dependency_data.items():
-                if isinstance(step_output, dict):
-                    # Look for image URLs in the step output
-                    data = step_output.get("data", step_output)
-                    if isinstance(data, dict):
-                        # Check for images array (common in generate_* tools)
-                        images = data.get("images", [])
-                        if images and len(images) > 0:
-                            resolved["image_url"] = images[0]
-                            break
-                        # Check for direct image_url
-                        if "image_url" in data:
-                            resolved["image_url"] = data["image_url"]
-                            break
-                        # Check for output URL
-                        if "output" in data:
-                            output = data["output"]
-                            if isinstance(output, list) and output:
-                                resolved["image_url"] = output[0]
-                            elif isinstance(output, str) and output.startswith("http"):
-                                resolved["image_url"] = output
-                            break
+        # Don't auto-inject image_url anymore - only resolve if explicitly referenced
+        # This prevents injecting parameters into tools that don't need them
         
         for key, value in parameters.items():
+            # Handle list of templates (e.g., reference_images: ["{{step_0_output}}", ...])
+            if isinstance(value, list):
+                resolved_list = []
+                for item in value:
+                    if isinstance(item, str) and "{{" in item and "}}" in item:
+                        resolved_item = self._resolve_single_template(item, dependency_data)
+                        if resolved_item:
+                            resolved_list.append(resolved_item)
+                    else:
+                        resolved_list.append(item)
+                resolved[key] = resolved_list
+                logger.info(f"Resolved list parameter {key}: {resolved_list[:2]}...")  # Log first 2
+                continue
+                
             if isinstance(value, str):
                 # Handle {{step_X_output}} template syntax
                 if "{{" in value and "}}" in value:
-                    for step_key, step_output in dependency_data.items():
-                        placeholder = f"{{{{{step_key}_output}}}}"
-                        if placeholder in value:
-                            if isinstance(step_output, dict):
-                                data = step_output.get("data", step_output)
-                                if isinstance(data, dict) and "images" in data:
-                                    value = value.replace(placeholder, data["images"][0])
+                    logger.info(f"Found template in parameter {key}: {value}")
+                    
+                    # Extract all template patterns
+                    import re
+                    templates = re.findall(r'\{\{([^}]+)\}\}', value)
+                    
+                    for template in templates:
+                        # Parse template: step_X_property or step_X_output
+                        parts = template.split('_')
+                        if len(parts) >= 2 and parts[0] == 'step':
+                            step_key = f"{parts[0]}_{parts[1]}"  # e.g., "step_0"
+                            property_name = '_'.join(parts[2:]) if len(parts) > 2 else 'output'  # e.g., "title" or "output"
+                            
+                            if step_key in dependency_data:
+                                step_output = dependency_data[step_key]
+                                placeholder = f"{{{{{template}}}}}"
+                                
+                                # CHECK FOR FAILED STEP - Don't proceed if dependency failed
+                                if isinstance(step_output, dict):
+                                    # Check if the step itself failed
+                                    if step_output.get("success") == False or step_output.get("status") == "error":
+                                        error_msg = step_output.get("error", "Unknown error")
+                                        logger.error(f"Dependency {step_key} failed: {error_msg}")
+                                        raise ValueError(f"Cannot proceed - dependency step {step_key} failed: {error_msg}")
+                                    
+                                    # Check nested data for failure
+                                    data = step_output.get("data", step_output)
+                                    if isinstance(data, dict) and data.get("success") == False:
+                                        error_msg = data.get("error", "Unknown error")
+                                        logger.error(f"Dependency {step_key} returned failure in data: {error_msg}")
+                                        raise ValueError(f"Cannot proceed - dependency step {step_key} failed: {error_msg}")
+                                
+                                # Extract the requested property
+                                if isinstance(step_output, dict):
+                                    data = step_output.get("data", step_output)
+                                    
+                                    # Try to get the specific property
+                                    if property_name == 'output':
+                                        # Handle output specially
+                                        if isinstance(data, dict):
+                                            # PRIORITY: Use saved_image_url if available (permanent storage)
+                                            if "saved_image_url" in data:
+                                                replacement = data["saved_image_url"]
+                                            elif "images" in data:
+                                                replacement = data["images"][0]
+                                            elif "image_url" in data:
+                                                replacement = data["image_url"]
+                                            elif "output" in data:
+                                                output = data["output"]
+                                                replacement = output[0] if isinstance(output, list) and output else str(output)
+                                            else:
+                                                replacement = str(data)
+                                        else:
+                                            replacement = str(data)
+                                    elif property_name == 'image_url':
+                                        # PRIORITY: Use saved_image_url if available (permanent storage)
+                                        if isinstance(data, dict):
+                                            replacement = data.get("saved_image_url") or data.get("image_url") or str(data)
+                                        else:
+                                            replacement = str(data)
+                                    elif isinstance(data, dict) and property_name in data:
+                                        # Direct property access
+                                        replacement = str(data[property_name])
+                                    else:
+                                        # Fallback to string representation
+                                        replacement = str(data)
+                                    
+                                    value = value.replace(placeholder, replacement)
+                                    logger.info(f"Replaced {placeholder} with: {replacement}")
                                 else:
-                                    value = value.replace(placeholder, str(data))
-                            else:
-                                value = value.replace(placeholder, str(step_output))
+                                    replacement = str(step_output)
+                                    value = value.replace(placeholder, replacement)
+                                    logger.info(f"Replaced {placeholder} with output: {replacement}")
+                    
                     resolved[key] = value
+                    logger.info(f"Final resolved value for {key}: {resolved[key]}")
                 elif value.startswith("from_step_"):
                     # Extract step index
                     step_ref = value.replace("from_step_", "step_")
@@ -326,7 +688,58 @@ class ExecutionAgent:
             else:
                 resolved[key] = value
         
+        # Type conversion for numeric parameters
+        # Convert string numbers to proper types (e.g., "15" -> 15 for duration)
+        for key in ['duration', 'width', 'height', 'price', 'price_cents', 'blueprint_id', 'print_provider_id']:
+            if key in resolved and isinstance(resolved[key], str):
+                try:
+                    resolved[key] = int(resolved[key])
+                    logger.info(f"Converted {key} to int: {resolved[key]}")
+                except (ValueError, TypeError):
+                    pass  # Keep as string if conversion fails
+        
+        logger.info(f"Final resolved parameters: {resolved}")
         return resolved
+    
+    def _resolve_single_template(self, value: str, dependency_data: Dict[str, Any]) -> Optional[str]:
+        """
+        Resolve a single template string like {{step_0_output}} to its actual value.
+        """
+        import re
+        templates = re.findall(r'\{\{([^}]+)\}\}', value)
+        
+        for template in templates:
+            parts = template.split('_')
+            if len(parts) >= 2 and parts[0] == 'step':
+                step_key = f"{parts[0]}_{parts[1]}"
+                property_name = '_'.join(parts[2:]) if len(parts) > 2 else 'output'
+                
+                if step_key in dependency_data:
+                    step_output = dependency_data[step_key]
+                    
+                    if isinstance(step_output, dict):
+                        data = step_output.get("data", step_output)
+                        
+                        if property_name == 'output':
+                            if isinstance(data, dict):
+                                if "saved_image_url" in data:
+                                    return data["saved_image_url"]
+                                elif "images" in data:
+                                    return data["images"][0]
+                                elif "image_url" in data:
+                                    return data["image_url"]
+                                elif "output" in data:
+                                    output = data["output"]
+                                    return output[0] if isinstance(output, list) and output else str(output)
+                        elif property_name == 'image_url':
+                            if isinstance(data, dict):
+                                return data.get("saved_image_url") or data.get("image_url")
+                        elif isinstance(data, dict) and property_name in data:
+                            return str(data[property_name])
+                    else:
+                        return str(step_output)
+        
+        return None
 
     # ========================================================================
     # NEW METHODS: Retry, Fallback, Artifact Collection, Context Update
@@ -377,8 +790,28 @@ class ExecutionAgent:
             
             # If not the last attempt, wait before retry
             if attempt < self.max_retries - 1:
-                delay = self.retry_delay_base * (2 ** attempt)  # Exponential backoff
-                logger.info(f"Retrying {tool_name} in {delay}s (attempt {attempt + 2}/{self.max_retries})")
+                # Use longer delay for rate limits
+                if self._is_rate_limit_error(str(last_error)):
+                    # Rate limit: Use much longer delay (starts at 60s)
+                    delay = self.rate_limit_delay * (attempt + 1)  # 60s, 120s, 180s, etc.
+                    logger.warning(f"🚦 Rate limit detected. Waiting {delay}s before retry...")
+                    logger.info(f"💡 This is normal for free/limited API tiers. Otto will automatically retry.")
+                else:
+                    # Regular exponential backoff for other errors
+                    delay = self.retry_delay_base * (2 ** attempt)  # 2s, 4s, 8s, etc.
+                    logger.info(f"Retrying {tool_name} in {delay}s (attempt {attempt + 2}/{self.max_retries})")
+                
+                # Stream progress update if callback available
+                if self.progress_callback:
+                    await self.progress_callback({
+                        "type": "retry",
+                        "tool": tool_name,
+                        "attempt": attempt + 2,
+                        "max_attempts": self.max_retries,
+                        "delay": delay,
+                        "reason": "rate_limit" if self._is_rate_limit_error(str(last_error)) else "error"
+                    })
+                
                 await asyncio.sleep(delay)
         
         return {
@@ -390,14 +823,16 @@ class ExecutionAgent:
         """Determine if an error is retryable."""
         error_lower = error.lower() if error else ""
         
-        # Non-retryable errors
+        # Non-retryable errors (fundamental issues)
         non_retryable = [
             "not found",
             "invalid api key",
             "unauthorized",
             "forbidden",
             "invalid parameter",
-            "missing required",
+            "missing required parameter",
+            "authentication failed",
+            "does not exist",
         ]
         
         for term in non_retryable:
@@ -408,14 +843,21 @@ class ExecutionAgent:
         retryable = [
             "timeout",
             "rate limit",
+            "rate_limit",
+            "ratelimit",
             "too many requests",
+            "429",
+            "quota",
+            "throttle",
             "service unavailable",
             "connection",
             "temporary",
             "try again",
             "502",
             "503",
-            "504"
+            "504",
+            "insufficient credits",
+            "credit",
         ]
         
         for term in retryable:
@@ -424,6 +866,23 @@ class ExecutionAgent:
         
         # Default: retry on unknown errors
         return True
+    
+    def _is_rate_limit_error(self, error: str) -> bool:
+        """Check if error is specifically a rate limit (needs longer delay)."""
+        error_lower = error.lower() if error else ""
+        rate_limit_indicators = [
+            "rate limit",
+            "rate_limit",
+            "ratelimit",
+            "too many requests",
+            "429",
+            "quota exceeded",
+            "throttle",
+            "insufficient credits",
+            "per minute",
+            "requests per",
+        ]
+        return any(indicator in error_lower for indicator in rate_limit_indicators)
     
     async def _try_fallback(
         self,
@@ -595,6 +1054,244 @@ class ExecutionAgent:
                 updated["last_file_url"] = data["url"]
         
         return updated
+    
+    async def _fix_parameter_error(
+        self,
+        tool_name: str,
+        parameters: Dict[str, Any],
+        error_msg: str,
+        tool_func: Any
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Automatically fix parameter errors by analyzing function signature.
+        """
+        import inspect
+        
+        try:
+            # Get function signature
+            sig = inspect.signature(tool_func)
+            expected_params = set(sig.parameters.keys()) - {'self', 'cls'}
+            provided_params = set(parameters.keys())
+            
+            # Find missing required parameters
+            missing = []
+            for param_name, param in sig.parameters.items():
+                if param_name in {'self', 'cls'}:
+                    continue
+                if param.default == inspect.Parameter.empty and param_name not in provided_params:
+                    missing.append(param_name)
+            
+            # Find unexpected parameters
+            unexpected = provided_params - expected_params
+            
+            if missing or unexpected:
+                logger.info(f"Parameter mismatch detected:")
+                logger.info(f"  Missing: {missing}")
+                logger.info(f"  Unexpected: {unexpected}")
+                
+                # Create fixed parameters
+                fixed = parameters.copy()
+                
+                # Try to map common parameter synonyms before removing
+                param_mappings = {
+                    'prompt': 'description',
+                    'text': 'description',
+                    'query': 'description',
+                    'task': 'content_type',
+                    'description': 'body_html',  # For Shopify products
+                    'content': 'body_html',  # For Shopify blog posts
+                    'design': 'design_description',  # For mockup generation
+                    'product': 'product_type',  # For mockup generation
+                    'include_audio': None,  # Remove this, not supported
+                    'weight': None,  # Remove, not supported in create_product
+                    'inventory_quantity': None,  # Remove, not supported in create_product
+                    'requires_shipping': None,  # Remove, not supported in create_product
+                    # Video tool mappings
+                    'reference_images': 'image_url',  # For video from images
+                    'input_image': 'image_url',  # For video from images
+                    'style': None,  # Remove unsupported video style param
+                }
+                
+                # Map unexpected parameters to expected ones
+                for unexpected_param in list(unexpected):
+                    if unexpected_param in param_mappings:
+                        mapped_to = param_mappings[unexpected_param]
+                        if mapped_to and mapped_to in missing:
+                            # Get the value
+                            value = fixed.pop(unexpected_param)
+                            
+                            # If it's a list (like reference_images), extract first element
+                            if isinstance(value, list) and len(value) > 0:
+                                value = value[0]
+                                logger.info(f"  Extracted first element from list for {unexpected_param}")
+                            
+                            # Move the value from unexpected to expected
+                            logger.info(f"  Mapping parameter: {unexpected_param} -> {mapped_to}")
+                            fixed[mapped_to] = value
+                            missing.remove(mapped_to)
+                            unexpected.remove(unexpected_param)
+                        elif mapped_to is None:
+                            # Remove it
+                            logger.info(f"  Removing unsupported parameter: {unexpected_param}")
+                            fixed.pop(unexpected_param, None)
+                            unexpected.remove(unexpected_param)
+                
+                # Remove remaining unexpected parameters
+                for param in unexpected:
+                    logger.info(f"  Removing unexpected parameter: {param}")
+                    fixed.pop(param, None)
+                
+                # Add missing parameters with smart defaults
+                for param in missing:
+                    default_value = self._get_smart_default(param, tool_name, parameters)
+                    if default_value is not None:
+                        logger.info(f"  Adding missing parameter {param} = {default_value}")
+                        fixed[param] = default_value
+                
+                return fixed
+        
+        except Exception as e:
+            logger.error(f"Failed to auto-fix parameters: {e}")
+        
+        return None
+    
+    def _get_smart_default(self, param_name: str, tool_name: str, existing_params: Dict) -> Any:
+        """
+        Generate smart default values for common parameters.
+        """
+        # Common parameter patterns
+        if param_name in ['prompt', 'text', 'content', 'description', 'body_html']:
+            # Try to find description-like values from existing params
+            return (existing_params.get('body_html') or
+                    existing_params.get('description') or 
+                    existing_params.get('prompt') or 
+                    existing_params.get('text') or
+                    existing_params.get('query') or
+                    existing_params.get('title', 'Generated content'))
+        
+        if param_name in ['width', 'height']:
+            return 1024
+        
+        if param_name == 'duration':
+            # Check if duration was provided in existing params
+            if 'duration' in existing_params:
+                return existing_params['duration']
+            return 15 if 'video' in tool_name.lower() else 30
+        
+        if param_name in ['style', 'art_style']:
+            return existing_params.get('style', 'professional')
+        
+        if param_name == 'content_type':
+            # Try to infer from task or existing params
+            if 'task' in existing_params:
+                task = str(existing_params['task']).lower()
+                if 'video' in task:
+                    return 'video'
+                elif 'audio' in task or 'music' in task:
+                    return 'audio'
+                elif 'image' in task:
+                    return 'image'
+            return 'auto'
+        
+        if param_name == 'format':
+            if 'image' in tool_name.lower():
+                return 'png'
+            elif 'video' in tool_name.lower():
+                return 'mp4'
+        
+        if param_name == 'quality':
+            return existing_params.get('quality', 'high')
+        
+        if param_name in ['model', 'model_name']:
+            if 'image' in tool_name.lower():
+                return 'flux-schnell'
+            elif 'video' in tool_name.lower():
+                return 'stable-video'
+        
+        return None
+    
+    async def _analyze_and_fix_error(
+        self,
+        tool_name: str,
+        parameters: Dict[str, Any],
+        error_msg: str,
+        exception: Exception
+    ) -> tuple[bool, Optional[Dict[str, Any]]]:
+        """
+        Analyze errors and determine if retry is worthwhile with fixes.
+        
+        Returns:
+            (should_retry, fixed_parameters)
+        """
+        error_lower = error_msg.lower()
+        
+        # Printify API errors
+        if 'printify' in tool_name.lower():
+            # Error 10300: Image upload failed
+            if '10300' in error_msg or 'image upload failed' in error_lower:
+                logger.info("Detected Printify image upload error - checking image format...")
+                
+                # Check if we have an image URL parameter
+                image_param = parameters.get('image_url') or parameters.get('design_url') or parameters.get('url')
+                if image_param and isinstance(image_param, str):
+                    # If it's a WebP, suggest conversion
+                    if image_param.endswith('.webp'):
+                        logger.info("Image is WebP format - Printify may prefer PNG")
+                        # We can't convert here, but can suggest adding conversion step
+                        return (False, None)  # Need external conversion
+                
+                return (True, None)  # Retry as-is (might be temporary API issue)
+            
+            # Missing API credentials
+            if 'api key' in error_lower or 'unauthorized' in error_lower:
+                logger.error("Printify API credentials missing or invalid")
+                return (False, None)
+        
+        # Replicate API errors
+        if 'replicate' in tool_name.lower():
+            # Rate limiting or insufficient credits
+            if any(x in error_lower for x in ['rate limit', '429', 'quota', 'credit', 'throttle']):
+                logger.warning("🚦 Replicate API rate limit/quota detected")
+                logger.info("💡 Will automatically retry with extended delay (60s intervals)")
+                logger.info("💡 Consider adding credits to your Replicate account for faster processing")
+                return (True, None)  # Will use extended rate_limit_delay
+            
+            # Model not found
+            if 'model not found' in error_lower or '404' in error_msg:
+                logger.error("Model not found - cannot retry")
+                return (False, None)
+        
+        # Video generation errors
+        if 'video' in tool_name.lower():
+            # Missing prompt
+            if 'prompt' in error_lower and ('required' in error_lower or 'missing' in error_lower):
+                fixed = parameters.copy()
+                if 'prompt' not in fixed:
+                    # Use description or title as prompt
+                    fixed['prompt'] = parameters.get('description', parameters.get('title', 'Product video'))
+                    logger.info(f"Added missing video prompt: {fixed['prompt']}")
+                    return (True, fixed)
+            
+            # Invalid duration
+            if 'duration' in error_lower:
+                fixed = parameters.copy()
+                fixed['duration'] = 15  # Default to 15 seconds
+                logger.info("Fixed video duration to 15 seconds")
+                return (True, fixed)
+        
+        # Network/timeout errors - always retry
+        if any(x in error_lower for x in ['timeout', 'connection', 'network', 'temporary']):
+            logger.info("Network/timeout error - will retry")
+            return (True, None)
+        
+        # Generic API errors that might be temporary
+        if any(x in error_lower for x in ['500', '502', '503', '504', 'internal server', 'service unavailable']):
+            logger.info("Server error - will retry")
+            return (True, None)
+        
+        # Unknown error - don't retry by default
+        logger.info("Unknown error type - not retrying automatically")
+        return (False, None)
     
     def get_artifacts(self) -> List[Dict[str, Any]]:
         """Get all collected artifacts as dicts for JSON serialization."""

@@ -22,7 +22,8 @@ SETTINGS_FILE = Path("./data/settings.json")
 class AISettings(BaseModel):
     """AI model settings."""
     default_model: str = "claude-sonnet-4-20250514"
-    fallback_model: str = "gpt-4-turbo-preview"
+    fallback_model: str = "gpt-4o"
+    reasoning_model: str = "claude-opus-4-20250514"
     max_tokens: int = 4096
     temperature: float = 0.7
     enable_streaming: bool = True
@@ -30,7 +31,7 @@ class AISettings(BaseModel):
 
 class VoiceSettings(BaseModel):
     """Voice settings."""
-    stt_model: str = "whisper-1"
+    stt_model: str = "whisper-large-v3"
     tts_provider: str = "openai"  # openai, elevenlabs
     tts_voice: str = "nova"
     tts_speed: float = 1.0
@@ -39,12 +40,40 @@ class VoiceSettings(BaseModel):
 
 
 class ImageSettings(BaseModel):
-    """Image generation settings."""
-    default_model: str = "flux_schnell"
+    """Image generation and editing settings."""
+    default_model: str = "flux_pro"
+    fallback_model: str = "sdxl"
+    default_style: str = "auto"  # auto-detect from prompt
     default_size: str = "1024x1024"
-    default_quality: str = "standard"
+    default_aspect_ratio: str = "1:1"  # 1:1, 16:9, 9:16, 2:3, 3:2, etc.
+    default_quality: str = "standard"  # standard, hd
+    editing_model: str = "sdxl"  # for image-to-image editing
+    upscale_model: str = "real-esrgan"
     auto_remove_background: bool = False
     save_generated_images: bool = True
+
+
+class VideoSettings(BaseModel):
+    """Video generation and editing settings."""
+    default_model: str = "kling"  # kling, minimax, svd, runway
+    fallback_model: str = "svd"
+    default_duration: int = 5  # seconds
+    default_fps: int = 24
+    default_aspect_ratio: str = "16:9"
+    editing_model: str = "kling"
+    upscale_model: str = "real-esrgan-video"
+    stabilization_enabled: bool = True
+    save_generated_videos: bool = True
+
+
+class AudioSettings(BaseModel):
+    """Audio generation and editing settings."""
+    default_music_model: str = "musicgen"
+    default_voice_model: str = "bark"
+    voice_clone_model: str = "xtts-v2"
+    transcription_model: str = "whisper-large-v3"
+    enhancement_model: str = "resemble-enhance"
+    save_generated_audio: bool = True
 
 
 class PrintifySettings(BaseModel):
@@ -94,16 +123,34 @@ class UISettings(BaseModel):
     show_tool_details: bool = True
 
 
+class ExtensionSettings(BaseModel):
+    """Extension enable/disable settings."""
+    printify: bool = True
+    shopify: bool = True
+    replicate: bool = True
+    browser: bool = True
+    web_search: bool = True
+    file_storage: bool = True
+    content_generation: bool = True
+    code_execution: bool = True
+    data_processing: bool = True
+    task_queue: bool = True
+    model_chaining: bool = True
+
+
 class AppSettings(BaseModel):
     """Complete application settings."""
     ai: AISettings = Field(default_factory=AISettings)
     voice: VoiceSettings = Field(default_factory=VoiceSettings)
     image: ImageSettings = Field(default_factory=ImageSettings)
+    video: VideoSettings = Field(default_factory=VideoSettings)
+    audio: AudioSettings = Field(default_factory=AudioSettings)
     printify: PrintifySettings = Field(default_factory=PrintifySettings)
     shopify: ShopifySettings = Field(default_factory=ShopifySettings)
     storage: StorageSettings = Field(default_factory=StorageSettings)
     notifications: NotificationSettings = Field(default_factory=NotificationSettings)
     ui: UISettings = Field(default_factory=UISettings)
+    extensions: ExtensionSettings = Field(default_factory=ExtensionSettings)
     updated_at: Optional[str] = None
 
 
@@ -171,6 +218,10 @@ class SettingsManager:
                 settings.voice = VoiceSettings()
             elif section == "image":
                 settings.image = ImageSettings()
+            elif section == "video":
+                settings.video = VideoSettings()
+            elif section == "audio":
+                settings.audio = AudioSettings()
             elif section == "printify":
                 settings.printify = PrintifySettings()
             elif section == "shopify":
@@ -181,6 +232,8 @@ class SettingsManager:
                 settings.notifications = NotificationSettings()
             elif section == "ui":
                 settings.ui = UISettings()
+            elif section == "extensions":
+                settings.extensions = ExtensionSettings()
             self.save(settings)
         else:
             settings = AppSettings()

@@ -32,9 +32,9 @@ class ContextWindow:
     max_age_hours: int = 24
     
     # Current state
-    interactions: deque = None
+    interactions: Optional[deque] = None
     total_tokens: int = 0
-    created_at: datetime = None
+    created_at: Optional[datetime] = None
     
     def __post_init__(self):
         if self.interactions is None:
@@ -81,14 +81,14 @@ class ContextManager:
         window = self._get_or_create_window(session_id)
         
         # Build minimal context
-        context = {
+        context: Dict[str, Any] = {
             "session_id": session_id,
             "agent_type": agent_type,
             "timestamp": datetime.now().isoformat()
         }
         
         # Add recent interactions (last N only)
-        context["recent_interactions"] = list(window.interactions)[-5:]
+        context["recent_interactions"] = list(window.interactions)[-5:] if window.interactions else []
         
         # Add compact global state
         context["global_state"] = self.global_state.copy()
@@ -127,7 +127,8 @@ class ContextManager:
             "metadata": metadata or {}
         }
         
-        window.interactions.append(interaction)
+        if window.interactions is not None:
+            window.interactions.append(interaction)
         window.total_tokens += self._estimate_tokens(content)
         
         # Auto-prune if over limit
