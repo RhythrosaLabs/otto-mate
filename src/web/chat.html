@@ -573,12 +573,13 @@
             font-size: 36px;
             font-weight: 700;
             margin-bottom: 12px;
+            margin-top: -20px;
             background: linear-gradient(135deg, #fff 0%, var(--accent-purple) 50%, var(--accent-pink) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             background-size: 200% 200%;
-            animation: welcomeGradient 3s ease infinite;
+            animation: welcomeGradient 8s ease infinite;
         }
         
         @keyframes welcomeGradient {
@@ -607,12 +608,11 @@
         @keyframes hide-caret {
             to { border-color: transparent; }
         }
-        }
         
         .welcome p {
             color: var(--text-muted);
             font-size: 17px;
-            margin-bottom: 36px;
+            margin-bottom: 28px;
             max-width: 500px;
             opacity: 0;
             animation: fadeInUp 0.6s ease 1.5s forwards;
@@ -634,6 +634,7 @@
             grid-template-columns: repeat(3, 1fr);
             gap: 14px;
             max-width: 700px;
+            margin-top: 20px;
             opacity: 0;
             animation: fadeInUp 0.6s ease 1.8s forwards;
         }
@@ -1928,9 +1929,42 @@
             border-color: rgba(139, 92, 246, 0.4);
             transform: translateY(-1px);
         }
-        .tool-btn span:first-child { font-size: 16px; }
-        .tool-btn span:last-child { font-size: 9px; color: var(--text-muted); }
+        .tool-btn span:first-child { font-size: 14px; }
+        .tool-btn span:last-child { font-size: 11px; color: var(--text-muted); font-weight: 500; }
         .tool-btn:hover span:last-child { color: var(--text); }
+        
+        /* Tooltip styling */
+        .tool-btn[title] {
+            position: relative;
+        }
+        .tool-btn[title]:hover::after {
+            content: attr(title);
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 6px 10px;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            font-size: 11px;
+            font-weight: 500;
+            border-radius: 6px;
+            white-space: nowrap;
+            z-index: 1000;
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        .tool-btn[title]:hover::before {
+            content: '';
+            position: absolute;
+            bottom: calc(100% + 2px);
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            pointer-events: none;
+        }
         
         /* Custom Edit Section */
         .editor-custom-section {
