@@ -3040,6 +3040,521 @@
             border-color: rgba(139, 92, 246, 0.4);
         }
         
+        /* ========================================
+           NEW EDITOR - Canvas & Tabbed Interface
+           ======================================== */
+        
+        /* Editor Tabs */
+        .editor-tabs {
+            display: flex;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 4px;
+            margin: 12px 16px 0;
+            border-radius: 10px;
+            gap: 4px;
+        }
+        
+        .editor-tab {
+            flex: 1;
+            padding: 10px 8px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            color: var(--text-dim);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        
+        .editor-tab:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+        }
+        
+        .editor-tab.active {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
+            color: white;
+            font-weight: 600;
+        }
+        
+        /* Editor Panels */
+        .editor-panel {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+        }
+        
+        .editor-panel.active {
+            display: flex;
+        }
+        
+        /* Canvas Container - Large Interactive Area */
+        .editor-canvas-container {
+            position: relative;
+            margin: 12px 16px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%);
+            border: 2px dashed rgba(139, 92, 246, 0.3);
+            min-height: 280px;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            cursor: crosshair;
+            transition: all 0.3s;
+        }
+        
+        .editor-canvas-container:hover {
+            border-color: rgba(139, 92, 246, 0.5);
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.15);
+        }
+        
+        .editor-canvas-container.has-content {
+            border-style: solid;
+            border-color: rgba(139, 92, 246, 0.4);
+        }
+        
+        /* Floating Toolbar */
+        .canvas-floating-toolbar {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 4px;
+            padding: 6px 10px;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(12px);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .editor-canvas-container:hover .canvas-floating-toolbar,
+        .canvas-floating-toolbar:hover {
+            opacity: 1;
+        }
+        
+        .float-tool {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            color: var(--text-dim);
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .float-tool:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+        }
+        
+        .float-tool.active {
+            background: var(--accent-purple);
+            color: white;
+        }
+        
+        .float-tool-divider {
+            width: 1px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.15);
+            margin: 4px 6px;
+        }
+        
+        .brush-size-control {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0 8px;
+        }
+        
+        .brush-size-control input[type="range"] {
+            width: 60px;
+            height: 4px;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+        }
+        
+        .brush-size-control input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            background: var(--accent-purple);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .brush-size-label {
+            font-size: 11px;
+            color: var(--text-dim);
+            min-width: 28px;
+        }
+        
+        /* Main Canvas */
+        .editor-main-canvas {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+            object-fit: contain;
+            display: none;
+        }
+        
+        .editor-main-canvas.visible {
+            display: block;
+        }
+        
+        /* Canvas Empty State */
+        .canvas-empty-state {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .canvas-empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.6;
+        }
+        
+        .canvas-empty-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+        
+        .canvas-empty-subtitle {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-bottom: 20px;
+        }
+        
+        .canvas-browse-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .canvas-browse-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+        }
+        
+        /* Media Type Bar */
+        .media-type-bar {
+            display: flex;
+            gap: 6px;
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.2);
+            margin: 0 16px;
+            border-radius: 10px;
+        }
+        
+        .media-type-btn {
+            flex: 1;
+            padding: 8px 6px;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            color: var(--text-dim);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .media-type-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+        }
+        
+        .media-type-btn.active {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: rgba(139, 92, 246, 0.4);
+            color: var(--accent-purple);
+        }
+        
+        .media-type-icon {
+            font-size: 18px;
+        }
+        
+        /* Quick Tools Section */
+        .quick-tools-section {
+            padding: 12px 16px;
+        }
+        
+        .section-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+        
+        .quick-tools-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+        
+        .quick-tool {
+            padding: 10px 6px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            text-align: center;
+        }
+        
+        .quick-tool:hover {
+            background: rgba(139, 92, 246, 0.15);
+            border-color: rgba(139, 92, 246, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .quick-tool-icon {
+            font-size: 20px;
+        }
+        
+        /* Custom Edit Section */
+        .custom-edit-section {
+            padding: 12px 16px;
+        }
+        
+        .custom-edit-row {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .custom-edit-input {
+            flex: 1;
+            padding: 12px 14px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 13px;
+            resize: none;
+        }
+        
+        .custom-edit-input:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+        }
+        
+        .custom-edit-btn {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        
+        .custom-edit-btn:hover {
+            opacity: 0.9;
+        }
+        
+        /* Publish Section */
+        .publish-section {
+            padding: 16px;
+        }
+        
+        .publish-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .publish-btn {
+            padding: 16px 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .publish-btn:hover {
+            background: rgba(139, 92, 246, 0.15);
+            border-color: rgba(139, 92, 246, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .publish-btn-icon {
+            font-size: 28px;
+        }
+        
+        .publish-btn-label {
+            font-weight: 500;
+        }
+        
+        .publish-btn-desc {
+            font-size: 10px;
+            color: var(--text-dim);
+        }
+        
+        /* AI Section */
+        .ai-section {
+            padding: 16px;
+        }
+        
+        .ai-prompt-area {
+            margin-bottom: 16px;
+        }
+        
+        .ai-prompt-input {
+            width: 100%;
+            padding: 14px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 13px;
+            resize: none;
+            margin-bottom: 10px;
+        }
+        
+        .ai-prompt-input:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+        }
+        
+        .ai-generate-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #06b6d4, #8b5cf6);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .ai-generate-btn:hover {
+            opacity: 0.9;
+        }
+        
+        .transform-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        
+        .transform-btn {
+            padding: 12px 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .transform-btn:hover {
+            background: rgba(6, 182, 212, 0.15);
+            border-color: rgba(6, 182, 212, 0.3);
+        }
+        
+        .transform-icon {
+            font-size: 18px;
+        }
+        
+        /* Editor Footer */
+        .editor-footer {
+            display: flex;
+            gap: 8px;
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            flex-shrink: 0;
+        }
+        
+        .footer-btn {
+            flex: 1;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        
+        .footer-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .footer-btn.primary {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
+            border: none;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .footer-btn.primary:hover {
+            opacity: 0.9;
+        }
+        
+        /* ======================================== */
+        
         /* Hide old editor styles */
         .editor-file-browser { display: none !important; }
         .editor-content { display: none !important; }
@@ -4942,278 +5457,265 @@
                 </div>
             </div>
             
-            <!-- Editor Sidebar - Canva-Style Design -->
+            <!-- Editor Sidebar - Redesigned Studio Interface -->
             <div class="editor-sidebar" id="editorSidebar">
                 <div class="sidebar-resize-handle left" data-sidebar="editorSidebar" data-direction="left"></div>
-                <!-- Header -->
+                
+                <!-- Header with Tabs -->
                 <div class="editor-header">
-                    <h2>🎨 Editor</h2>
+                    <div class="editor-tabs">
+                        <button class="editor-tab active" data-tab="edit" onclick="switchEditorMode('edit', this)">✏️ Edit</button>
+                        <button class="editor-tab" data-tab="publish" onclick="switchEditorMode('publish', this)">🚀 Publish</button>
+                        <button class="editor-tab" data-tab="ai" onclick="switchEditorMode('ai', this)">🤖 AI</button>
+                    </div>
                     <button class="editor-close" onclick="toggleEditor()">×</button>
                 </div>
                 
-                <!-- Scrollable Content -->
-                <div class="editor-scroll-content">
-                    <!-- Canvas Preview - Main focus like Canva -->
-                    <div class="editor-canvas" id="editorCanvas">
-                        <div class="canvas-placeholder" id="canvasPlaceholder">
-                            <div class="canvas-drop-area" id="canvasDropArea">
-                                <span class="canvas-icon">🖼️</span>
-                                <span class="canvas-text">Drop or select a file</span>
-                                <span class="canvas-subtext">Images, videos, audio, code, 3D</span>
-                                <button class="canvas-browse-btn" onclick="document.getElementById('editorFileInput').click()">
-                                    📁 Browse Files
+                <!-- Main Canvas Area - Takes most space -->
+                <div class="editor-canvas-container" id="editorCanvasContainer">
+                    <div class="editor-canvas-wrapper">
+                        <!-- Floating Toolbar -->
+                        <div class="canvas-floating-toolbar" id="canvasFloatingToolbar">
+                            <button class="float-tool active" data-tool="select" onclick="setCanvasTool('select')" title="Select">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M4.5 3L20 12l-7 2.5L10.5 22z"/></svg>
+                            </button>
+                            <div class="float-tool-divider"></div>
+                            <button class="float-tool" data-tool="brush" onclick="setCanvasTool('brush')" title="Inpaint Brush">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M7 14c-1.66 0-3 1.34-3 3 0 1.31-1.16 2-2 2 .92 1.22 2.49 2 4 2 2.21 0 4-1.79 4-4 0-1.66-1.34-3-3-3zm13.71-9.37l-1.34-1.34a.996.996 0 0 0-1.41 0L9 12.25 11.75 15l8.96-8.96a.996.996 0 0 0 0-1.41z"/></svg>
+                            </button>
+                            <button class="float-tool" data-tool="eraser" onclick="setCanvasTool('eraser')" title="Eraser">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M16.24 3.56l4.95 4.94-12.02 12.02a4.99 4.99 0 0 1-3.53 1.46H2v-3.64c0-1.33.53-2.6 1.46-3.53L16.24 3.56z"/></svg>
+                            </button>
+                            <div class="float-tool-divider"></div>
+                            <button class="float-tool" onclick="zoomCanvas(-1)" title="Zoom Out">−</button>
+                            <span class="zoom-level" id="canvasZoomLevel">100%</span>
+                            <button class="float-tool" onclick="zoomCanvas(1)" title="Zoom In">+</button>
+                            <button class="float-tool" onclick="fitCanvas()" title="Fit">⊡</button>
+                        </div>
+                        
+                        <!-- Brush Size Slider (shows when brush/eraser active) -->
+                        <div class="brush-size-control" id="brushSizeControl" style="display:none;">
+                            <span>Size:</span>
+                            <input type="range" min="5" max="100" value="30" id="brushSizeSlider" oninput="setBrushSize(this.value)">
+                            <span id="brushSizeValue">30</span>
+                        </div>
+                        
+                        <!-- The Canvas -->
+                        <canvas id="editorMainCanvas" class="editor-main-canvas"></canvas>
+                        
+                        <!-- Drop Zone Overlay -->
+                        <div class="canvas-drop-overlay" id="canvasDropOverlay">
+                            <div class="drop-content">
+                                <span class="drop-icon">📁</span>
+                                <span class="drop-text">Drop image, video, or audio</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Empty State -->
+                        <div class="canvas-empty-state" id="canvasEmptyState">
+                            <div class="empty-icon">🎨</div>
+                            <div class="empty-title">Start Creating</div>
+                            <div class="empty-actions">
+                                <button class="empty-btn primary" onclick="document.getElementById('editorFileInput').click()">
+                                    📁 Upload File
+                                </button>
+                                <button class="empty-btn" onclick="generateNewImage()">
+                                    ✨ Generate with AI
                                 </button>
                             </div>
+                            <div class="empty-hint">or paste URL / drag & drop</div>
                         </div>
-                        <div class="canvas-preview" id="canvasPreview" style="display: none;"></div>
-                        <input type="file" id="editorFileInput" style="display: none;" 
-                               accept="image/*,video/*,audio/*,.obj,.glb,.gltf,.fbx,.stl,.py,.js,.html,.css,.json,.txt,.md"
-                               onchange="handleEditorFileSelect(event)">
+                    </div>
+                    <input type="file" id="editorFileInput" style="display:none;" 
+                           accept="image/*,video/*,audio/*,.obj,.glb,.gltf"
+                           onchange="handleEditorFileSelect(event)">
+                </div>
+                
+                <!-- Edit Panel -->
+                <div class="editor-panel" id="editPanel">
+                    <!-- Media Type Indicator -->
+                    <div class="media-type-bar" id="mediaTypeBar">
+                        <span class="media-type-icon" id="mediaTypeIcon">🖼️</span>
+                        <span class="media-type-label" id="mediaTypeLabel">Image</span>
+                        <button class="media-clear-btn" onclick="clearEditorFile()" title="Clear">✕</button>
                     </div>
                     
-                    <!-- File Info Bar -->
-                    <div class="editor-file-info" id="editorFileInfo" style="display: none;">
-                        <span class="file-info-name" id="editorFileName">filename.png</span>
-                        <span class="file-info-size" id="editorFileSize">1.2 MB</span>
-                        <button class="file-info-clear" onclick="clearEditorFile()">✕</button>
-                    </div>
-                    
-                    <!-- URL Input -->
-                    <div class="editor-url-section">
-                        <input type="text" class="editor-url-input" id="editorFileUrl" 
-                               placeholder="Paste URL or path..."
-                               oninput="handleEditorUrlInput()">
-                    </div>
-                    
-                    <!-- Tools Panel - Canva style -->
-                    <div class="editor-tools-panel">
-                        <!-- Media Type Tabs -->
-                        <div class="editor-media-tabs">
-                            <button class="media-tab active" onclick="switchEditorTab('image', this)">🖼️ Image</button>
-                            <button class="media-tab" onclick="switchEditorTab('video', this)">🎬 Video</button>
-                            <button class="media-tab" onclick="switchEditorTab('audio', this)">🎵 Audio</button>
-                            <button class="media-tab" onclick="switchEditorTab('3d', this)">🧊 3D</button>
-                            <button class="media-tab" onclick="switchEditorTab('text', this)">📝 Text</button>
-                            <button class="media-tab" onclick="switchEditorTab('code', this)">💻 Code</button>
+                    <!-- Quick Tools Grid -->
+                    <div class="quick-tools-section">
+                        <div class="quick-tools-grid" id="imageQuickTools">
+                            <button class="quick-tool" onclick="applyTool('remove_background')" title="Remove Background">
+                                <span class="qt-icon">🔲</span><span class="qt-label">Remove BG</span>
+                            </button>
+                            <button class="quick-tool" onclick="applyTool('upscale')" title="Upscale 4x">
+                                <span class="qt-icon">🔍</span><span class="qt-label">Upscale</span>
+                            </button>
+                            <button class="quick-tool" onclick="applyTool('enhance')" title="Enhance">
+                                <span class="qt-icon">✨</span><span class="qt-label">Enhance</span>
+                            </button>
+                            <button class="quick-tool" onclick="applyTool('inpaint')" title="Inpaint Selection">
+                                <span class="qt-icon">✏️</span><span class="qt-label">Inpaint</span>
+                            </button>
+                            <button class="quick-tool" onclick="applyTool('style_transfer')" title="Style Transfer">
+                                <span class="qt-icon">🎭</span><span class="qt-label">Style</span>
+                            </button>
+                            <button class="quick-tool" onclick="applyTool('colorize')" title="Colorize">
+                                <span class="qt-icon">🎨</span><span class="qt-label">Colorize</span>
+                            </button>
                         </div>
                         
-                        <!-- Image Tools -->
-                        <div class="tools-grid" id="imageTools">
-                            <div class="tool-btn" onclick="applyTool('remove_background')" title="Remove Background">
-                                <span>🔲</span><span>Remove BG</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('upscale')" title="Upscale 4x">
-                                <span>🔍</span><span>Upscale</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('enhance')" title="Enhance">
-                                <span>✨</span><span>Enhance</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('colorize')" title="Colorize">
-                                <span>🎨</span><span>Colorize</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('style_transfer')" title="Style Transfer">
-                                <span>🎭</span><span>Style</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('inpaint')" title="Edit/Inpaint">
-                                <span>✏️</span><span>Edit</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('image_to_video')" title="Animate">
-                                <span>🎬</span><span>Animate</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('image_to_3d')" title="To 3D">
-                                <span>🧊</span><span>To 3D</span>
-                            </div>
+                        <div class="quick-tools-grid" id="videoQuickTools" style="display:none;">
+                            <button class="quick-tool" onclick="applyTool('slow_motion')"><span class="qt-icon">🐌</span><span class="qt-label">Slow-Mo</span></button>
+                            <button class="quick-tool" onclick="applyTool('video_upscale')"><span class="qt-icon">🔍</span><span class="qt-label">Upscale</span></button>
+                            <button class="quick-tool" onclick="applyTool('remove_video_background')"><span class="qt-icon">🔲</span><span class="qt-label">Remove BG</span></button>
+                            <button class="quick-tool" onclick="applyTool('add_captions')"><span class="qt-icon">💬</span><span class="qt-label">Captions</span></button>
+                            <button class="quick-tool" onclick="applyTool('add_music')"><span class="qt-icon">🎵</span><span class="qt-label">Music</span></button>
+                            <button class="quick-tool" onclick="applyTool('interpolate')"><span class="qt-icon">⚡</span><span class="qt-label">Smooth</span></button>
                         </div>
                         
-                        <!-- Video Tools -->
-                        <div class="tools-grid" id="videoTools" style="display: none;">
-                            <div class="tool-btn" onclick="applyTool('slow_motion')" title="Slow Motion">
-                                <span>🐌</span><span>Slow-Mo</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('interpolate')" title="Smooth/Interpolate">
-                                <span>⚡</span><span>Smooth</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('video_upscale')" title="Upscale Video">
-                                <span>🔍</span><span>Upscale</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('stabilize')" title="Stabilize">
-                                <span>📷</span><span>Stabilize</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('remove_video_background')" title="Remove BG">
-                                <span>🔲</span><span>Remove BG</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('add_music')" title="Add Music">
-                                <span>🎵</span><span>Add Music</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('add_voiceover')" title="Add Voiceover">
-                                <span>🎤</span><span>Voiceover</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('add_captions')" title="Add Captions">
-                                <span>💬</span><span>Captions</span>
-                            </div>
-                        </div>
-                        
-                        <!-- Audio Tools -->
-                        <div class="tools-grid" id="audioTools" style="display: none;">
-                            <div class="tool-btn" onclick="applyTool('separate_vocals')" title="Separate Vocals">
-                                <span>🎤</span><span>Vocals</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('extract_stems')" title="Extract Stems">
-                                <span>🎸</span><span>Stems</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('audio_enhance')" title="Enhance Audio">
-                                <span>✨</span><span>Enhance</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('denoise')" title="Remove Noise">
-                                <span>🔇</span><span>Denoise</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('text_to_speech')" title="Text to Speech">
-                                <span>🗣️</span><span>TTS</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('music_generation')" title="Generate Music">
-                                <span>🎼</span><span>Gen Music</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('voice_clone')" title="Clone Voice">
-                                <span>👤</span><span>Clone</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('transcribe')" title="Transcribe">
-                                <span>📝</span><span>Transcribe</span>
-                            </div>
-                        </div>
-                        
-                        <!-- 3D Tools -->
-                        <div class="tools-grid" id="threeDTools" style="display: none;">
-                            <div class="tool-btn" onclick="applyTool('image_to_3d')" title="Image to 3D">
-                                <span>🖼️</span><span>Image→3D</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('text_to_3d')" title="Text to 3D">
-                                <span>✍️</span><span>Text→3D</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('mesh_refinement')" title="Refine Mesh">
-                                <span>🔧</span><span>Refine</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('texture_generation')" title="Generate Texture">
-                                <span>🎨</span><span>Texture</span>
-                            </div>
-                        </div>
-                        
-                        <!-- Text/Document Tools -->
-                        <div class="tools-grid" id="textTools" style="display: none;">
-                            <div class="tool-btn" onclick="applyTool('summarize')" title="Summarize">
-                                <span>📋</span><span>Summarize</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('rewrite')" title="Rewrite">
-                                <span>✏️</span><span>Rewrite</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('translate')" title="Translate">
-                                <span>🌐</span><span>Translate</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('expand')" title="Expand">
-                                <span>📈</span><span>Expand</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('format')" title="Format">
-                                <span>📑</span><span>Format</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('ocr')" title="Extract Text (OCR)">
-                                <span>👁️</span><span>OCR</span>
-                            </div>
-                        </div>
-                        
-                        <!-- Code Tools -->
-                        <div class="tools-grid" id="codeTools" style="display: none;">
-                            <div class="tool-btn" onclick="applyTool('code_explain')" title="Explain Code">
-                                <span>📖</span><span>Explain</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('code_refactor')" title="Refactor Code">
-                                <span>🔄</span><span>Refactor</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('code_debug')" title="Debug Code">
-                                <span>🐛</span><span>Debug</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('code_complete')" title="Complete Code">
-                                <span>⚡</span><span>Complete</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('code_convert')" title="Convert Language">
-                                <span>🔀</span><span>Convert</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('code_test')" title="Generate Tests">
-                                <span>🧪</span><span>Tests</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('code_document')" title="Add Documentation">
-                                <span>📝</span><span>Document</span>
-                            </div>
-                            <div class="tool-btn" onclick="applyTool('code_run')" title="Run Code">
-                                <span>▶️</span><span>Run</span>
-                            </div>
-                        </div>
-                        
-                        <!-- Code Editor Area -->
-                        <div id="codeEditorArea" style="display: none;">
-                            <textarea class="code-editor-textarea" id="codeEditorTextarea" 
-                                placeholder="// Paste or write your code here...&#10;&#10;function example() {&#10;    return 'Hello World';&#10;}"></textarea>
-                            <div class="code-editor-footer">
-                                <select class="code-language-select" id="codeLanguage">
-                                    <option value="javascript">JavaScript</option>
-                                    <option value="python">Python</option>
-                                    <option value="typescript">TypeScript</option>
-                                    <option value="html">HTML</option>
-                                    <option value="css">CSS</option>
-                                    <option value="json">JSON</option>
-                                    <option value="java">Java</option>
-                                    <option value="cpp">C++</option>
-                                    <option value="rust">Rust</option>
-                                    <option value="go">Go</option>
-                                    <option value="sql">SQL</option>
-                                    <option value="bash">Bash</option>
-                                </select>
-                                <button class="code-run-btn" onclick="runCodeInEditor()" title="Run Code">▶️ Run</button>
-                            </div>
-                            <div class="code-output" id="codeOutput" style="display: none;">
-                                <div class="code-output-header">Output</div>
-                                <pre id="codeOutputContent"></pre>
-                            </div>
+                        <div class="quick-tools-grid" id="audioQuickTools" style="display:none;">
+                            <button class="quick-tool" onclick="applyTool('separate_vocals')"><span class="qt-icon">🎤</span><span class="qt-label">Vocals</span></button>
+                            <button class="quick-tool" onclick="applyTool('extract_stems')"><span class="qt-icon">🎸</span><span class="qt-label">Stems</span></button>
+                            <button class="quick-tool" onclick="applyTool('audio_enhance')"><span class="qt-icon">✨</span><span class="qt-label">Enhance</span></button>
+                            <button class="quick-tool" onclick="applyTool('denoise')"><span class="qt-icon">🔇</span><span class="qt-label">Denoise</span></button>
+                            <button class="quick-tool" onclick="applyTool('transcribe')"><span class="qt-icon">📝</span><span class="qt-label">Transcribe</span></button>
+                            <button class="quick-tool" onclick="applyTool('voice_clone')"><span class="qt-icon">👤</span><span class="qt-label">Clone</span></button>
                         </div>
                     </div>
                     
-                    <!-- Custom Instruction -->
-                    <div class="editor-custom-section">
-                        <div class="custom-label">Custom Edit</div>
-                        <textarea class="editor-instruction-input" id="editorInstruction" 
-                            placeholder="Describe what you want..."></textarea>
-                        <button class="editor-custom-btn" onclick="executeEdit()">
-                            ✨ Apply
+                    <!-- Custom Edit Input -->
+                    <div class="custom-edit-section">
+                        <textarea class="custom-edit-input" id="editorInstruction" 
+                            placeholder="Describe what to change... (e.g., 'make the sky more vibrant' or 'remove the person on the left')"></textarea>
+                        <button class="apply-edit-btn" onclick="executeEdit()">
+                            <span>✨</span> Apply Edit
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Publish Panel -->
+                <div class="editor-panel" id="publishPanel" style="display:none;">
+                    <div class="publish-section">
+                        <div class="publish-title">🏪 Print-on-Demand</div>
+                        <div class="publish-grid">
+                            <button class="publish-btn" onclick="publishTo('printify', 'tshirt')">
+                                <span class="pub-icon">👕</span><span>T-Shirt</span>
+                            </button>
+                            <button class="publish-btn" onclick="publishTo('printify', 'mug')">
+                                <span class="pub-icon">☕</span><span>Mug</span>
+                            </button>
+                            <button class="publish-btn" onclick="publishTo('printify', 'poster')">
+                                <span class="pub-icon">🖼️</span><span>Poster</span>
+                            </button>
+                            <button class="publish-btn" onclick="publishTo('printify', 'hoodie')">
+                                <span class="pub-icon">🧥</span><span>Hoodie</span>
+                            </button>
+                            <button class="publish-btn" onclick="publishTo('printify', 'sticker')">
+                                <span class="pub-icon">🏷️</span><span>Sticker</span>
+                            </button>
+                            <button class="publish-btn" onclick="publishTo('printify', 'phone_case')">
+                                <span class="pub-icon">📱</span><span>Phone Case</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="publish-section">
+                        <div class="publish-title">📱 Social Media</div>
+                        <div class="publish-grid">
+                            <button class="publish-btn" onclick="publishTo('instagram')">
+                                <span class="pub-icon">📸</span><span>Instagram</span>
+                            </button>
+                            <button class="publish-btn" onclick="publishTo('twitter')">
+                                <span class="pub-icon">𝕏</span><span>X / Twitter</span>
+                            </button>
+                            <button class="publish-btn" onclick="publishTo('tiktok')">
+                                <span class="pub-icon">🎵</span><span>TikTok</span>
+                            </button>
+                            <button class="publish-btn" onclick="publishTo('youtube')">
+                                <span class="pub-icon">▶️</span><span>YouTube</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="publish-section">
+                        <div class="publish-title">🛒 E-Commerce</div>
+                        <div class="publish-grid">
+                            <button class="publish-btn" onclick="publishTo('shopify')">
+                                <span class="pub-icon">🛍️</span><span>Shopify</span>
+                            </button>
+                            <button class="publish-btn" onclick="publishTo('etsy')">
+                                <span class="pub-icon">🧶</span><span>Etsy</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="publish-custom">
+                        <input type="text" class="publish-custom-input" id="publishCaption" placeholder="Add caption or description...">
+                    </div>
+                </div>
+                
+                <!-- AI Panel -->
+                <div class="editor-panel" id="aiPanel" style="display:none;">
+                    <div class="ai-section">
+                        <div class="ai-title">🎨 Generate New</div>
+                        <textarea class="ai-prompt-input" id="aiGeneratePrompt" placeholder="Describe what to create..."></textarea>
+                        <div class="ai-options">
+                            <select class="ai-select" id="aiMediaType">
+                                <option value="image">🖼️ Image</option>
+                                <option value="video">🎬 Video</option>
+                                <option value="audio">🎵 Audio</option>
+                                <option value="3d">🧊 3D Model</option>
+                            </select>
+                            <select class="ai-select" id="aiAspectRatio">
+                                <option value="1:1">Square (1:1)</option>
+                                <option value="16:9">Landscape (16:9)</option>
+                                <option value="9:16">Portrait (9:16)</option>
+                                <option value="2:3">Tall (2:3)</option>
+                                <option value="3:2">Wide (3:2)</option>
+                            </select>
+                        </div>
+                        <button class="ai-generate-btn" onclick="generateFromAI()">
+                            ✨ Generate
                         </button>
                     </div>
                     
-                    <!-- Result Section -->
-                    <div class="editor-result" id="editorResultSection">
-                        <div class="result-header">
-                            <span class="result-title">✅ Done!</span>
-                        </div>
-                        <div class="result-preview" id="editorResultPreview"></div>
-                        <div class="result-actions">
-                            <button class="result-btn primary" onclick="downloadEditorResult()">⬇️ Download</button>
-                            <button class="result-btn" onclick="useResultAsInput()">🔄 Edit More</button>
-                            <button class="result-btn" onclick="sendResultToChat()">💬 To Chat</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Enhanced Status Bar -->
-                    <div class="editor-status-bar" id="editorStatusBar">
-                        <div class="status-content">
-                            <div class="status-spinner"></div>
-                            <span id="editorStatusText">Processing...</span>
-                        </div>
-                        <div class="status-progress-bar">
-                            <div class="status-progress-fill" id="editorProgressFill"></div>
-                        </div>
-                        <div class="status-steps" id="editorStatusSteps">
-                            <span class="status-step" data-step="analyze">🔍 Analyze</span>
-                            <span class="status-step" data-step="prepare">📤 Prepare</span>
-                            <span class="status-step" data-step="process">⚙️ Process</span>
-                            <span class="status-step" data-step="complete">✅ Done</span>
+                    <div class="ai-section">
+                        <div class="ai-title">🔄 Transform Current</div>
+                        <div class="transform-grid">
+                            <button class="transform-btn" onclick="transformMedia('image_to_video')">
+                                <span>🖼️→🎬</span><span>Animate</span>
+                            </button>
+                            <button class="transform-btn" onclick="transformMedia('image_to_3d')">
+                                <span>🖼️→🧊</span><span>To 3D</span>
+                            </button>
+                            <button class="transform-btn" onclick="transformMedia('video_to_gif')">
+                                <span>🎬→🎞️</span><span>To GIF</span>
+                            </button>
+                            <button class="transform-btn" onclick="transformMedia('voice_clone')">
+                                <span>🎤→👤</span><span>Clone Voice</span>
+                            </button>
                         </div>
                     </div>
+                </div>
+                
+                <!-- Status Bar (at bottom) -->
+                <div class="editor-status-bar" id="editorStatusBar">
+                    <div class="status-content">
+                        <div class="status-spinner"></div>
+                        <span id="editorStatusText">Processing...</span>
+                    </div>
+                    <div class="status-progress-bar">
+                        <div class="status-progress-fill" id="editorProgressFill"></div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions Footer -->
+                <div class="editor-footer">
+                    <button class="footer-btn secondary" onclick="downloadEditorResult()" id="downloadBtn" disabled>
+                        ⬇️ Download
+                    </button>
+                    <button class="footer-btn primary" onclick="sendResultToChat()">
+                        💬 Send to Chat
+                    </button>
                 </div>
             </div>
             
@@ -8055,6 +8557,291 @@
                 toggleQueue();
             }
         }
+        
+        // ========================================
+        // NEW EDITOR - Canvas & Tabbed Interface
+        // ========================================
+        
+        let editorMode = 'edit';  // edit, publish, ai
+        let canvasTool = 'select';  // select, brush, eraser
+        let brushSize = 20;
+        let canvasZoom = 1;
+        let isInpaintMode = false;
+        let inpaintCanvas = null;
+        let inpaintCtx = null;
+        
+        function switchEditorMode(mode, el) {
+            editorMode = mode;
+            
+            // Update tabs
+            document.querySelectorAll('.editor-tab').forEach(t => t.classList.remove('active'));
+            if (el) el.classList.add('active');
+            
+            // Hide all panels
+            document.querySelectorAll('.editor-panel').forEach(p => p.classList.remove('active'));
+            
+            // Show selected panel
+            const panelMap = {
+                'edit': 'editPanel',
+                'publish': 'publishPanel',
+                'ai': 'aiPanel'
+            };
+            const panel = document.getElementById(panelMap[mode]);
+            if (panel) panel.classList.add('active');
+        }
+        
+        function setCanvasTool(tool, el) {
+            canvasTool = tool;
+            document.querySelectorAll('.float-tool').forEach(t => t.classList.remove('active'));
+            if (el) el.classList.add('active');
+            
+            const canvas = document.getElementById('editorMainCanvas');
+            const container = document.querySelector('.editor-canvas-container');
+            
+            if (tool === 'brush' || tool === 'eraser') {
+                container.style.cursor = 'crosshair';
+                enableInpaintMode();
+            } else {
+                container.style.cursor = 'default';
+                disableInpaintMode();
+            }
+        }
+        
+        function enableInpaintMode() {
+            const mainCanvas = document.getElementById('editorMainCanvas');
+            if (!mainCanvas || !mainCanvas.src) return;
+            
+            // Create overlay canvas for inpainting
+            if (!inpaintCanvas) {
+                inpaintCanvas = document.createElement('canvas');
+                inpaintCanvas.id = 'inpaintOverlay';
+                inpaintCanvas.style.cssText = 'position:absolute;top:0;left:0;pointer-events:auto;cursor:crosshair;';
+                mainCanvas.parentElement.appendChild(inpaintCanvas);
+                
+                inpaintCtx = inpaintCanvas.getContext('2d');
+                
+                // Drawing handlers
+                let isDrawing = false;
+                
+                inpaintCanvas.addEventListener('mousedown', (e) => {
+                    isDrawing = true;
+                    draw(e);
+                });
+                
+                inpaintCanvas.addEventListener('mousemove', (e) => {
+                    if (isDrawing) draw(e);
+                });
+                
+                inpaintCanvas.addEventListener('mouseup', () => isDrawing = false);
+                inpaintCanvas.addEventListener('mouseleave', () => isDrawing = false);
+                
+                function draw(e) {
+                    const rect = inpaintCanvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    inpaintCtx.beginPath();
+                    inpaintCtx.arc(x, y, brushSize / 2, 0, Math.PI * 2);
+                    
+                    if (canvasTool === 'brush') {
+                        inpaintCtx.fillStyle = 'rgba(139, 92, 246, 0.5)';
+                        inpaintCtx.fill();
+                    } else if (canvasTool === 'eraser') {
+                        inpaintCtx.globalCompositeOperation = 'destination-out';
+                        inpaintCtx.fill();
+                        inpaintCtx.globalCompositeOperation = 'source-over';
+                    }
+                }
+            }
+            
+            // Size overlay to match image
+            inpaintCanvas.width = mainCanvas.offsetWidth;
+            inpaintCanvas.height = mainCanvas.offsetHeight;
+            inpaintCanvas.style.display = 'block';
+        }
+        
+        function disableInpaintMode() {
+            if (inpaintCanvas) {
+                inpaintCanvas.style.display = 'none';
+            }
+        }
+        
+        function setBrushSize(size) {
+            brushSize = parseInt(size);
+            const label = document.getElementById('brushSizeLabel');
+            if (label) label.textContent = size + 'px';
+        }
+        
+        function zoomCanvas(direction) {
+            if (direction === 'in') {
+                canvasZoom = Math.min(canvasZoom * 1.25, 4);
+            } else {
+                canvasZoom = Math.max(canvasZoom / 1.25, 0.25);
+            }
+            applyCanvasZoom();
+        }
+        
+        function fitCanvas() {
+            canvasZoom = 1;
+            applyCanvasZoom();
+        }
+        
+        function applyCanvasZoom() {
+            const canvas = document.getElementById('editorMainCanvas');
+            if (canvas) {
+                canvas.style.transform = `scale(${canvasZoom})`;
+                canvas.style.transformOrigin = 'center center';
+            }
+        }
+        
+        function switchMediaType(type, el) {
+            document.querySelectorAll('.media-type-btn').forEach(b => b.classList.remove('active'));
+            if (el) el.classList.add('active');
+            
+            // Update quick tools based on media type
+            updateQuickTools(type);
+        }
+        
+        function updateQuickTools(type) {
+            const toolsGrid = document.getElementById('quickToolsGrid');
+            if (!toolsGrid) return;
+            
+            const toolSets = {
+                'image': [
+                    { icon: '🔲', label: 'Remove BG', action: 'remove_background' },
+                    { icon: '🔍', label: 'Upscale', action: 'upscale' },
+                    { icon: '✨', label: 'Enhance', action: 'enhance' },
+                    { icon: '🎨', label: 'Colorize', action: 'colorize' },
+                    { icon: '🎭', label: 'Style', action: 'style_transfer' },
+                    { icon: '✏️', label: 'Inpaint', action: 'inpaint' },
+                    { icon: '🎬', label: 'Animate', action: 'image_to_video' },
+                    { icon: '🧊', label: 'To 3D', action: 'image_to_3d' }
+                ],
+                'video': [
+                    { icon: '🐌', label: 'Slow-Mo', action: 'slow_motion' },
+                    { icon: '⚡', label: 'Smooth', action: 'interpolate' },
+                    { icon: '🔍', label: 'Upscale', action: 'video_upscale' },
+                    { icon: '📷', label: 'Stabilize', action: 'stabilize' },
+                    { icon: '🔲', label: 'Remove BG', action: 'remove_video_background' },
+                    { icon: '🎵', label: 'Add Music', action: 'add_music' },
+                    { icon: '🎤', label: 'Voiceover', action: 'add_voiceover' },
+                    { icon: '💬', label: 'Captions', action: 'add_captions' }
+                ],
+                'audio': [
+                    { icon: '🎤', label: 'Vocals', action: 'separate_vocals' },
+                    { icon: '🎸', label: 'Stems', action: 'extract_stems' },
+                    { icon: '✨', label: 'Enhance', action: 'audio_enhance' },
+                    { icon: '🔇', label: 'Denoise', action: 'denoise' },
+                    { icon: '🗣️', label: 'TTS', action: 'text_to_speech' },
+                    { icon: '🎼', label: 'Gen Music', action: 'music_generation' },
+                    { icon: '👤', label: 'Clone', action: 'voice_clone' },
+                    { icon: '📝', label: 'Transcribe', action: 'transcribe' }
+                ]
+            };
+            
+            const tools = toolSets[type] || toolSets['image'];
+            toolsGrid.innerHTML = tools.map(t => `
+                <button class="quick-tool" onclick="applyTool('${t.action}')">
+                    <span class="quick-tool-icon">${t.icon}</span>
+                    <span>${t.label}</span>
+                </button>
+            `).join('');
+        }
+        
+        function publishTo(platform) {
+            const platformNames = {
+                'printify': 'Printify',
+                'instagram': 'Instagram',
+                'tiktok': 'TikTok',
+                'youtube': 'YouTube',
+                'twitter': 'X/Twitter',
+                'facebook': 'Facebook',
+                'shopify': 'Shopify',
+                'etsy': 'Etsy'
+            };
+            
+            const name = platformNames[platform] || platform;
+            
+            // Get current file
+            const fileUrl = document.getElementById('editorFileUrl')?.value?.trim();
+            if (!fileUrl) {
+                showEditorStatus('Please add a file to publish', 'error');
+                return;
+            }
+            
+            // Send to chat for processing
+            const instruction = `Publish this to ${name}: ${fileUrl}`;
+            document.getElementById('chatInput').value = instruction;
+            sendMessage();
+            
+            showEditorStatus(`Publishing to ${name}...`, 'processing');
+        }
+        
+        async function generateFromAI() {
+            const prompt = document.getElementById('aiPromptInput')?.value?.trim();
+            if (!prompt) {
+                showEditorStatus('Please enter a prompt', 'error');
+                return;
+            }
+            
+            showEditorStatus('Generating...', 'processing');
+            
+            // Send to chat for AI generation
+            document.getElementById('chatInput').value = `Generate: ${prompt}`;
+            sendMessage();
+        }
+        
+        function transformMedia(type) {
+            const fileUrl = document.getElementById('editorFileUrl')?.value?.trim();
+            if (!fileUrl && !['text_to_image', 'text_to_video', 'text_to_audio', 'text_to_3d'].includes(type)) {
+                showEditorStatus('Please add a file first', 'error');
+                return;
+            }
+            
+            const transformMap = {
+                'img_to_vid': 'Convert this image to video/animation',
+                'img_to_3d': 'Convert this image to 3D model',
+                'vid_to_gif': 'Convert this video to GIF',
+                'audio_to_text': 'Transcribe this audio to text',
+                'text_to_image': 'Generate image from text',
+                'text_to_video': 'Generate video from text'
+            };
+            
+            const instruction = transformMap[type] || `Transform to ${type}`;
+            document.getElementById('chatInput').value = fileUrl ? `${instruction}: ${fileUrl}` : instruction;
+            sendMessage();
+        }
+        
+        function downloadFromEditor() {
+            const resultPreview = document.getElementById('editorResultPreview');
+            const img = resultPreview?.querySelector('img');
+            const video = resultPreview?.querySelector('video');
+            const source = img?.src || video?.src;
+            
+            if (source) {
+                const a = document.createElement('a');
+                a.href = source;
+                a.download = 'otto-edited.' + (video ? 'mp4' : 'png');
+                a.click();
+            } else {
+                showEditorStatus('No result to download', 'error');
+            }
+        }
+        
+        function editMore() {
+            const resultPreview = document.getElementById('editorResultPreview');
+            const img = resultPreview?.querySelector('img');
+            const video = resultPreview?.querySelector('video');
+            const source = img?.src || video?.src;
+            
+            if (source) {
+                document.getElementById('editorFileUrl').value = source;
+                handleEditorUrlInput();
+                document.getElementById('editorResultSection')?.classList.remove('visible');
+            }
+        }
+        
+        // ========================================
         
         // Current editor media type
         let currentEditorMediaType = 'image';
