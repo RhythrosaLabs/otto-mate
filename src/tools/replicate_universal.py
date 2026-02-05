@@ -840,7 +840,8 @@ class ReplicateUniversal(ToolBase):
         # ═══════════════════════════════════════════════════════════════
         pod_keywords = ["t-shirt", "tshirt", "shirt design", "print design", "sticker", "mug design", "poster", "vector", "illustration", "clipart"]
         if any(kw in desc_lower for kw in pod_keywords):
-            return ("image", "recraft-ai/recraft-v3", {"style": "vector_illustration"})
+            # Use valid Recraft style (digital_illustration/2d_art_poster for vector/illustration)
+            return ("image", "recraft-ai/recraft-v3", {"style": "digital_illustration/2d_art_poster"})
         
         # ═══════════════════════════════════════════════════════════════
         # LOGO & BRANDING DETECTION
@@ -1077,7 +1078,7 @@ class ReplicateUniversal(ToolBase):
             inputs["num_outputs"] = 1
             
             # Smart aspect ratio detection
-            if "flux" in selected_model:
+            if "flux" in selected_model.lower():
                 # Detect aspect ratio from natural language in description
                 detected_ratio = self._detect_aspect_ratio_from_text(description)
                 
@@ -1091,6 +1092,40 @@ class ReplicateUniversal(ToolBase):
                     logger.info(f"Detected aspect ratio from prompt: {detected_ratio}")
                 else:
                     inputs.setdefault("aspect_ratio", "1:1")
+                    
+            elif "recraft" in selected_model.lower():
+                # Validate and fix Recraft style - Recraft requires specific style formats
+                valid_recraft_styles = [
+                    "any", "realistic_image", "digital_illustration",
+                    "digital_illustration/pixel_art", "digital_illustration/hand_drawn",
+                    "digital_illustration/grain", "digital_illustration/infantile_sketch",
+                    "digital_illustration/2d_art_poster", "digital_illustration/handmade_3d",
+                    "digital_illustration/hand_drawn_outline", "digital_illustration/engraving_color",
+                    "digital_illustration/2d_art_poster_2", "vector_illustration"
+                ]
+                # Map common user styles to valid Recraft styles
+                recraft_style_map = {
+                    "vector": "digital_illustration/2d_art_poster",
+                    "vector_illustration": "digital_illustration/2d_art_poster",
+                    "illustration": "digital_illustration",
+                    "cartoon": "digital_illustration/infantile_sketch",
+                    "realistic": "realistic_image",
+                    "minimal": "digital_illustration/2d_art_poster",
+                    "cute": "digital_illustration/infantile_sketch",
+                    "kawaii": "digital_illustration/infantile_sketch",
+                    "hand_drawn": "digital_illustration/hand_drawn",
+                    "pixel": "digital_illustration/pixel_art",
+                    "3d": "digital_illustration/handmade_3d",
+                }
+                current_style = inputs.get("style", "")
+                if current_style and current_style not in valid_recraft_styles:
+                    # Try to map to valid style
+                    mapped = recraft_style_map.get(current_style.lower(), "digital_illustration/2d_art_poster")
+                    logger.info(f"Mapping invalid Recraft style '{current_style}' → '{mapped}'")
+                    inputs["style"] = mapped
+                elif not current_style:
+                    inputs["style"] = "digital_illustration/2d_art_poster"  # Default
+                    
             elif width and height:
                 inputs["width"] = width
                 inputs["height"] = height
