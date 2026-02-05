@@ -872,10 +872,58 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 14px;
-            max-width: 700px;
-            margin-top: 20px;
+            max-width: 100%;
+            margin-top: 12px;
             opacity: 0;
-            animation: fadeInUp 0.6s ease 1.8s forwards;
+            animation: fadeInUp 0.6s ease 0.3s forwards;
+        }
+        
+        /* Workflow Category System */
+        .workflow-categories {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            max-width: 900px;
+            margin-top: 28px;
+            max-height: 50vh;
+            overflow-y: auto;
+            padding-right: 8px;
+            opacity: 0;
+            animation: fadeInUp 0.6s ease 1.5s forwards;
+        }
+        
+        .workflow-category {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.03) 0%, rgba(139, 92, 246, 0.02) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.1);
+            border-radius: 16px;
+            padding: 16px 18px 18px;
+        }
+        
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(139, 92, 246, 0.08);
+        }
+        
+        .category-icon {
+            font-size: 20px;
+        }
+        
+        .category-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        
+        .workflow-category .suggestions {
+            animation: none;
+            opacity: 1;
+            margin-top: 0;
         }
         
         .suggestion {
@@ -3647,11 +3695,15 @@
             .suggestion-text { font-size: 12px; }
             .suggestion-desc { font-size: 10px; }
             .welcome h1 { font-size: 28px; }
+            .workflow-categories { max-height: 40vh; gap: 16px; }
+            .workflow-category { padding: 12px 14px; }
+            .category-title { font-size: 12px; }
         }
         
         @media (max-width: 480px) {
             .suggestions { grid-template-columns: 1fr; }
             .welcome h1 { font-size: 24px; }
+            .workflow-categories { max-height: 35vh; }
         }
         
         /* Context Menu */
@@ -3875,51 +3927,246 @@
                                 <h1><span class="typing-text">How can I help you?</span></h1>
                                 <p>I can create images, videos, design and publish products, perform complex workflows, research the web, and automate all ends of your entire business.</p>
                             </div>
-                            <div class="suggestions">
-                                <div class="suggestion" onclick="sendSuggestion('Design a cute cat illustration, put it on a mug and t-shirt on Printify, and write a marketing blog post about it')">
-                                    <div class="suggestion-icon">🚀</div>
-                                    <div class="suggestion-text">Design → Print → Blog</div>
-                                    <div class="suggestion-desc">Full product launch workflow</div>
+                            <!-- Workflow Category Sections -->
+                            <div class="workflow-categories">
+                                <!-- E-Commerce Automation -->
+                                <div class="workflow-category">
+                                    <div class="category-header">
+                                        <span class="category-icon">🛒</span>
+                                        <span class="category-title">E-Commerce Automation</span>
+                                    </div>
+                                    <div class="suggestions">
+                                        <div class="suggestion" onclick="sendSuggestion('Design a cute cat illustration, put it on a mug and t-shirt on Printify, and write a marketing blog post about it')">
+                                            <div class="suggestion-icon">🚀</div>
+                                            <div class="suggestion-text">Design → Print → Blog</div>
+                                            <div class="suggestion-desc">Full product launch workflow</div>
+                                        </div>
+                                        <div class="suggestion" onclick="sendSuggestion('Create a complete seasonal collection: 5 autumn-themed designs, put them on hoodies and mugs, write product descriptions, and publish to my store')">
+                                            <div class="suggestion-icon">🍂</div>
+                                            <div class="suggestion-text">Seasonal Collection Launch</div>
+                                            <div class="suggestion-desc">Multi-product store update</div>
+                                        </div>
+                                        <div class="suggestion" onclick="sendSuggestion('Research trending pet products, design 3 unique dog-themed graphics, and create products on my Printify store')">
+                                            <div class="suggestion-icon">📊</div>
+                                            <div class="suggestion-text">Research → Design → Sell</div>
+                                            <div class="suggestion-desc">Market-driven product creation</div>
+                                        </div>
+                                        <div class="suggestion" onclick="sendSuggestion('Launch a flash sale campaign: create 10 limited edition designs, publish them all to Printify, generate urgency-focused ad copy, and create Instagram stories')">
+                                            <div class="suggestion-icon">⚡</div>
+                                            <div class="suggestion-text">Flash Sale Campaign</div>
+                                            <div class="suggestion-desc">Limited edition product blitz</div>
+                                        </div>
+                                        <div class="suggestion" onclick="sendSuggestion('Sync my Printify inventory with Shopify, identify out-of-stock items, and suggest restocking priorities based on sales data')">
+                                            <div class="suggestion-icon">🔄</div>
+                                            <div class="suggestion-text">Inventory Sync & Restock</div>
+                                            <div class="suggestion-desc">Cross-platform inventory audit</div>
+                                        </div>
+                                        <div class="suggestion" onclick="sendSuggestion('Create a niche product line: research Y2K aesthetic trends, generate 8 vintage-inspired designs, create stickers and posters, write nostalgic product descriptions')">
+                                            <div class="suggestion-icon">💿</div>
+                                            <div class="suggestion-text">Niche Product Line Builder</div>
+                                            <div class="suggestion-desc">Trend-based collection creator</div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="suggestion" onclick="sendSuggestion('Research trending pet products, design 3 unique dog-themed graphics, and create products on my Printify store')">
-                                    <div class="suggestion-icon">📊</div>
-                                    <div class="suggestion-text">Research → Design → Sell</div>
-                                    <div class="suggestion-desc">Market-driven product creation</div>
+
+                                <!-- Video & Media Production -->
+                                <div class="workflow-category">
+                                    <div class="category-header">
+                                        <span class="category-icon">🎬</span>
+                                        <span class="category-title">Video & Media Production</span>
+                                    </div>
+                                    <div class="suggestions">
+                                        <div class="suggestion" onclick="sendSuggestion('Create a cinematic 10-second promo video for a luxury watch brand with dramatic lighting and epic music')">
+                                            <div class="suggestion-icon">⌚</div>
+                                            <div class="suggestion-text">Cinematic Promo Video</div>
+                                            <div class="suggestion-desc">Apple-quality commercial</div>
+                                        </div>
+                                        <div class="suggestion" onclick="sendSuggestion('Generate ambient lo-fi music and create a 30-second video loop with calming nature visuals for my meditation app')">
+                                            <div class="suggestion-icon">🎵</div>
+                                            <div class="suggestion-text">Music + Video Creation</div>
+                                            <div class="suggestion-desc">Custom audio and visuals</div>
+                                        </div>
+                                        <div class="suggestion" onclick="sendSuggestion('Create a TikTok content bundle: 5 short-form videos with trending hooks, product showcases, and viral-style edits for my clothing brand')">
+                                            <div class="suggestion-icon">📱</div>
+                                            <div class="suggestion-text">TikTok Content Bundle</div>
+                                            <div class="suggestion-desc">5 viral-ready short videos</div>
+                                        </div>
+                                        <div class="suggestion" onclick="sendSuggestion('Create YouTube channel assets: animated intro, outro, subscribe reminder, thumbnail templates, and channel banner for a gaming channel')">
+                                            <div class="suggestion-icon">▶️</div>
+                                            <div class="suggestion-text">YouTube Creator Kit</div>
+                                            <div class="suggestion-desc">Complete channel branding</div>
+                                        </div>
+                                        <div class="suggestion" onclick="sendSuggestion('Generate a product showcase video: fetch my top-selling Printify product mockups, animate them with AI, add voiceover explaining features, and background music')">
+                                            <div class="suggestion-icon">🛍️</div>
+                                            <div class="suggestion-text">Product Showcase Video</div>
+                                            <div class="suggestion-desc">Animated product demo</div>
+                                        </div>
+                                        <div class="suggestion" onclick="sendSuggestion('Create an ad campaign package: 15-second ad video, 30-second extended cut, 5 different aspect ratios for each platform, and thumbnail variants')">
+                                            <div class="suggestion-icon">📺</div>
+                                            <div class="suggestion-text">Multi-Platform Ad Package</div>
+                                            <div class="suggestion-desc">All formats, all platforms</div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="suggestion" onclick="sendSuggestion('Create a professional logo for a coffee shop called Morning Brew, generate social media posts, and write website copy')">
-                                    <div class="suggestion-icon">☕</div>
-                                    <div class="suggestion-text">Brand Identity Package</div>
-                                    <div class="suggestion-desc">Logo, social, and website copy</div>
+
+                                <!-- Social Media & Marketing -->
+                                <div class="workflow-category">
+                                    <div class="category-header">
+                                        <span class="category-icon">📣</span>
+                                        <span class="category-title">Social Media & Marketing</span>
+                                    </div>
+                                    <div class="suggestions">
+                                        <div class="suggestion" onclick="sendSuggestion('Create a professional logo for a coffee shop called Morning Brew, generate social media posts, and write website copy')">
+                                            <div class="suggestion-icon">☕</div>
+                                            <div class="suggestion-text">Brand Identity Package</div>
+                                            <div class="suggestion-desc">Logo, social, and website copy</div>
+                                        </div>
+                                        <div class="suggestion" onclick="sendSuggestion('Generate a 2-week content calendar: 14 Instagram posts with graphics, captions, hashtags, optimal posting times, and corresponding Stories content')">
+                                            <div class="suggestion-icon">📅</div>
+                                            <div class="suggestion-text">Content Calendar Generator</div>
+                                            <div class="suggestion-desc">2 weeks of scheduled posts</div>
+                                        </div>
+                                        <div class="suggestion" onclick="sendSuggestion('Build an influencer outreach campaign: identify 20 micro-influencers in my niche, draft personalized DM templates, create a collaboration media kit')">
+                                            <div class="suggestion-icon">🤝</div>
+                                            <div class="suggestion-text">Influencer Outreach Kit</div>
+                                            <div class="suggestion-desc">Templates + target list</div>
+                                        </div>
+                                        <div class="suggestion" onclick="sendSuggestion('Create a hashtag strategy: research 50 high-performing hashtags in my niche, organize by reach tier, create themed hashtag sets for different post types')">
+                                            <div class="suggestion-icon">#️⃣</div>
+                                            <div class="suggestion-text">Hashtag Strategy Builder</div>
+                                            <div class="suggestion-desc">Researched hashtag sets</div>
+                                        </div>
+                                        <div class="suggestion" onclick="sendSuggestion('Launch a cross-platform campaign: create coordinated posts for Instagram, TikTok, Twitter, LinkedIn, and Pinterest promoting my new product collection')">
+                                            <div class="suggestion-icon">🌐</div>
+                                            <div class="suggestion-text">Cross-Platform Campaign</div>
+                                            <div class="suggestion-desc">All social channels at once</div>
+                                        </div>
+                                        <div class="suggestion" onclick="sendSuggestion('Create a viral challenge campaign: design a branded hashtag challenge, create template graphics, write participation instructions, draft 10 seed posts')">
+                                            <div class="suggestion-icon">🔥</div>
+                                            <div class="suggestion-text">Viral Challenge Creator</div>
+                                            <div class="suggestion-desc">Hashtag challenge kit</div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="suggestion" onclick="sendSuggestion('Generate 5 unique space-themed wallpaper designs in portrait mode using Flux Pro and create framed art products for each')">
-                                    <div class="suggestion-icon">🌌</div>
-                                    <div class="suggestion-text">Art Collection → Framed Prints</div>
-                                    <div class="suggestion-desc">Premium wall art products</div>
+
+                                <!-- Research & Analytics -->
+                                <div class="workflow-category">
+                                    <div class="category-header">
+                                        <span class="category-icon">🔬</span>
+                                        <span class="category-title">Research & Analytics</span>
+                                    </div>
+                                    <div class="suggestions">
+                                        <div class="suggestion" onclick="sendSuggestion('Analyze my top 5 competitors in the wellness space, identify gaps, and create 3 unique product designs to fill them')">
+                                            <div class="suggestion-icon">🔍</div>
+                                            <div class="suggestion-text">Competitive Gap Analysis</div>
+                                            <div class="suggestion-desc">Find market opportunities</div>
+                                        </div>
+                                        <div class="suggestion" onclick="sendSuggestion('Generate a trend report: research the top 10 emerging trends in sustainable fashion for 2026, analyze consumer sentiment, and suggest product opportunities')">
+                                            <div class="suggestion-icon">📈</div>
+                                            <div class="suggestion-text">Trend Discovery Report</div>
+                                            <div class="suggestion-desc">Emerging market insights</div>
+                                        </div>
+                                        <div class="suggestion" onclick="sendSuggestion('Build customer personas: research my target demographic, create 3 detailed buyer personas with pain points, motivations, and purchasing behaviors')">
+                                            <div class="suggestion-icon">👥</div>
+                                            <div class="suggestion-text">Customer Persona Builder</div>
+                                            <div class="suggestion-desc">Detailed buyer profiles</div>
+                                        </div>
+                                        <div class="suggestion" onclick="sendSuggestion('Conduct an SEO competitor analysis: identify top 10 ranking competitors for my keywords, analyze their content strategies, and create an action plan to outrank them')">
+                                            <div class="suggestion-icon">🎯</div>
+                                            <div class="suggestion-text">SEO Competitor Analysis</div>
+                                            <div class="suggestion-desc">Rank higher than competitors</div>
+                                        </div>
+                                        <div class="suggestion" onclick="sendSuggestion('Create a market sizing report: research the total addressable market for eco-friendly pet products, segment by category, and identify the fastest-growing niches')">
+                                            <div class="suggestion-icon">📊</div>
+                                            <div class="suggestion-text">Market Sizing Report</div>
+                                            <div class="suggestion-desc">TAM/SAM/SOM analysis</div>
+                                        </div>
+                                        <div class="suggestion" onclick="sendSuggestion('Analyze pricing strategies: research competitor pricing in my category, identify optimal price points, and create a tiered pricing recommendation with rationale')">
+                                            <div class="suggestion-icon">💰</div>
+                                            <div class="suggestion-text">Pricing Strategy Analysis</div>
+                                            <div class="suggestion-desc">Optimize your pricing</div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="suggestion" onclick="sendSuggestion('Create a cinematic 10-second promo video for a luxury watch brand with dramatic lighting and epic music')">
-                                    <div class="suggestion-icon">🎬</div>
-                                    <div class="suggestion-text">Cinematic Promo Video</div>
-                                    <div class="suggestion-desc">Apple-quality commercial</div>
+
+                                <!-- Content & Copywriting -->
+                                <div class="workflow-category">
+                                    <div class="category-header">
+                                        <span class="category-icon">✍️</span>
+                                        <span class="category-title">Content & Copywriting</span>
+                                    </div>
+                                    <div class="suggestions">
+                                        <div class="suggestion" onclick="sendSuggestion('Write a 5-part blog series on sustainable living, generate featured images for each post, create social media teasers, and draft a newsletter announcing the series')">
+                                            <div class="suggestion-icon">📝</div>
+                                            <div class="suggestion-text">Blog Content Series</div>
+                                            <div class="suggestion-desc">5 posts + promotion assets</div>
+                                        </div>
+                                        <div class="suggestion" onclick="sendSuggestion('Create an email marketing campaign: 7-email welcome sequence with subject lines, preview text, body copy, CTAs, and A/B test variations')">
+                                            <div class="suggestion-icon">📧</div>
+                                            <div class="suggestion-text">Email Welcome Sequence</div>
+                                            <div class="suggestion-desc">7 automated emails</div>
+                                        </div>
+                                        <div class="suggestion" onclick="sendSuggestion('Generate a landing page: headline variations, hero copy, feature sections, testimonial placeholders, FAQ content, and CTA button copy for my SaaS product')">
+                                            <div class="suggestion-icon">🖥️</div>
+                                            <div class="suggestion-text">Landing Page Copy Kit</div>
+                                            <div class="suggestion-desc">Complete page content</div>
+                                        </div>
+                                        <div class="suggestion" onclick="sendSuggestion('Write product descriptions for my entire Printify catalog: fetch all products, generate SEO-optimized descriptions, include keywords, and ensure brand voice consistency')">
+                                            <div class="suggestion-icon">🏷️</div>
+                                            <div class="suggestion-text">Bulk Product Descriptions</div>
+                                            <div class="suggestion-desc">SEO-optimized copy for all</div>
+                                        </div>
+                                        <div class="suggestion" onclick="sendSuggestion('Create a press release package: write a professional press release for my product launch, create a media kit, draft pitch emails for 5 different publication types')">
+                                            <div class="suggestion-icon">📰</div>
+                                            <div class="suggestion-text">Press Release Package</div>
+                                            <div class="suggestion-desc">Media kit + pitch emails</div>
+                                        </div>
+                                        <div class="suggestion" onclick="sendSuggestion('Generate ad copy variations: create 20 different headlines, 10 body copy options, and 15 CTA variations for A/B testing my Facebook and Google ads')">
+                                            <div class="suggestion-icon">📢</div>
+                                            <div class="suggestion-text">Ad Copy Variations</div>
+                                            <div class="suggestion-desc">50+ tested variations</div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="suggestion" onclick="sendSuggestion('Analyze my top 5 competitors in the wellness space, identify gaps, and create 3 unique product designs to fill them')">
-                                    <div class="suggestion-icon">🔍</div>
-                                    <div class="suggestion-text">Competitive Analysis</div>
-                                    <div class="suggestion-desc">Research and opportunity mapping</div>
-                                </div>
-                                <div class="suggestion" onclick="sendSuggestion('Generate ambient lo-fi music and create a 30-second video loop with calming nature visuals for my meditation app')">
-                                    <div class="suggestion-icon">🎵</div>
-                                    <div class="suggestion-text">Music + Video Creation</div>
-                                    <div class="suggestion-desc">Custom audio and visuals</div>
-                                </div>
-                                <div class="suggestion" onclick="sendSuggestion('Create a complete seasonal collection: 5 autumn-themed designs, put them on hoodies and mugs, write product descriptions, and publish to my store')">
-                                    <div class="suggestion-icon">🍂</div>
-                                    <div class="suggestion-text">Seasonal Collection Launch</div>
-                                    <div class="suggestion-desc">Multi-product store update</div>
-                                </div>
-                                <div class="suggestion" onclick="sendSuggestion('Design a mascot character for a kids education app, create 5 expressions/poses, and generate promotional materials')">
-                                    <div class="suggestion-icon">🎨</div>
-                                    <div class="suggestion-text">Character Design Suite</div>
-                                    <div class="suggestion-desc">Mascot with variations</div>
+
+                                <!-- Design & Creative -->
+                                <div class="workflow-category">
+                                    <div class="category-header">
+                                        <span class="category-icon">🎨</span>
+                                        <span class="category-title">Design & Creative</span>
+                                    </div>
+                                    <div class="suggestions">
+                                        <div class="suggestion" onclick="sendSuggestion('Generate 5 unique space-themed wallpaper designs in portrait mode using Flux Pro and create framed art products for each')">
+                                            <div class="suggestion-icon">🌌</div>
+                                            <div class="suggestion-text">Art Collection → Framed Prints</div>
+                                            <div class="suggestion-desc">Premium wall art products</div>
+                                        </div>
+                                        <div class="suggestion" onclick="sendSuggestion('Design a mascot character for a kids education app, create 5 expressions/poses, and generate promotional materials')">
+                                            <div class="suggestion-icon">🐻</div>
+                                            <div class="suggestion-text">Character Design Suite</div>
+                                            <div class="suggestion-desc">Mascot with variations</div>
+                                        </div>
+                                        <div class="suggestion" onclick="sendSuggestion('Create a complete brand kit: logo in 5 variations, color palette, typography recommendations, social media templates, business card design, and brand guidelines document')">
+                                            <div class="suggestion-icon">💎</div>
+                                            <div class="suggestion-text">Complete Brand Kit</div>
+                                            <div class="suggestion-desc">Full visual identity system</div>
+                                        </div>
+                                        <div class="suggestion" onclick="sendSuggestion('Generate a sticker pack: create 12 unique sticker designs with transparent backgrounds, various sizes, and create a Printify sticker sheet product')">
+                                            <div class="suggestion-icon">🎀</div>
+                                            <div class="suggestion-text">Sticker Pack Creator</div>
+                                            <div class="suggestion-desc">12 designs + product</div>
+                                        </div>
+                                        <div class="suggestion" onclick="sendSuggestion('Design social media templates: create 10 Instagram post templates, 5 Story templates, and 3 carousel templates in a cohesive brand style')">
+                                            <div class="suggestion-icon">📐</div>
+                                            <div class="suggestion-text">Social Template Pack</div>
+                                            <div class="suggestion-desc">18 reusable templates</div>
+                                        </div>
+                                        <div class="suggestion" onclick="sendSuggestion('Create a pattern collection: design 6 seamless patterns in bohemian style, generate mockups on throw pillows, blankets, and phone cases')">
+                                            <div class="suggestion-icon">🔷</div>
+                                            <div class="suggestion-text">Pattern Collection</div>
+                                            <div class="suggestion-desc">Seamless repeats + products</div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
