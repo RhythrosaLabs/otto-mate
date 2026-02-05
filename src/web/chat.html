@@ -46,6 +46,99 @@
             --glow-cyan: rgba(34, 211, 238, 0.05);
         }
         
+        /* Theme: Aurora (Magenta/Indigo) - default */
+        [data-theme="aurora"] {
+            --bg: #000000;
+            --bg-secondary: #1a1a2e;
+            --accent-purple: #a78bfa;
+            --accent-pink: #f472b6;
+            --accent-cyan: #60a5fa;
+        }
+        
+        /* Theme: Light */
+        [data-theme="light"] {
+            --bg: #f8f9fa;
+            --bg-secondary: #ffffff;
+            --bg-sidebar: #f0f0f5;
+            --bg-chat: #ffffff;
+            --bg-card: #f5f5f8;
+            --text: #1a1a2e;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --glow-purple: rgba(167, 139, 250, 0.08);
+            --glow-blue: rgba(96, 165, 250, 0.05);
+            --glow-cyan: rgba(34, 211, 238, 0.03);
+            --sidebar-gradient: linear-gradient(180deg, 
+                rgba(99, 102, 241, 0.04) 0%, 
+                rgba(139, 92, 246, 0.02) 30%,
+                rgba(236, 72, 153, 0.02) 60%,
+                rgba(6, 182, 212, 0.02) 100%);
+        }
+        
+        /* Theme: Dark */
+        [data-theme="dark"] {
+            --bg: #0a0a0f;
+            --bg-secondary: #121218;
+            --bg-sidebar: #0d0d12;
+            --accent-purple: #8b5cf6;
+            --accent-pink: #ec4899;
+            --accent-cyan: #3b82f6;
+        }
+        
+        /* Theme: Sunset (Teal/Orange) */
+        [data-theme="sunset"] {
+            --bg: #0a0f0f;
+            --bg-secondary: #121a1a;
+            --bg-sidebar: #0a1212;
+            --accent-purple: #fb923c;
+            --accent-pink: #f97316;
+            --accent-cyan: #2dd4bf;
+            --accent-teal: #14b8a6;
+            --accent-orange: #fb923c;
+            --glow-purple: rgba(251, 146, 60, 0.15);
+            --glow-blue: rgba(45, 212, 191, 0.1);
+            --sidebar-gradient: linear-gradient(180deg, 
+                rgba(45, 212, 191, 0.08) 0%, 
+                rgba(251, 146, 60, 0.05) 50%,
+                rgba(249, 115, 22, 0.03) 100%);
+        }
+        
+        /* Theme: Ocean (Teal/Magenta) */
+        [data-theme="ocean"] {
+            --bg: #0a0a12;
+            --bg-secondary: #0f1520;
+            --bg-sidebar: #0a0f15;
+            --accent-purple: #ec4899;
+            --accent-pink: #f472b6;
+            --accent-cyan: #2dd4bf;
+            --glow-purple: rgba(236, 72, 153, 0.15);
+            --glow-blue: rgba(45, 212, 191, 0.1);
+            --sidebar-gradient: linear-gradient(180deg, 
+                rgba(45, 212, 191, 0.08) 0%, 
+                rgba(236, 72, 153, 0.05) 50%,
+                rgba(244, 114, 182, 0.03) 100%);
+        }
+        
+        /* Theme: Cosmic (Full spectrum) */
+        [data-theme="cosmic"] {
+            --bg: #05050a;
+            --bg-secondary: #10101a;
+            --bg-sidebar: #080810;
+            --accent-purple: #a78bfa;
+            --accent-pink: #f472b6;
+            --accent-cyan: #2dd4bf;
+            --accent-orange: #fb923c;
+            --glow-purple: rgba(167, 139, 250, 0.12);
+            --glow-blue: rgba(45, 212, 191, 0.08);
+            --glow-cyan: rgba(251, 146, 60, 0.05);
+            --sidebar-gradient: linear-gradient(180deg, 
+                rgba(167, 139, 250, 0.08) 0%, 
+                rgba(45, 212, 191, 0.05) 25%,
+                rgba(236, 72, 153, 0.04) 50%,
+                rgba(251, 146, 60, 0.03) 75%,
+                rgba(99, 102, 241, 0.04) 100%);
+        }
+        
         body {
             font-family: 'Inter', -apple-system, sans-serif;
             background: 
@@ -63,18 +156,18 @@
             position: absolute;
             top: 0;
             bottom: 0;
-            width: 6px;
+            width: 8px;
             cursor: col-resize;
             background: transparent;
-            z-index: 100;
+            z-index: 1000;
             transition: background 0.2s;
         }
         .sidebar-resize-handle:hover,
         .sidebar-resize-handle.dragging {
             background: linear-gradient(180deg, rgba(139, 92, 246, 0.5) 0%, rgba(236, 72, 153, 0.5) 100%);
         }
-        .sidebar-resize-handle.left { left: -3px; }
-        .sidebar-resize-handle.right { right: -3px; }
+        .sidebar-resize-handle.left { left: 0; }
+        .sidebar-resize-handle.right { right: 0; }
         
         /* History Sidebar - Canva/Gemini Inspired */
         .history-sidebar {
@@ -112,9 +205,11 @@
         }
         
         .history-sidebar.collapsed {
-            width: 0;
+            width: 0 !important;
+            min-width: 0 !important;
             overflow: hidden;
             border: none;
+            padding: 0;
         }
         
         .sidebar-header {
@@ -3299,6 +3394,21 @@
                         <h3>Preferences</h3>
                         <div class="setting-row">
                             <div>
+                                <div class="setting-label">🎨 Visual Theme</div>
+                                <div class="setting-desc">Customize colors and appearance</div>
+                            </div>
+                            <select class="setting-input" id="themeSelect" onchange="setTheme(this.value)" style="width:auto">
+                                <option value="aurora">Aurora (Magenta/Indigo)</option>
+                                <option value="light">Daylight (Light Mode)</option>
+                                <option value="dark">Midnight (Dark Mode)</option>
+                                <option value="system">System Default</option>
+                                <option value="sunset">Sunset (Teal/Orange)</option>
+                                <option value="ocean">Ocean (Teal/Magenta)</option>
+                                <option value="cosmic">Cosmic (Full Spectrum)</option>
+                            </select>
+                        </div>
+                        <div class="setting-row">
+                            <div>
                                 <div class="setting-label">Auto-save files</div>
                                 <div class="setting-desc">Save all generated content automatically</div>
                             </div>
@@ -4121,6 +4231,7 @@
         
         // Initialize
         async function init() {
+            loadTheme();
             await checkStatus();
             loadHistory();
             loadSettings();
@@ -6083,6 +6194,30 @@
 
         function toggleSetting(el) {
             el.classList.toggle('on');
+        }
+        
+        // Theme handling
+        function setTheme(theme) {
+            if (theme === 'system') {
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+            } else {
+                document.documentElement.setAttribute('data-theme', theme);
+            }
+            localStorage.setItem('ottoTheme', theme);
+        }
+        
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('ottoTheme') || 'aurora';
+            document.getElementById('themeSelect').value = savedTheme;
+            setTheme(savedTheme);
+            
+            // Listen for system theme changes
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+                if (localStorage.getItem('ottoTheme') === 'system') {
+                    setTheme('system');
+                }
+            });
         }
         
         function loadSettings() {
