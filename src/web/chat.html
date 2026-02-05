@@ -3050,6 +3050,539 @@
             box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
         }
 
+        /* ══════════════════════════════════════════════════════════════
+           QUEUE/CALENDAR SIDEBAR
+           ══════════════════════════════════════════════════════════════ */
+        .queue-sidebar {
+            width: 360px;
+            min-width: 300px;
+            max-width: 600px;
+            height: 100vh;
+            border-left: 1px solid rgba(139, 92, 246, 0.15);
+            background: var(--sidebar-gradient);
+            display: none;
+            flex-direction: column;
+            box-shadow: -10px 0 50px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .queue-sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 120px;
+            background: var(--sidebar-glow);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .queue-sidebar.open { display: flex; }
+        
+        .queue-header {
+            padding: 14px 16px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.04) 100%);
+            border-bottom: 1px solid rgba(139, 92, 246, 0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .queue-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #e0d4fc 0%, #c4b5fd 50%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .queue-tabs {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            background: rgba(0,0,0,0.2);
+            border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .queue-tab {
+            flex: 1;
+            padding: 10px 12px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        
+        .queue-tab:hover {
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--text);
+        }
+        
+        .queue-tab.active {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.15) 100%);
+            color: var(--accent-purple);
+            box-shadow: 0 2px 8px rgba(139, 92, 246, 0.2);
+        }
+        
+        .queue-tab .tab-count {
+            background: rgba(139, 92, 246, 0.3);
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+            min-width: 18px;
+            text-align: center;
+        }
+        
+        .queue-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            position: relative;
+            z-index: 1;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(139, 92, 246, 0.3) transparent;
+        }
+        
+        .queue-content::-webkit-scrollbar { width: 6px; }
+        .queue-content::-webkit-scrollbar-track { background: transparent; }
+        .queue-content::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, rgba(99, 102, 241, 0.4) 0%, rgba(139, 92, 246, 0.3) 100%);
+            border-radius: 3px;
+        }
+        
+        /* Mini Calendar */
+        .mini-calendar {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(139, 92, 246, 0.1);
+        }
+        
+        .calendar-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .calendar-nav button {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        
+        .calendar-nav button:hover {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--text);
+        }
+        
+        .calendar-month {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            text-align: center;
+        }
+        
+        .calendar-weekday {
+            font-size: 10px;
+            color: var(--text-muted);
+            padding: 4px;
+            text-transform: uppercase;
+        }
+        
+        .calendar-day {
+            font-size: 12px;
+            padding: 6px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s;
+            color: var(--text-muted);
+        }
+        
+        .calendar-day:hover {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--text);
+        }
+        
+        .calendar-day.today {
+            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-cyan) 100%);
+            color: white;
+            font-weight: 600;
+        }
+        
+        .calendar-day.has-tasks {
+            position: relative;
+        }
+        
+        .calendar-day.has-tasks::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background: var(--accent-pink);
+            border-radius: 50%;
+        }
+        
+        .calendar-day.selected {
+            background: rgba(139, 92, 246, 0.3);
+            color: var(--text);
+            box-shadow: inset 0 0 0 2px var(--accent-purple);
+        }
+        
+        /* Queue Items */
+        .queue-section {
+            margin-bottom: 20px;
+        }
+        
+        .queue-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .queue-section-title {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+        
+        .queue-item {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(139, 92, 246, 0.1);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+        
+        .queue-item:hover {
+            background: rgba(139, 92, 246, 0.1);
+            border-color: rgba(139, 92, 246, 0.3);
+            transform: translateX(-2px);
+        }
+        
+        .queue-item.running {
+            border-color: var(--accent-cyan);
+            background: rgba(45, 212, 191, 0.1);
+        }
+        
+        .queue-item.completed {
+            border-color: rgba(34, 197, 94, 0.3);
+            opacity: 0.7;
+        }
+        
+        .queue-item.failed {
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+        
+        .queue-item.scheduled {
+            border-color: rgba(251, 146, 60, 0.3);
+        }
+        
+        .queue-item-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.1) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        
+        .queue-item.running .queue-item-icon {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        
+        .queue-item-content {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .queue-item-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .queue-item-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .queue-item-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 500;
+        }
+        
+        .queue-item-status.running {
+            background: rgba(45, 212, 191, 0.2);
+            color: var(--accent-cyan);
+        }
+        
+        .queue-item-status.queued {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--accent-purple);
+        }
+        
+        .queue-item-status.scheduled {
+            background: rgba(251, 146, 60, 0.2);
+            color: var(--accent-orange);
+        }
+        
+        .queue-item-status.completed {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+        
+        .queue-item-status.failed {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+        
+        .queue-item-actions {
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .queue-item:hover .queue-item-actions {
+            opacity: 1;
+        }
+        
+        .queue-action-btn {
+            width: 28px;
+            height: 28px;
+            border: none;
+            background: rgba(139, 92, 246, 0.2);
+            border-radius: 6px;
+            color: var(--text-muted);
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+        }
+        
+        .queue-action-btn:hover {
+            background: rgba(139, 92, 246, 0.4);
+            color: var(--text);
+        }
+        
+        .queue-action-btn.danger:hover {
+            background: rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+        
+        /* Schedule form */
+        .schedule-form {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid rgba(139, 92, 246, 0.1);
+        }
+        
+        .schedule-form-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--text);
+        }
+        
+        .schedule-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .schedule-input {
+            flex: 1;
+            padding: 10px 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 13px;
+        }
+        
+        .schedule-input:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+        }
+        
+        .schedule-btn {
+            padding: 10px 16px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .schedule-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        }
+        
+        /* Progress bar for running items */
+        .queue-progress {
+            height: 3px;
+            background: rgba(139, 92, 246, 0.2);
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        
+        .queue-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-purple), var(--accent-cyan));
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+        
+        /* Empty state */
+        .queue-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+        
+        .queue-empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+        
+        .queue-empty p {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .queue-empty-hint {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+        
+        /* Enhanced Image Edit Overlay */
+        .image-wrapper {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+        
+        .image-edit-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 8px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s;
+            flex-wrap: wrap;
+        }
+        
+        .image-wrapper:hover .image-edit-overlay {
+            opacity: 1;
+        }
+        
+        .image-edit-btn {
+            padding: 6px 12px;
+            background: rgba(139, 92, 246, 0.8);
+            backdrop-filter: blur(4px);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .image-edit-btn:hover {
+            background: var(--accent-purple);
+            transform: translateY(-1px);
+        }
+        
+        .image-edit-btn.secondary {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .image-edit-btn.secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
         @media (max-width: 900px) {
             .history-sidebar { display: none; }
             .history-sidebar.mobile-open {
@@ -3274,6 +3807,7 @@
                 </div>
                 <button class="btn" onclick="toggleFiles()">📁 Files</button>
                 <button class="btn" onclick="toggleEditor()">✨ Editor</button>
+                <button class="btn" onclick="toggleQueue()">📋 Queue</button>
                 <button class="btn" onclick="toggleSettings()">⚙️ Settings</button>
             </div>
         </header>
@@ -3950,6 +4484,101 @@
                             <span class="status-step" data-step="prepare">📤 Prepare</span>
                             <span class="status-step" data-step="process">⚙️ Process</span>
                             <span class="status-step" data-step="complete">✅ Done</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Queue/Calendar Sidebar -->
+            <div class="queue-sidebar" id="queueSidebar">
+                <div class="sidebar-resize-handle left" data-sidebar="queueSidebar" data-direction="left"></div>
+                <div class="queue-header">
+                    <h2>📋 Queue & Schedule</h2>
+                    <button class="close-btn" onclick="toggleQueue()">×</button>
+                </div>
+                
+                <div class="queue-tabs">
+                    <button class="queue-tab active" onclick="switchQueueTab('queue', this)">
+                        🔄 Queue <span class="tab-count" id="queueCount">0</span>
+                    </button>
+                    <button class="queue-tab" onclick="switchQueueTab('scheduled', this)">
+                        📅 Scheduled <span class="tab-count" id="scheduledCount">0</span>
+                    </button>
+                    <button class="queue-tab" onclick="switchQueueTab('history', this)">
+                        📜 History
+                    </button>
+                </div>
+                
+                <div class="queue-content" id="queueContent">
+                    <!-- Queue Tab Content -->
+                    <div id="queueTabContent">
+                        <div class="queue-section">
+                            <div class="queue-section-header">
+                                <span class="queue-section-title">Active Tasks</span>
+                            </div>
+                            <div id="activeTasksList"></div>
+                        </div>
+                        
+                        <div class="queue-section">
+                            <div class="queue-section-header">
+                                <span class="queue-section-title">Pending</span>
+                            </div>
+                            <div id="pendingTasksList"></div>
+                        </div>
+                        
+                        <div class="queue-empty" id="queueEmpty">
+                            <div class="queue-empty-icon">📭</div>
+                            <p>No tasks in queue</p>
+                            <p class="queue-empty-hint">Tasks from chat will appear here</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Scheduled Tab Content -->
+                    <div id="scheduledTabContent" style="display: none;">
+                        <div class="mini-calendar">
+                            <div class="calendar-nav">
+                                <button onclick="prevMonth()">‹</button>
+                                <span class="calendar-month" id="calendarMonth">February 2026</span>
+                                <button onclick="nextMonth()">›</button>
+                            </div>
+                            <div class="calendar-grid" id="calendarGrid"></div>
+                        </div>
+                        
+                        <div class="schedule-form">
+                            <div class="schedule-form-title">Schedule New Task</div>
+                            <div class="schedule-row">
+                                <input type="text" class="schedule-input" id="scheduleTaskInput" placeholder="What should I do?">
+                            </div>
+                            <div class="schedule-row">
+                                <input type="date" class="schedule-input" id="scheduleDate">
+                                <input type="time" class="schedule-input" id="scheduleTime" value="09:00">
+                            </div>
+                            <div class="schedule-row">
+                                <select class="schedule-input" id="scheduleRepeat">
+                                    <option value="once">Once</option>
+                                    <option value="daily">Daily</option>
+                                    <option value="weekly">Weekly</option>
+                                    <option value="monthly">Monthly</option>
+                                </select>
+                                <button class="schedule-btn" onclick="scheduleTask()">📅 Schedule</button>
+                            </div>
+                        </div>
+                        
+                        <div class="queue-section" style="margin-top: 16px;">
+                            <div class="queue-section-header">
+                                <span class="queue-section-title">Upcoming</span>
+                            </div>
+                            <div id="scheduledTasksList"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- History Tab Content -->
+                    <div id="historyTabContent" style="display: none;">
+                        <div class="queue-section">
+                            <div class="queue-section-header">
+                                <span class="queue-section-title">Completed</span>
+                            </div>
+                            <div id="completedTasksList"></div>
                         </div>
                     </div>
                 </div>
@@ -4829,17 +5458,17 @@
             // Process markdown links FIRST - before URL detection
             // Markdown image links with display: ![alt](url)
             text = text.replace(/!\[([^\]]*)\]\((https?:\/\/[^\)]+)\)/g, (match, alt, url) => {
-                // Display as inline image with edit overlay
-                return `<div class="image-wrapper"><img class="inline-image" src="${url}" onclick="openLightbox('${url}')" draggable="true" ondragstart="handleImageDrag(event, '${url}')" onerror="this.outerHTML='<a href=\\'${url}\\' target=\\'_blank\\'>View Image</a>'" alt="${alt}"><div class="image-edit-overlay"><button class="image-edit-btn" onclick="sendToEditor('${url}')" title="Edit with AI">✨ Edit</button></div></div>`;
+                // Display as inline image with enhanced edit overlay
+                return `<div class="image-wrapper"><img class="inline-image" src="${url}" onclick="openLightbox('${url}')" draggable="true" ondragstart="handleImageDrag(event, '${url}')" onerror="this.outerHTML='<a href=\\'${url}\\' target=\\'_blank\\'>View Image</a>'" alt="${alt}"><div class="image-edit-overlay"><button class="image-edit-btn" onclick="sendToEditor('${url}')" title="Edit with AI">✨ Edit</button><button class="image-edit-btn secondary" onclick="quickImageEdit('${url}', 'remove_background')" title="Remove Background">🔲 BG</button><button class="image-edit-btn secondary" onclick="quickImageEdit('${url}', 'upscale')" title="Upscale">🔍 4x</button><button class="image-edit-btn secondary" onclick="downloadFromUrl('${url}')" title="Download">⬇️</button><button class="image-edit-btn secondary" onclick="addImageToQueue('${url}')" title="Add to Queue">📋</button></div></div>`;
             });
             
             // Markdown text links: [text](url) - convert to regular links
             text = text.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, (match, linkText, url) => {
                 // Check if URL is an image/video - show inline with label
                 if (url.match(/\.(png|jpg|jpeg|gif|webp)(\?|$)/i) || url.includes('replicate.delivery') || url.includes('oaidalleapiprodscus')) {
-                    return `<div class="labeled-media"><span class="media-label">${linkText}</span><div class="image-wrapper"><img class="inline-image" src="${url}" onclick="openLightbox('${url}')" draggable="true" ondragstart="handleImageDrag(event, '${url}')" onerror="this.outerHTML='<a href=\\'${url}\\' target=\\'_blank\\'>${linkText}</a>'" alt="${linkText}"><div class="image-edit-overlay"><button class="image-edit-btn" onclick="sendToEditor('${url}')" title="Edit with AI">✨ Edit</button></div></div></div>`;
+                    return `<div class="labeled-media"><span class="media-label">${linkText}</span><div class="image-wrapper"><img class="inline-image" src="${url}" onclick="openLightbox('${url}')" draggable="true" ondragstart="handleImageDrag(event, '${url}')" onerror="this.outerHTML='<a href=\\'${url}\\' target=\\'_blank\\'>${linkText}</a>'" alt="${linkText}"><div class="image-edit-overlay"><button class="image-edit-btn" onclick="sendToEditor('${url}')" title="Edit with AI">✨ Edit</button><button class="image-edit-btn secondary" onclick="quickImageEdit('${url}', 'remove_background')" title="Remove BG">🔲</button><button class="image-edit-btn secondary" onclick="quickImageEdit('${url}', 'upscale')" title="Upscale">🔍</button><button class="image-edit-btn secondary" onclick="downloadFromUrl('${url}')" title="Download">⬇️</button></div></div></div>`;
                 } else if (url.match(/\.(mp4|webm|mov)(\?|$)/i)) {
-                    return `<div class="labeled-media"><span class="media-label">${linkText}</span><div class="image-wrapper"><video class="generated-video" controls src="${url}"></video><div class="image-edit-overlay"><button class="image-edit-btn" onclick="sendToEditor('${url}')" title="Edit with AI">✨ Edit</button></div></div></div>`;
+                    return `<div class="labeled-media"><span class="media-label">${linkText}</span><div class="image-wrapper"><video class="generated-video" controls src="${url}"></video><div class="image-edit-overlay"><button class="image-edit-btn" onclick="sendToEditor('${url}')" title="Edit with AI">✨ Edit</button><button class="image-edit-btn secondary" onclick="downloadFromUrl('${url}')" title="Download">⬇️</button></div></div></div>`;
                 }
                 return `<a href="${url}" target="_blank">${linkText}</a>`;
             });
@@ -4847,7 +5476,7 @@
             // Convert standalone image URLs to inline images (not in quotes or already processed)
             text = text.replace(/(^|[^"'=])(https?:\/\/[^\s<>\)]+\.(png|jpg|jpeg|gif|webp)(\?[^\s<>\)]*)?)/gi, (match, prefix, url) => {
                 if (prefix.includes('src') || prefix.includes('href')) return match;
-                return `${prefix}<div class="image-wrapper"><img class="inline-image" src="${url}" onclick="openLightbox('${url}')" draggable="true" ondragstart="handleImageDrag(event, '${url}')" onerror="this.outerHTML='<a href=\\'${url}\\' target=\\'_blank\\'>View Image</a>'" alt="Generated image"><div class="image-edit-overlay"><button class="image-edit-btn" onclick="sendToEditor('${url}')" title="Edit with AI">✨ Edit</button></div></div>`;
+                return `${prefix}<div class="image-wrapper"><img class="inline-image" src="${url}" onclick="openLightbox('${url}')" draggable="true" ondragstart="handleImageDrag(event, '${url}')" onerror="this.outerHTML='<a href=\\'${url}\\' target=\\'_blank\\'>View Image</a>'" alt="Generated image"><div class="image-edit-overlay"><button class="image-edit-btn" onclick="sendToEditor('${url}')" title="Edit">✨ Edit</button><button class="image-edit-btn secondary" onclick="quickImageEdit('${url}', 'remove_background')" title="Remove BG">🔲</button><button class="image-edit-btn secondary" onclick="quickImageEdit('${url}', 'upscale')" title="Upscale">🔍</button><button class="image-edit-btn secondary" onclick="downloadFromUrl('${url}')" title="Download">⬇️</button></div></div>`;
             });
             
             // Convert Replicate delivery URLs to inline images (includes pbxt.replicate.delivery)
@@ -4856,9 +5485,9 @@
                 if (prefix.includes('src') || prefix.includes('href')) return match;
                 // Check if it's a video by extension
                 if (url.match(/\.(mp4|webm|mov)(\?|$)/i)) {
-                    return `${prefix}<div class="image-wrapper"><video class="generated-video" controls src="${url}"></video><div class="image-edit-overlay"><button class="image-edit-btn" onclick="sendToEditor('${url}')" title="Edit with AI">✨ Edit</button></div></div>`;
+                    return `${prefix}<div class="image-wrapper"><video class="generated-video" controls src="${url}"></video><div class="image-edit-overlay"><button class="image-edit-btn" onclick="sendToEditor('${url}')" title="Edit">✨ Edit</button><button class="image-edit-btn secondary" onclick="downloadFromUrl('${url}')" title="Download">⬇️</button></div></div>`;
                 }
-                return `${prefix}<div class="image-wrapper"><img class="inline-image" src="${url}" onclick="openLightbox('${url}')" draggable="true" ondragstart="handleImageDrag(event, '${url}')" onerror="this.outerHTML='<a href=\\'${url}\\' target=\\'_blank\\'>View Generated Content</a>'" alt="Generated content"><div class="image-edit-overlay"><button class="image-edit-btn" onclick="sendToEditor('${url}')" title="Edit with AI">✨ Edit</button></div></div>`;
+                return `${prefix}<div class="image-wrapper"><img class="inline-image" src="${url}" onclick="openLightbox('${url}')" draggable="true" ondragstart="handleImageDrag(event, '${url}')" onerror="this.outerHTML='<a href=\\'${url}\\' target=\\'_blank\\'>View Generated Content</a>'" alt="Generated content"><div class="image-edit-overlay"><button class="image-edit-btn" onclick="sendToEditor('${url}')" title="Edit">✨ Edit</button><button class="image-edit-btn secondary" onclick="quickImageEdit('${url}', 'remove_background')" title="Remove BG">🔲</button><button class="image-edit-btn secondary" onclick="quickImageEdit('${url}', 'upscale')" title="Upscale">🔍</button><button class="image-edit-btn secondary" onclick="downloadFromUrl('${url}')" title="Download">⬇️</button></div></div>`;
             });
             
             // Convert video URLs to inline video players
@@ -5283,6 +5912,7 @@
         function toggleFiles() {
             document.getElementById('settingsSidebar').classList.remove('open');
             document.getElementById('editorSidebar').classList.remove('open');
+            document.getElementById('queueSidebar').classList.remove('open');
             document.getElementById('filesSidebar').classList.toggle('open');
             if (document.getElementById('filesSidebar').classList.contains('open')) loadFiles();
         }
@@ -5485,6 +6115,7 @@
         function toggleSettings() {
             document.getElementById('filesSidebar').classList.remove('open');
             document.getElementById('editorSidebar').classList.remove('open');
+            document.getElementById('queueSidebar').classList.remove('open');
             document.getElementById('settingsSidebar').classList.toggle('open');
         }
         
@@ -5497,9 +6128,409 @@
         function toggleEditor() {
             document.getElementById('filesSidebar').classList.remove('open');
             document.getElementById('settingsSidebar').classList.remove('open');
+            document.getElementById('queueSidebar').classList.remove('open');
             document.getElementById('editorSidebar').classList.toggle('open');
         }
         
+        // Queue/Calendar System
+        let queueTasks = [];
+        let scheduledTasks = [];
+        let completedTasks = [];
+        let currentCalendarDate = new Date();
+        
+        function toggleQueue() {
+            document.getElementById('filesSidebar').classList.remove('open');
+            document.getElementById('settingsSidebar').classList.remove('open');
+            document.getElementById('editorSidebar').classList.remove('open');
+            document.getElementById('queueSidebar').classList.toggle('open');
+            if (document.getElementById('queueSidebar').classList.contains('open')) {
+                loadQueueTasks();
+                renderCalendar();
+            }
+        }
+        
+        function switchQueueTab(tab, el) {
+            document.querySelectorAll('.queue-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            
+            document.getElementById('queueTabContent').style.display = tab === 'queue' ? 'block' : 'none';
+            document.getElementById('scheduledTabContent').style.display = tab === 'scheduled' ? 'block' : 'none';
+            document.getElementById('historyTabContent').style.display = tab === 'history' ? 'block' : 'none';
+            
+            if (tab === 'scheduled') renderCalendar();
+            if (tab === 'history') renderCompletedTasks();
+        }
+        
+        async function loadQueueTasks() {
+            try {
+                const res = await fetch('/task_queue');
+                const data = await res.json();
+                queueTasks = data.tasks || [];
+                renderQueueTasks();
+            } catch (e) {
+                // Use local storage as fallback
+                queueTasks = JSON.parse(localStorage.getItem('queueTasks') || '[]');
+                renderQueueTasks();
+            }
+        }
+        
+        function renderQueueTasks() {
+            const activeTasks = queueTasks.filter(t => t.status === 'running');
+            const pendingTasks = queueTasks.filter(t => t.status === 'pending' || t.status === 'queued');
+            
+            const activeList = document.getElementById('activeTasksList');
+            const pendingList = document.getElementById('pendingTasksList');
+            const emptyState = document.getElementById('queueEmpty');
+            
+            if (activeTasks.length === 0 && pendingTasks.length === 0) {
+                emptyState.style.display = 'block';
+                activeList.innerHTML = '';
+                pendingList.innerHTML = '';
+            } else {
+                emptyState.style.display = 'none';
+                activeList.innerHTML = activeTasks.map(t => renderQueueItem(t)).join('');
+                pendingList.innerHTML = pendingTasks.map(t => renderQueueItem(t)).join('');
+            }
+            
+            document.getElementById('queueCount').textContent = queueTasks.length;
+        }
+        
+        function renderQueueItem(task) {
+            const icon = getTaskIcon(task.type || task.title);
+            const statusClass = task.status || 'queued';
+            const statusLabels = { running: '🔄 Running', queued: '⏳ Queued', pending: '⏳ Pending', completed: '✅ Done', failed: '❌ Failed' };
+            
+            return `
+                <div class="queue-item ${statusClass}" data-task-id="${task.id}">
+                    <div class="queue-item-icon">${icon}</div>
+                    <div class="queue-item-content">
+                        <div class="queue-item-title">${escapeHtml(task.title || task.instruction || 'Task')}</div>
+                        <div class="queue-item-meta">
+                            <span class="queue-item-status ${statusClass}">${statusLabels[statusClass] || statusClass}</span>
+                            <span>${formatTimeAgo(task.created_at || task.created)}</span>
+                        </div>
+                        ${task.status === 'running' ? `<div class="queue-progress"><div class="queue-progress-bar" style="width: ${task.progress || 50}%"></div></div>` : ''}
+                    </div>
+                    <div class="queue-item-actions">
+                        ${task.status === 'running' ? `<button class="queue-action-btn" onclick="pauseTask('${task.id}')" title="Pause">⏸️</button>` : ''}
+                        ${task.status !== 'running' ? `<button class="queue-action-btn" onclick="runTask('${task.id}')" title="Run now">▶️</button>` : ''}
+                        <button class="queue-action-btn danger" onclick="removeTask('${task.id}')" title="Remove">🗑️</button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function getTaskIcon(type) {
+            if (!type) return '📋';
+            const t = type.toLowerCase();
+            if (t.includes('image') || t.includes('photo')) return '🖼️';
+            if (t.includes('video')) return '🎬';
+            if (t.includes('audio') || t.includes('music')) return '🎵';
+            if (t.includes('3d')) return '🧊';
+            if (t.includes('product') || t.includes('printify')) return '🛍️';
+            if (t.includes('research') || t.includes('analyze')) return '🔍';
+            if (t.includes('write') || t.includes('blog')) return '📝';
+            if (t.includes('design')) return '🎨';
+            return '📋';
+        }
+        
+        function formatTimeAgo(timestamp) {
+            if (!timestamp) return '';
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+            const mins = Math.floor(diff / 60000);
+            if (mins < 1) return 'just now';
+            if (mins < 60) return `${mins}m ago`;
+            const hours = Math.floor(mins / 60);
+            if (hours < 24) return `${hours}h ago`;
+            const days = Math.floor(hours / 24);
+            return `${days}d ago`;
+        }
+        
+        async function addToQueue(task) {
+            const newTask = {
+                id: 'task_' + Date.now(),
+                title: task.title || task,
+                instruction: task.instruction || task,
+                type: task.type || detectTaskType(task.title || task),
+                status: 'queued',
+                created: Date.now(),
+                priority: task.priority || 'normal'
+            };
+            queueTasks.push(newTask);
+            localStorage.setItem('queueTasks', JSON.stringify(queueTasks));
+            renderQueueTasks();
+            
+            try {
+                await fetch('/task_queue', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newTask)
+                });
+            } catch (e) {}
+        }
+        
+        function detectTaskType(text) {
+            if (!text) return 'general';
+            const t = text.toLowerCase();
+            if (t.includes('image') || t.includes('photo') || t.includes('picture')) return 'image';
+            if (t.includes('video') || t.includes('animate')) return 'video';
+            if (t.includes('audio') || t.includes('music') || t.includes('sound')) return 'audio';
+            if (t.includes('3d') || t.includes('model')) return '3d';
+            return 'general';
+        }
+        
+        async function removeTask(taskId) {
+            queueTasks = queueTasks.filter(t => t.id !== taskId);
+            localStorage.setItem('queueTasks', JSON.stringify(queueTasks));
+            renderQueueTasks();
+            try {
+                await fetch(`/task_queue/${taskId}`, { method: 'DELETE' });
+            } catch (e) {}
+        }
+        
+        async function runTask(taskId) {
+            const task = queueTasks.find(t => t.id === taskId);
+            if (!task) return;
+            task.status = 'running';
+            renderQueueTasks();
+            
+            // Send to chat for execution
+            document.getElementById('input').value = task.instruction || task.title;
+            sendMessage();
+            
+            // Mark as completed after sending
+            setTimeout(() => {
+                task.status = 'completed';
+                completedTasks.unshift(task);
+                queueTasks = queueTasks.filter(t => t.id !== taskId);
+                localStorage.setItem('queueTasks', JSON.stringify(queueTasks));
+                localStorage.setItem('completedTasks', JSON.stringify(completedTasks));
+                renderQueueTasks();
+            }, 1000);
+        }
+        
+        function pauseTask(taskId) {
+            const task = queueTasks.find(t => t.id === taskId);
+            if (task) {
+                task.status = 'queued';
+                renderQueueTasks();
+            }
+        }
+        
+        // Calendar functions
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            const monthLabel = document.getElementById('calendarMonth');
+            
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+            const today = new Date();
+            
+            monthLabel.textContent = currentCalendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            
+            const weekdays = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+            let html = weekdays.map(d => `<div class="calendar-weekday">${d}</div>`).join('');
+            
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            for (let i = 0; i < firstDay; i++) {
+                html += '<div class="calendar-day" style="opacity:0.3"></div>';
+            }
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month, day);
+                const isToday = date.toDateString() === today.toDateString();
+                const hasTasks = scheduledTasks.some(t => {
+                    const taskDate = new Date(t.scheduledDate);
+                    return taskDate.toDateString() === date.toDateString();
+                });
+                
+                html += `<div class="calendar-day ${isToday ? 'today' : ''} ${hasTasks ? 'has-tasks' : ''}" 
+                             onclick="selectCalendarDate(${year}, ${month}, ${day})">${day}</div>`;
+            }
+            
+            grid.innerHTML = html;
+            
+            // Set default schedule date to today
+            const dateInput = document.getElementById('scheduleDate');
+            if (dateInput && !dateInput.value) {
+                dateInput.value = today.toISOString().split('T')[0];
+            }
+        }
+        
+        function prevMonth() {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+            renderCalendar();
+        }
+        
+        function nextMonth() {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+            renderCalendar();
+        }
+        
+        function selectCalendarDate(year, month, day) {
+            document.getElementById('scheduleDate').value = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            document.querySelectorAll('.calendar-day').forEach(d => d.classList.remove('selected'));
+            event.target.classList.add('selected');
+        }
+        
+        function scheduleTask() {
+            const taskInput = document.getElementById('scheduleTaskInput');
+            const dateInput = document.getElementById('scheduleDate');
+            const timeInput = document.getElementById('scheduleTime');
+            const repeatSelect = document.getElementById('scheduleRepeat');
+            
+            if (!taskInput.value.trim()) {
+                taskInput.focus();
+                return;
+            }
+            
+            const scheduledDate = new Date(`${dateInput.value}T${timeInput.value}`);
+            
+            const task = {
+                id: 'scheduled_' + Date.now(),
+                title: taskInput.value,
+                instruction: taskInput.value,
+                type: detectTaskType(taskInput.value),
+                status: 'scheduled',
+                scheduledDate: scheduledDate.toISOString(),
+                repeat: repeatSelect.value,
+                created: Date.now()
+            };
+            
+            scheduledTasks.push(task);
+            localStorage.setItem('scheduledTasks', JSON.stringify(scheduledTasks));
+            
+            taskInput.value = '';
+            renderScheduledTasks();
+            renderCalendar();
+            updateScheduledCount();
+        }
+        
+        function renderScheduledTasks() {
+            const list = document.getElementById('scheduledTasksList');
+            scheduledTasks = JSON.parse(localStorage.getItem('scheduledTasks') || '[]');
+            
+            const upcoming = scheduledTasks
+                .filter(t => new Date(t.scheduledDate) > new Date())
+                .sort((a, b) => new Date(a.scheduledDate) - new Date(b.scheduledDate));
+            
+            if (upcoming.length === 0) {
+                list.innerHTML = '<div class="queue-empty" style="padding: 20px;"><p style="font-size: 13px; color: var(--text-muted);">No scheduled tasks</p></div>';
+            } else {
+                list.innerHTML = upcoming.map(t => `
+                    <div class="queue-item scheduled" data-task-id="${t.id}">
+                        <div class="queue-item-icon">${getTaskIcon(t.type)}</div>
+                        <div class="queue-item-content">
+                            <div class="queue-item-title">${escapeHtml(t.title)}</div>
+                            <div class="queue-item-meta">
+                                <span class="queue-item-status scheduled">📅 ${formatScheduledDate(t.scheduledDate)}</span>
+                                ${t.repeat !== 'once' ? `<span>🔁 ${t.repeat}</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="queue-item-actions">
+                            <button class="queue-action-btn" onclick="runScheduledNow('${t.id}')" title="Run now">▶️</button>
+                            <button class="queue-action-btn danger" onclick="removeScheduledTask('${t.id}')" title="Remove">🗑️</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        function formatScheduledDate(dateStr) {
+            const date = new Date(dateStr);
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            if (date.toDateString() === today.toDateString()) {
+                return `Today ${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
+            } else if (date.toDateString() === tomorrow.toDateString()) {
+                return `Tomorrow ${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
+            } else {
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+            }
+        }
+        
+        function removeScheduledTask(taskId) {
+            scheduledTasks = scheduledTasks.filter(t => t.id !== taskId);
+            localStorage.setItem('scheduledTasks', JSON.stringify(scheduledTasks));
+            renderScheduledTasks();
+            renderCalendar();
+            updateScheduledCount();
+        }
+        
+        function runScheduledNow(taskId) {
+            const task = scheduledTasks.find(t => t.id === taskId);
+            if (!task) return;
+            
+            document.getElementById('input').value = task.instruction || task.title;
+            sendMessage();
+            
+            if (task.repeat === 'once') {
+                removeScheduledTask(taskId);
+            }
+        }
+        
+        function updateScheduledCount() {
+            scheduledTasks = JSON.parse(localStorage.getItem('scheduledTasks') || '[]');
+            document.getElementById('scheduledCount').textContent = scheduledTasks.length;
+        }
+        
+        function renderCompletedTasks() {
+            const list = document.getElementById('completedTasksList');
+            completedTasks = JSON.parse(localStorage.getItem('completedTasks') || '[]');
+            
+            if (completedTasks.length === 0) {
+                list.innerHTML = '<div class="queue-empty" style="padding: 20px;"><p style="font-size: 13px; color: var(--text-muted);">No completed tasks yet</p></div>';
+            } else {
+                list.innerHTML = completedTasks.slice(0, 20).map(t => `
+                    <div class="queue-item completed" data-task-id="${t.id}">
+                        <div class="queue-item-icon">${getTaskIcon(t.type)}</div>
+                        <div class="queue-item-content">
+                            <div class="queue-item-title">${escapeHtml(t.title)}</div>
+                            <div class="queue-item-meta">
+                                <span class="queue-item-status completed">✅ Completed</span>
+                                <span>${formatTimeAgo(t.completedAt || t.created)}</span>
+                            </div>
+                        </div>
+                        <div class="queue-item-actions">
+                            <button class="queue-action-btn" onclick="rerunTask('${t.id}')" title="Run again">🔄</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        function rerunTask(taskId) {
+            const task = completedTasks.find(t => t.id === taskId);
+            if (task) {
+                document.getElementById('input').value = task.instruction || task.title;
+                sendMessage();
+            }
+        }
+        
+        // Initialize queue on load
+        (function initQueue() {
+            scheduledTasks = JSON.parse(localStorage.getItem('scheduledTasks') || '[]');
+            completedTasks = JSON.parse(localStorage.getItem('completedTasks') || '[]');
+            updateScheduledCount();
+            
+            // Check for due scheduled tasks every minute
+            setInterval(() => {
+                const now = new Date();
+                scheduledTasks.forEach(task => {
+                    const taskDate = new Date(task.scheduledDate);
+                    if (taskDate <= now && task.status === 'scheduled') {
+                        runScheduledNow(task.id);
+                    }
+                });
+            }, 60000);
+        })();
+
         function selectMediaType(type, el) {
             currentMediaType = type;
             // Update both old and new pill selectors
@@ -5755,6 +6786,54 @@
             }, 100);
             
             showEditorStatus('File loaded! Choose an action or describe what you want.', 'success');
+        }
+        
+        // Quick image edit from chat overlay
+        async function quickImageEdit(url, action) {
+            // Add to chat as a task
+            const actionNames = {
+                'remove_background': 'Remove background from this image',
+                'upscale': 'Upscale this image to 4x resolution',
+                'enhance': 'Enhance and improve this image quality',
+                'colorize': 'Colorize this image',
+                'style_transfer': 'Apply artistic style to this image',
+                'variations': 'Create variations of this image'
+            };
+            
+            const instruction = `${actionNames[action] || action}: ${url}`;
+            document.getElementById('input').value = instruction;
+            sendMessage();
+        }
+        
+        // Download image from URL
+        function downloadFromUrl(url) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'download_' + Date.now() + getExtensionFromUrl(url);
+            a.target = '_blank';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+        
+        function getExtensionFromUrl(url) {
+            const match = url.match(/\.(\w{3,4})(\?|$)/);
+            return match ? '.' + match[1] : '.png';
+        }
+        
+        // Add image to queue for batch processing
+        function addImageToQueue(url) {
+            addToQueue({
+                title: 'Process image: ' + url.split('/').pop().substring(0, 30) + '...',
+                instruction: 'Process this image: ' + url,
+                type: 'image',
+                imageUrl: url
+            });
+            
+            // Show queue if not open
+            if (!document.getElementById('queueSidebar').classList.contains('open')) {
+                toggleQueue();
+            }
         }
         
         // Current editor media type
