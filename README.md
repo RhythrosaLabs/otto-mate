@@ -37,7 +37,11 @@ Otto Chat is a sophisticated autonomous AI platform that combines Claude's intel
   <em>File management with colorful filter chips and premium styling</em>
 </p>
 
-
+<p align="center">
+  <img src="docs/screenshots/editor-sidebar.png" alt="Otto Chat - Editor Panel" width="100%">
+  <br>
+  <em>Powerful media editor with gradient styling and compact controls</em>
+</p>
 
 ---
 
