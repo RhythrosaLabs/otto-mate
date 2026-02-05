@@ -3654,6 +3654,354 @@
             opacity: 0.7;
         }
         
+        /* ══════════════════════════════════════════════════════════════
+           CONTACTS SIDEBAR
+           ══════════════════════════════════════════════════════════════ */
+        .contacts-sidebar {
+            width: 360px;
+            min-width: 300px;
+            max-width: 600px;
+            border-left: 1px solid rgba(45, 212, 191, 0.15);
+            background: var(--sidebar-gradient);
+            display: none;
+            flex-direction: column;
+            box-shadow: -10px 0 50px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            position: relative;
+            min-height: 0;
+        }
+        
+        .contacts-sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 120px;
+            background: linear-gradient(180deg, rgba(45, 212, 191, 0.08) 0%, transparent 100%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .contacts-sidebar.open { display: flex; }
+        
+        .contacts-header {
+            padding: 14px 16px;
+            background: linear-gradient(135deg, rgba(45, 212, 191, 0.08) 0%, rgba(34, 211, 238, 0.04) 100%);
+            border-bottom: 1px solid rgba(45, 212, 191, 0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .contacts-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #a7f3d0 0%, #5eead4 50%, #2dd4bf 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .contacts-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .contacts-add-btn {
+            padding: 6px 12px;
+            background: linear-gradient(135deg, rgba(45, 212, 191, 0.15), rgba(34, 211, 238, 0.15));
+            border: 1px solid rgba(45, 212, 191, 0.3);
+            border-radius: 6px;
+            color: var(--accent-cyan);
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .contacts-add-btn:hover {
+            background: linear-gradient(135deg, rgba(45, 212, 191, 0.25), rgba(34, 211, 238, 0.25));
+            border-color: var(--accent-cyan);
+            transform: translateY(-1px);
+        }
+        
+        .contacts-search {
+            padding: 12px 16px;
+            background: rgba(0,0,0,0.2);
+            border-bottom: 1px solid rgba(45, 212, 191, 0.1);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .contacts-search-input {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(45, 212, 191, 0.2);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 13px;
+        }
+        
+        .contacts-search-input:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+        }
+        
+        .contacts-search-input::placeholder {
+            color: var(--text-muted);
+        }
+        
+        .contacts-tabs {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            background: rgba(0,0,0,0.15);
+            border-bottom: 1px solid rgba(45, 212, 191, 0.1);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .contacts-tab {
+            flex: 1;
+            padding: 10px 12px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        
+        .contacts-tab:hover {
+            background: rgba(45, 212, 191, 0.1);
+            color: var(--text);
+        }
+        
+        .contacts-tab.active {
+            background: linear-gradient(135deg, rgba(45, 212, 191, 0.2) 0%, rgba(34, 211, 238, 0.15) 100%);
+            color: var(--accent-cyan);
+            box-shadow: 0 2px 8px rgba(45, 212, 191, 0.2);
+        }
+        
+        .contacts-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            padding-bottom: 100px;
+            position: relative;
+            z-index: 1;
+            min-height: 0;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(45, 212, 191, 0.3) transparent;
+        }
+        
+        .contacts-content::-webkit-scrollbar { width: 6px; }
+        .contacts-content::-webkit-scrollbar-track { background: transparent; }
+        .contacts-content::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, rgba(45, 212, 191, 0.4) 0%, rgba(34, 211, 238, 0.3) 100%);
+            border-radius: 3px;
+        }
+        
+        .contacts-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .contact-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(45, 212, 191, 0.1);
+            border-radius: 12px;
+            padding: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .contact-card:hover {
+            background: rgba(45, 212, 191, 0.08);
+            border-color: rgba(45, 212, 191, 0.25);
+            transform: translateX(4px);
+        }
+        
+        .contact-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .contact-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            flex-shrink: 0;
+        }
+        
+        .contact-avatar.lead {
+            background: linear-gradient(135deg, #f59e0b, #f97316);
+        }
+        
+        .contact-avatar.customer {
+            background: linear-gradient(135deg, #22c55e, #10b981);
+        }
+        
+        .contact-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .contact-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .contact-email {
+            font-size: 12px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .contact-badge {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .contact-badge.lead {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+        
+        .contact-badge.customer {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+        
+        .contact-badge.contact {
+            background: rgba(45, 212, 191, 0.2);
+            color: var(--accent-cyan);
+        }
+        
+        .contact-card-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        
+        .contact-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .contact-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 10px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .contact-card:hover .contact-actions {
+            opacity: 1;
+        }
+        
+        .contact-action-btn {
+            flex: 1;
+            padding: 8px;
+            background: rgba(45, 212, 191, 0.1);
+            border: 1px solid rgba(45, 212, 191, 0.2);
+            border-radius: 6px;
+            color: var(--text-muted);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+        
+        .contact-action-btn:hover {
+            background: rgba(45, 212, 191, 0.2);
+            color: var(--text);
+        }
+        
+        .contact-action-btn.danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+        
+        .contacts-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+        
+        .contacts-empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+        
+        .contacts-empty p {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .contacts-empty-hint {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+        
+        .contacts-add-first-btn {
+            margin-top: 16px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .contacts-add-first-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(45, 212, 191, 0.4);
+        }
+        
         /* Enhanced Image Edit Overlay */
         .image-wrapper {
             position: relative;
@@ -3941,6 +4289,7 @@
                 <button class="btn" onclick="toggleFiles()">📁 Files</button>
                 <button class="btn" onclick="toggleEditor()">✨ Editor</button>
                 <button class="btn" onclick="toggleQueue()">📋 Queue</button>
+                <button class="btn" onclick="toggleContacts()">👥 Contacts</button>
                 <button class="btn" onclick="toggleSettings()">⚙️ Settings</button>
             </div>
         </header>
@@ -4913,6 +5262,67 @@
                                 <span class="queue-section-title">Completed</span>
                             </div>
                             <div id="completedTasksList"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contacts Sidebar -->
+            <div class="contacts-sidebar" id="contactsSidebar">
+                <div class="sidebar-resize-handle left" data-sidebar="contactsSidebar" data-direction="left"></div>
+                <div class="contacts-header">
+                    <h2>👥 Contacts</h2>
+                    <div class="contacts-header-actions">
+                        <button class="contacts-add-btn" onclick="openAddContactModal()" title="Add new contact">+ Add</button>
+                        <button class="close-btn" onclick="toggleContacts()">×</button>
+                    </div>
+                </div>
+                
+                <div class="contacts-search">
+                    <input type="text" class="contacts-search-input" id="contactsSearchInput" placeholder="Search contacts..." oninput="filterContacts(this.value)">
+                </div>
+                
+                <div class="contacts-tabs">
+                    <button class="contacts-tab active" onclick="switchContactsTab('all', this)">
+                        All <span class="tab-count" id="allContactsCount">0</span>
+                    </button>
+                    <button class="contacts-tab" onclick="switchContactsTab('leads', this)">
+                        🎯 Leads
+                    </button>
+                    <button class="contacts-tab" onclick="switchContactsTab('customers', this)">
+                        💰 Customers
+                    </button>
+                </div>
+                
+                <div class="contacts-content" id="contactsContent">
+                    <!-- All Contacts Tab -->
+                    <div id="allContactsTabContent">
+                        <div class="contacts-list" id="contactsList"></div>
+                        <div class="contacts-empty" id="contactsEmpty">
+                            <div class="contacts-empty-icon">👥</div>
+                            <p>No contacts yet</p>
+                            <p class="contacts-empty-hint">Add contacts to manage your relationships</p>
+                            <button class="contacts-add-first-btn" onclick="openAddContactModal()">+ Add First Contact</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Leads Tab -->
+                    <div id="leadsTabContent" style="display: none;">
+                        <div class="contacts-list" id="leadsList"></div>
+                        <div class="contacts-empty" id="leadsEmpty">
+                            <div class="contacts-empty-icon">🎯</div>
+                            <p>No leads yet</p>
+                            <p class="contacts-empty-hint">Leads will appear when you mark contacts as leads</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Customers Tab -->
+                    <div id="customersTabContent" style="display: none;">
+                        <div class="contacts-list" id="customersList"></div>
+                        <div class="contacts-empty" id="customersEmpty">
+                            <div class="contacts-empty-icon">💰</div>
+                            <p>No customers yet</p>
+                            <p class="contacts-empty-hint">Customers will appear when leads convert</p>
                         </div>
                     </div>
                 </div>
@@ -6258,6 +6668,7 @@
             document.getElementById('settingsSidebar').classList.remove('open');
             document.getElementById('editorSidebar').classList.remove('open');
             document.getElementById('queueSidebar').classList.remove('open');
+            document.getElementById('contactsSidebar').classList.remove('open');
             document.getElementById('filesSidebar').classList.toggle('open');
             if (document.getElementById('filesSidebar').classList.contains('open')) loadFiles();
         }
@@ -6461,6 +6872,7 @@
             document.getElementById('filesSidebar').classList.remove('open');
             document.getElementById('editorSidebar').classList.remove('open');
             document.getElementById('queueSidebar').classList.remove('open');
+            document.getElementById('contactsSidebar').classList.remove('open');
             document.getElementById('settingsSidebar').classList.toggle('open');
         }
         
@@ -6474,6 +6886,7 @@
             document.getElementById('filesSidebar').classList.remove('open');
             document.getElementById('settingsSidebar').classList.remove('open');
             document.getElementById('queueSidebar').classList.remove('open');
+            document.getElementById('contactsSidebar').classList.remove('open');
             document.getElementById('editorSidebar').classList.toggle('open');
         }
         
@@ -6487,6 +6900,7 @@
             document.getElementById('filesSidebar').classList.remove('open');
             document.getElementById('settingsSidebar').classList.remove('open');
             document.getElementById('editorSidebar').classList.remove('open');
+            document.getElementById('contactsSidebar').classList.remove('open');
             document.getElementById('queueSidebar').classList.toggle('open');
             if (document.getElementById('queueSidebar').classList.contains('open')) {
                 loadQueueTasks();
@@ -6926,6 +7340,367 @@
                     }
                 });
             }, 60000);
+        })();
+
+        // ═══════════════════════════════════════════════════════════════════
+        // CONTACTS MANAGEMENT SYSTEM
+        // ═══════════════════════════════════════════════════════════════════
+        
+        let contacts = [];
+        let currentContactsFilter = 'all';
+        
+        function toggleContacts() {
+            document.getElementById('filesSidebar').classList.remove('open');
+            document.getElementById('settingsSidebar').classList.remove('open');
+            document.getElementById('editorSidebar').classList.remove('open');
+            document.getElementById('queueSidebar').classList.remove('open');
+            document.getElementById('contactsSidebar').classList.toggle('open');
+            if (document.getElementById('contactsSidebar').classList.contains('open')) {
+                loadContacts();
+            }
+        }
+        
+        function switchContactsTab(tab, el) {
+            document.querySelectorAll('.contacts-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            currentContactsFilter = tab;
+            
+            document.getElementById('allContactsTabContent').style.display = tab === 'all' ? 'block' : 'none';
+            document.getElementById('leadsTabContent').style.display = tab === 'leads' ? 'block' : 'none';
+            document.getElementById('customersTabContent').style.display = tab === 'customers' ? 'block' : 'none';
+            
+            renderContacts();
+        }
+        
+        async function loadContacts() {
+            try {
+                const res = await fetch('/api/contacts');
+                const data = await res.json();
+                if (data.success) {
+                    contacts = data.contacts || [];
+                } else {
+                    contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+                }
+            } catch (e) {
+                contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+            }
+            renderContacts();
+        }
+        
+        function renderContacts() {
+            const allList = document.getElementById('contactsList');
+            const leadsList = document.getElementById('leadsList');
+            const customersList = document.getElementById('customersList');
+            const allEmpty = document.getElementById('contactsEmpty');
+            const leadsEmpty = document.getElementById('leadsEmpty');
+            const customersEmpty = document.getElementById('customersEmpty');
+            
+            const searchQuery = (document.getElementById('contactsSearchInput')?.value || '').toLowerCase();
+            
+            // Filter by search query
+            const filteredContacts = contacts.filter(c => {
+                const name = (c.name || '').toLowerCase();
+                const email = (c.email || '').toLowerCase();
+                const company = (c.company || '').toLowerCase();
+                return name.includes(searchQuery) || email.includes(searchQuery) || company.includes(searchQuery);
+            });
+            
+            const allContacts = filteredContacts;
+            const leads = filteredContacts.filter(c => c.type === 'lead');
+            const customers = filteredContacts.filter(c => c.type === 'customer');
+            
+            // Render all contacts
+            if (allContacts.length === 0) {
+                allEmpty.style.display = 'block';
+                allList.innerHTML = '';
+            } else {
+                allEmpty.style.display = 'none';
+                allList.innerHTML = allContacts.map(c => renderContactCard(c)).join('');
+            }
+            
+            // Render leads
+            if (leads.length === 0) {
+                leadsEmpty.style.display = 'block';
+                leadsList.innerHTML = '';
+            } else {
+                leadsEmpty.style.display = 'none';
+                leadsList.innerHTML = leads.map(c => renderContactCard(c)).join('');
+            }
+            
+            // Render customers
+            if (customers.length === 0) {
+                customersEmpty.style.display = 'block';
+                customersList.innerHTML = '';
+            } else {
+                customersEmpty.style.display = 'none';
+                customersList.innerHTML = customers.map(c => renderContactCard(c)).join('');
+            }
+            
+            document.getElementById('allContactsCount').textContent = contacts.length;
+        }
+        
+        function renderContactCard(contact) {
+            const initials = getInitials(contact.name || contact.email || '?');
+            const type = contact.type || 'contact';
+            const badgeClass = type;
+            const avatarClass = type === 'lead' ? 'lead' : type === 'customer' ? 'customer' : '';
+            
+            return `
+                <div class="contact-card" onclick="viewContact('${contact.id}')">
+                    <div class="contact-card-header">
+                        <div class="contact-avatar ${avatarClass}">${initials}</div>
+                        <div class="contact-info">
+                            <div class="contact-name">${escapeHtml(contact.name || 'Unknown')}</div>
+                            <div class="contact-email">${escapeHtml(contact.email || 'No email')}</div>
+                        </div>
+                        <span class="contact-badge ${badgeClass}">${type}</span>
+                    </div>
+                    <div class="contact-card-meta">
+                        ${contact.company ? `<span class="contact-meta-item">🏢 ${escapeHtml(contact.company)}</span>` : ''}
+                        ${contact.phone ? `<span class="contact-meta-item">📱 ${escapeHtml(contact.phone)}</span>` : ''}
+                        ${contact.lastContact ? `<span class="contact-meta-item">🕐 ${formatTimeAgo(contact.lastContact)}</span>` : ''}
+                    </div>
+                    <div class="contact-actions">
+                        <button class="contact-action-btn" onclick="event.stopPropagation(); emailContact('${contact.id}')">📧 Email</button>
+                        <button class="contact-action-btn" onclick="event.stopPropagation(); chatAboutContact('${contact.id}')">💬 Chat</button>
+                        <button class="contact-action-btn" onclick="event.stopPropagation(); editContact('${contact.id}')">✏️ Edit</button>
+                        <button class="contact-action-btn danger" onclick="event.stopPropagation(); deleteContact('${contact.id}')">🗑️</button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function getInitials(name) {
+            if (!name) return '?';
+            return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        }
+        
+        function filterContacts(query) {
+            renderContacts();
+        }
+        
+        function openAddContactModal() {
+            // Create and show modal for adding contact
+            const modalHtml = `
+                <div class="modal-overlay" id="addContactModal" onclick="closeAddContactModal(event)">
+                    <div class="modal" onclick="event.stopPropagation()" style="max-width: 400px;">
+                        <div class="modal-header">
+                            <span class="modal-title">👥 Add New Contact</span>
+                            <button class="modal-close" onclick="closeAddContactModal()">×</button>
+                        </div>
+                        <div class="modal-body" style="display: flex; flex-direction: column; gap: 12px;">
+                            <input type="text" class="modal-input" id="newContactName" placeholder="Full Name" style="margin-bottom: 0;">
+                            <input type="email" class="modal-input" id="newContactEmail" placeholder="Email Address" style="margin-bottom: 0;">
+                            <input type="text" class="modal-input" id="newContactCompany" placeholder="Company (optional)" style="margin-bottom: 0;">
+                            <input type="tel" class="modal-input" id="newContactPhone" placeholder="Phone (optional)" style="margin-bottom: 0;">
+                            <select class="modal-input" id="newContactType" style="margin-bottom: 0; padding: 12px;">
+                                <option value="contact">Contact</option>
+                                <option value="lead">Lead</option>
+                                <option value="customer">Customer</option>
+                            </select>
+                            <textarea class="modal-input" id="newContactNotes" placeholder="Notes (optional)" rows="3" style="resize: vertical;"></textarea>
+                        </div>
+                        <div class="modal-footer" style="display: flex; gap: 8px; justify-content: flex-end; padding: 16px; border-top: 1px solid rgba(139, 92, 246, 0.1);">
+                            <button class="btn" onclick="closeAddContactModal()">Cancel</button>
+                            <button class="btn" style="background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));" onclick="saveNewContact()">✓ Save Contact</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            document.getElementById('newContactName').focus();
+        }
+        
+        function closeAddContactModal(event) {
+            if (event && event.target.id !== 'addContactModal') return;
+            const modal = document.getElementById('addContactModal');
+            if (modal) modal.remove();
+        }
+        
+        async function saveNewContact() {
+            const name = document.getElementById('newContactName').value.trim();
+            const email = document.getElementById('newContactEmail').value.trim();
+            const company = document.getElementById('newContactCompany').value.trim();
+            const phone = document.getElementById('newContactPhone').value.trim();
+            const type = document.getElementById('newContactType').value;
+            const notes = document.getElementById('newContactNotes').value.trim();
+            
+            if (!name && !email) {
+                alert('Please enter at least a name or email');
+                return;
+            }
+            
+            const newContact = {
+                id: 'contact_' + Date.now(),
+                name,
+                email,
+                company,
+                phone,
+                type,
+                notes,
+                createdAt: new Date().toISOString(),
+                lastContact: null
+            };
+            
+            contacts.push(newContact);
+            localStorage.setItem('contacts', JSON.stringify(contacts));
+            
+            try {
+                await fetch('/api/contacts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newContact)
+                });
+            } catch (e) {}
+            
+            closeAddContactModal();
+            renderContacts();
+        }
+        
+        function viewContact(contactId) {
+            const contact = contacts.find(c => c.id === contactId);
+            if (!contact) return;
+            
+            const modalHtml = `
+                <div class="modal-overlay" id="viewContactModal" onclick="closeViewContactModal(event)">
+                    <div class="modal" onclick="event.stopPropagation()" style="max-width: 450px;">
+                        <div class="modal-header">
+                            <span class="modal-title">👤 ${escapeHtml(contact.name || 'Contact')}</span>
+                            <button class="modal-close" onclick="closeViewContactModal()">×</button>
+                        </div>
+                        <div class="modal-body" style="padding: 20px;">
+                            <div style="text-align: center; margin-bottom: 20px;">
+                                <div class="contact-avatar ${contact.type}" style="width: 80px; height: 80px; font-size: 32px; margin: 0 auto 12px;">
+                                    ${getInitials(contact.name || contact.email)}
+                                </div>
+                                <span class="contact-badge ${contact.type}" style="font-size: 12px;">${contact.type || 'contact'}</span>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 12px;">
+                                ${contact.email ? `<div style="color: var(--text-muted); font-size: 13px;">📧 <a href="mailto:${contact.email}" style="color: var(--accent-cyan);">${escapeHtml(contact.email)}</a></div>` : ''}
+                                ${contact.phone ? `<div style="color: var(--text-muted); font-size: 13px;">📱 ${escapeHtml(contact.phone)}</div>` : ''}
+                                ${contact.company ? `<div style="color: var(--text-muted); font-size: 13px;">🏢 ${escapeHtml(contact.company)}</div>` : ''}
+                                ${contact.notes ? `<div style="color: var(--text-muted); font-size: 13px; margin-top: 8px; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 8px;">📝 ${escapeHtml(contact.notes)}</div>` : ''}
+                            </div>
+                        </div>
+                        <div class="modal-footer" style="display: flex; gap: 8px; justify-content: center; padding: 16px; border-top: 1px solid rgba(139, 92, 246, 0.1);">
+                            <button class="btn" onclick="closeViewContactModal(); emailContact('${contact.id}')">📧 Email</button>
+                            <button class="btn" onclick="closeViewContactModal(); chatAboutContact('${contact.id}')">💬 Chat</button>
+                            <button class="btn" onclick="closeViewContactModal(); editContact('${contact.id}')">✏️ Edit</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+        
+        function closeViewContactModal(event) {
+            if (event && event.target.id !== 'viewContactModal') return;
+            const modal = document.getElementById('viewContactModal');
+            if (modal) modal.remove();
+        }
+        
+        function emailContact(contactId) {
+            const contact = contacts.find(c => c.id === contactId);
+            if (contact && contact.email) {
+                window.open(`mailto:${contact.email}`, '_blank');
+            }
+        }
+        
+        function chatAboutContact(contactId) {
+            const contact = contacts.find(c => c.id === contactId);
+            if (!contact) return;
+            
+            // Close contacts sidebar and focus chat
+            document.getElementById('contactsSidebar').classList.remove('open');
+            
+            const prompt = `I want to discuss or take action regarding my contact: ${contact.name || 'Unknown'}${contact.email ? ` (${contact.email})` : ''}${contact.company ? ` from ${contact.company}` : ''}. They are currently marked as: ${contact.type || 'contact'}.`;
+            
+            document.getElementById('input').value = prompt;
+            document.getElementById('input').focus();
+        }
+        
+        function editContact(contactId) {
+            const contact = contacts.find(c => c.id === contactId);
+            if (!contact) return;
+            
+            const modalHtml = `
+                <div class="modal-overlay" id="editContactModal" onclick="closeEditContactModal(event)">
+                    <div class="modal" onclick="event.stopPropagation()" style="max-width: 400px;">
+                        <div class="modal-header">
+                            <span class="modal-title">✏️ Edit Contact</span>
+                            <button class="modal-close" onclick="closeEditContactModal()">×</button>
+                        </div>
+                        <div class="modal-body" style="display: flex; flex-direction: column; gap: 12px;">
+                            <input type="text" class="modal-input" id="editContactName" placeholder="Full Name" value="${escapeHtml(contact.name || '')}" style="margin-bottom: 0;">
+                            <input type="email" class="modal-input" id="editContactEmail" placeholder="Email Address" value="${escapeHtml(contact.email || '')}" style="margin-bottom: 0;">
+                            <input type="text" class="modal-input" id="editContactCompany" placeholder="Company (optional)" value="${escapeHtml(contact.company || '')}" style="margin-bottom: 0;">
+                            <input type="tel" class="modal-input" id="editContactPhone" placeholder="Phone (optional)" value="${escapeHtml(contact.phone || '')}" style="margin-bottom: 0;">
+                            <select class="modal-input" id="editContactType" style="margin-bottom: 0; padding: 12px;">
+                                <option value="contact" ${contact.type === 'contact' ? 'selected' : ''}>Contact</option>
+                                <option value="lead" ${contact.type === 'lead' ? 'selected' : ''}>Lead</option>
+                                <option value="customer" ${contact.type === 'customer' ? 'selected' : ''}>Customer</option>
+                            </select>
+                            <textarea class="modal-input" id="editContactNotes" placeholder="Notes (optional)" rows="3" style="resize: vertical;">${escapeHtml(contact.notes || '')}</textarea>
+                        </div>
+                        <div class="modal-footer" style="display: flex; gap: 8px; justify-content: flex-end; padding: 16px; border-top: 1px solid rgba(139, 92, 246, 0.1);">
+                            <button class="btn" onclick="closeEditContactModal()">Cancel</button>
+                            <button class="btn" style="background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));" onclick="updateContact('${contact.id}')">✓ Save Changes</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            document.getElementById('editContactName').focus();
+        }
+        
+        function closeEditContactModal(event) {
+            if (event && event.target.id !== 'editContactModal') return;
+            const modal = document.getElementById('editContactModal');
+            if (modal) modal.remove();
+        }
+        
+        async function updateContact(contactId) {
+            const contact = contacts.find(c => c.id === contactId);
+            if (!contact) return;
+            
+            contact.name = document.getElementById('editContactName').value.trim();
+            contact.email = document.getElementById('editContactEmail').value.trim();
+            contact.company = document.getElementById('editContactCompany').value.trim();
+            contact.phone = document.getElementById('editContactPhone').value.trim();
+            contact.type = document.getElementById('editContactType').value;
+            contact.notes = document.getElementById('editContactNotes').value.trim();
+            contact.updatedAt = new Date().toISOString();
+            
+            localStorage.setItem('contacts', JSON.stringify(contacts));
+            
+            try {
+                await fetch(`/api/contacts/${contactId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(contact)
+                });
+            } catch (e) {}
+            
+            closeEditContactModal();
+            renderContacts();
+        }
+        
+        async function deleteContact(contactId) {
+            if (!confirm('Delete this contact?')) return;
+            
+            contacts = contacts.filter(c => c.id !== contactId);
+            localStorage.setItem('contacts', JSON.stringify(contacts));
+            
+            try {
+                await fetch(`/api/contacts/${contactId}`, { method: 'DELETE' });
+            } catch (e) {}
+            
+            renderContacts();
+        }
+        
+        // Initialize contacts on load
+        (function initContacts() {
+            contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
         })();
 
         function selectMediaType(type, el) {

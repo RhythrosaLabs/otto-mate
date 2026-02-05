@@ -83,6 +83,13 @@ PRINTIFY_PRODUCT_CATALOG = {
     "wood print": {"blueprint_id": 408, "print_provider_id": 56, "name": "Wood Print"},
     
     # ── Bags & Accessories ──
+    # NOTE: Compound terms MUST come first to avoid partial matching issues
+    "canvas tote bag": {"blueprint_id": 36, "print_provider_id": 99, "name": "Cotton Canvas Tote Bag"},
+    "canvas tote": {"blueprint_id": 36, "print_provider_id": 99, "name": "Cotton Canvas Tote Bag"},
+    "cotton tote bag": {"blueprint_id": 36, "print_provider_id": 99, "name": "Cotton Canvas Tote Bag"},
+    "cotton tote": {"blueprint_id": 36, "print_provider_id": 99, "name": "Cotton Canvas Tote Bag"},
+    "shopping tote": {"blueprint_id": 36, "print_provider_id": 99, "name": "Cotton Canvas Tote Bag"},
+    "reusable bag": {"blueprint_id": 36, "print_provider_id": 99, "name": "Cotton Canvas Tote Bag"},
     "tote bag": {"blueprint_id": 36, "print_provider_id": 99, "name": "Cotton Tote Bag"},
     "tote": {"blueprint_id": 36, "print_provider_id": 99, "name": "Cotton Tote Bag"},
     "backpack": {"blueprint_id": 490, "print_provider_id": 56, "name": "Backpack"},
@@ -605,14 +612,19 @@ def resolve_product_type(product_type: str) -> Dict[str, Any]:
             return result
     
     # 3. Fuzzy match - check if any catalog key is contained in input
-    for key in PRINTIFY_PRODUCT_CATALOG:
+    # CRITICAL: Sort by length descending to match longer/more specific terms first
+    # This prevents "canvas tote bag" from matching "canvas" (wall art) instead of "tote bag"
+    sorted_catalog_keys = sorted(PRINTIFY_PRODUCT_CATALOG.keys(), key=len, reverse=True)
+    for key in sorted_catalog_keys:
         if key in normalized:
             result = PRINTIFY_PRODUCT_CATALOG[key].copy()
             result["matched_from"] = f"contains:{key}"
+            logger.info(f"🎯 Best match found: '{key}' in '{normalized}'")
             return result
     
     # 4. Fuzzy match - check if input is contained in any catalog key
-    for key in PRINTIFY_PRODUCT_CATALOG:
+    # Also sort by length to prefer more specific matches
+    for key in sorted_catalog_keys:
         if normalized in key:
             result = PRINTIFY_PRODUCT_CATALOG[key].copy()
             result["matched_from"] = f"partial:{normalized}→{key}"
@@ -859,6 +871,168 @@ class PrintifyTools(ToolBase):
                     continue
         
         raise last_error or Exception("Request failed after retries")
+    
+    # ═══════════════════════════════════════════════════════════════════
+    # DYNAMIC BLUEPRINT DISCOVERY - Query Printify API for product types
+    # ═══════════════════════════════════════════════════════════════════
+    
+    async def get_all_blueprints(self) -> List[Dict[str, Any]]:
+        """
+        Fetch all available blueprints from Printify API.
+        
+        Returns list of blueprints with id, title, description, and images.
+        This is the source of truth for all available product types.
+        """
+        try:
+            endpoint = "/catalog/blueprints.json"
+            result = await self._request("GET", endpoint)
+            if isinstance(result, list):
+                logger.info(f"📦 Fetched {len(result)} blueprints from Printify API")
+                return result
+            return result.get("data", []) if isinstance(result, dict) else []
+        except Exception as e:
+            logger.error(f"Failed to fetch blueprints: {e}")
+            return []
+    
+    async def search_blueprint(self, product_type: str) -> Optional[Dict[str, Any]]:
+        """
+        Search Printify catalog for a blueprint matching the product type.
+        
+        This dynamically queries the Printify API to find products that
+        may not be in our static catalog.
+        
+        Args:
+            product_type: Human-readable product type (e.g., "canvas tote bag", "mug")
+            
+        Returns:
+            Blueprint info or None if not found
+        """
+        try:
+            blueprints = await self.get_all_blueprints()
+            product_type_lower = product_type.lower().strip()
+            
+            # Score blueprints by how well they match the query
+            scores = []
+            for bp in blueprints:
+                title = bp.get("title", "").lower()
+                description = bp.get("description", "").lower()
+                
+                score = 0
+                
+                # Exact title match
+                if product_type_lower == title:
+                    score += 100
+                
+                # Title contains query
+                elif product_type_lower in title:
+                    score += 50
+                
+                # Query contains title
+                elif title in product_type_lower:
+                    score += 40
+                
+                # Word matching
+                query_words = product_type_lower.split()
+                title_words = title.split()
+                matching_words = sum(1 for w in query_words if any(w in tw for tw in title_words))
+                score += matching_words * 10
+                
+                # Description matching
+                if product_type_lower in description:
+                    score += 5
+                
+                if score > 0:
+                    scores.append((score, bp))
+            
+            # Sort by score descending
+            scores.sort(key=lambda x: x[0], reverse=True)
+            
+            if scores:
+                best_match = scores[0][1]
+                logger.info(f"🎯 Dynamic blueprint search: '{product_type}' → #{best_match.get('id')} {best_match.get('title')}")
+                
+                # Get print providers for this blueprint
+                blueprint_id = best_match.get("id")
+                providers = await self.get_print_providers(blueprint_id)
+                
+                if providers:
+                    # Pick the first available provider
+                    provider = providers[0]
+                    provider_id = provider.get("id")
+                    
+                    return {
+                        "blueprint_id": blueprint_id,
+                        "print_provider_id": provider_id,
+                        "name": best_match.get("title"),
+                        "description": best_match.get("description", ""),
+                        "matched_from": "dynamic_api_search",
+                        "match_score": scores[0][0]
+                    }
+            
+            return None
+            
+        except Exception as e:
+            logger.error(f"Dynamic blueprint search failed: {e}")
+            return None
+    
+    async def get_print_providers(self, blueprint_id: int) -> List[Dict[str, Any]]:
+        """Get available print providers for a blueprint."""
+        try:
+            endpoint = f"/catalog/blueprints/{blueprint_id}/print_providers.json"
+            result = await self._request("GET", endpoint)
+            if isinstance(result, list):
+                return result
+            return result.get("data", []) if isinstance(result, dict) else []
+        except Exception as e:
+            logger.error(f"Failed to get print providers for blueprint {blueprint_id}: {e}")
+            return []
+    
+    @tool(
+        name="printify_search_product_types",
+        description="Search Printify catalog for available product types by name. Use this to find the right blueprint for any product.",
+        category="printify"
+    )
+    async def search_product_types(self, query: str, limit: int = 10) -> Dict[str, Any]:
+        """
+        Search for product types in the Printify catalog.
+        
+        Args:
+            query: Product type to search for (e.g., "canvas tote", "mug", "hoodie")
+            limit: Max results to return
+            
+        Returns:
+            List of matching product types with blueprint IDs
+        """
+        try:
+            blueprints = await self.get_all_blueprints()
+            query_lower = query.lower().strip()
+            
+            matches = []
+            for bp in blueprints:
+                title = bp.get("title", "").lower()
+                if query_lower in title or any(word in title for word in query_lower.split()):
+                    matches.append({
+                        "blueprint_id": bp.get("id"),
+                        "title": bp.get("title"),
+                        "description": bp.get("description", "")[:100]
+                    })
+                    if len(matches) >= limit:
+                        break
+            
+            return {
+                "success": True,
+                "query": query,
+                "matches": matches,
+                "total_found": len(matches),
+                "hint": "Use the blueprint_id with printify_create_product or just use printify_smart_create_product with the product title"
+            }
+            
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e),
+                "query": query
+            }
     
     @tool(
         name="printify_get_catalog",
@@ -1207,8 +1381,23 @@ class PrintifyTools(ToolBase):
         blueprint_id = resolved["blueprint_id"]
         print_provider_id = resolved["print_provider_id"]
         product_name = resolved["name"]
+        matched_from = resolved.get("matched_from", "")
         
-        logger.info(f"🎯 Smart product creation: '{product_type}' → {product_name} (blueprint={blueprint_id}, provider={print_provider_id})")
+        # If we got a "default" fallback match, try dynamic API search for better results
+        if "default" in matched_from or "no match" in matched_from:
+            logger.info(f"⚠️ Static catalog returned default for '{product_type}', trying dynamic API search...")
+            try:
+                dynamic_result = await self.search_blueprint(product_type)
+                if dynamic_result and dynamic_result.get("blueprint_id"):
+                    blueprint_id = dynamic_result["blueprint_id"]
+                    print_provider_id = dynamic_result["print_provider_id"]
+                    product_name = dynamic_result["name"]
+                    matched_from = dynamic_result.get("matched_from", "dynamic_api")
+                    logger.info(f"✓ Dynamic API found: '{product_type}' → {product_name} (blueprint={blueprint_id})")
+            except Exception as e:
+                logger.warning(f"Dynamic API search failed, using static default: {e}")
+        
+        logger.info(f"🎯 Smart product creation: '{product_type}' → {product_name} (blueprint={blueprint_id}, provider={print_provider_id}, matched_from={matched_from})")
         
         # Get actual image URL
         actual_image_url = image_url or design_url or kwargs.get("url") or kwargs.get("design_image_url")
