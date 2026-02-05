@@ -2295,6 +2295,262 @@
         }
         .canvas-browse-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4); }
         
+        /* A/B Preview Area */
+        .editor-ab-preview {
+            display: flex;
+            gap: 8px;
+            padding: 10px 12px;
+            background: rgba(0, 0, 0, 0.2);
+            flex-shrink: 0;
+        }
+        
+        .ab-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+        
+        .ab-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            padding-left: 2px;
+        }
+        
+        .ab-content {
+            flex: 1;
+            min-height: 120px;
+            max-height: 180px;
+            background: #0a0a14;
+            border-radius: 10px;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .ab-original .ab-content {
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+        
+        .ab-result .ab-content {
+            border-color: rgba(34, 197, 94, 0.3);
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, #0a0a14 100%);
+        }
+        
+        .ab-result.has-result .ab-content {
+            border-color: rgba(34, 197, 94, 0.5);
+        }
+        
+        .ab-content img, .ab-content video {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 6px;
+        }
+        
+        .ab-content audio {
+            width: 90%;
+        }
+        
+        .ab-drop-zone {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 20px 10px;
+            text-align: center;
+        }
+        
+        .ab-drop-icon {
+            font-size: 28px;
+            opacity: 0.5;
+        }
+        
+        .ab-drop-text {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        
+        .ab-browse-btn {
+            margin-top: 4px;
+            padding: 6px 14px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .ab-browse-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 12px rgba(139, 92, 246, 0.4);
+        }
+        
+        .ab-placeholder {
+            font-size: 11px;
+            color: var(--text-muted);
+            opacity: 0.6;
+        }
+        
+        .ab-divider {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            flex-shrink: 0;
+        }
+        
+        .ab-arrow {
+            font-size: 16px;
+            color: var(--text-muted);
+            opacity: 0.5;
+        }
+        
+        /* URL Bar (compact) */
+        .editor-url-bar {
+            display: flex;
+            gap: 6px;
+            padding: 0 12px 8px 12px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+        
+        .editor-url-bar .editor-url-input {
+            flex: 1;
+            padding: 8px 10px;
+            border: 1px solid rgba(139, 92, 246, 0.15);
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.3);
+            color: var(--text);
+            font-size: 11px;
+        }
+        
+        .editor-url-bar .editor-url-input:focus {
+            outline: none;
+            border-color: #8b5cf6;
+        }
+        
+        .url-clear-btn {
+            width: 28px;
+            height: 28px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: var(--text-muted);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .url-clear-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.4);
+            color: #ef4444;
+        }
+        
+        /* Fixed Bottom Action Bar */
+        .editor-action-bar {
+            padding: 10px 12px;
+            background: linear-gradient(180deg, rgba(15, 15, 25, 0.95) 0%, rgba(10, 10, 20, 0.98) 100%);
+            border-top: 1px solid rgba(139, 92, 246, 0.15);
+            flex-shrink: 0;
+        }
+        
+        .editor-status-mini {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            padding: 6px 10px;
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 6px;
+            font-size: 11px;
+            color: var(--text);
+        }
+        
+        .editor-status-mini.visible {
+            display: flex;
+        }
+        
+        .editor-status-mini.success {
+            background: rgba(34, 197, 94, 0.15);
+            color: #22c55e;
+        }
+        
+        .editor-status-mini.error {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+        }
+        
+        .status-spinner-mini {
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(139, 92, 246, 0.3);
+            border-top-color: #8b5cf6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        .editor-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .editor-action-btn {
+            flex: 1;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        
+        .editor-action-btn.secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text);
+        }
+        
+        .editor-action-btn.secondary:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .editor-action-btn.secondary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        
+        .editor-action-btn.primary {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+            border: none;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .editor-action-btn.primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        }
+        
+        .editor-action-btn.primary.processing {
+            opacity: 0.7;
+            cursor: wait;
+        }
+        
         .canvas-preview {
             width: 100%;
             height: 100%;
@@ -4951,39 +5207,42 @@
                     <button class="editor-close" onclick="toggleEditor()">×</button>
                 </div>
                 
-                <!-- Scrollable Content -->
-                <div class="editor-scroll-content">
-                    <!-- Canvas Preview - Main focus like Canva -->
-                    <div class="editor-canvas" id="editorCanvas">
-                        <div class="canvas-placeholder" id="canvasPlaceholder">
-                            <div class="canvas-drop-area" id="canvasDropArea">
-                                <span class="canvas-icon">🖼️</span>
-                                <span class="canvas-text">Drop or select a file</span>
-                                <span class="canvas-subtext">Images, videos, audio, code, 3D</span>
-                                <button class="canvas-browse-btn" onclick="document.getElementById('editorFileInput').click()">
-                                    📁 Browse Files
-                                </button>
+                <!-- A/B Preview Area (Original vs Result) -->
+                <div class="editor-ab-preview" id="editorABPreview">
+                    <div class="ab-panel ab-original" id="abOriginal">
+                        <div class="ab-label">Original</div>
+                        <div class="ab-content" id="abOriginalContent">
+                            <div class="ab-drop-zone" id="abDropZone">
+                                <span class="ab-drop-icon">📁</span>
+                                <span class="ab-drop-text">Drop file or paste URL</span>
+                                <button class="ab-browse-btn" onclick="document.getElementById('editorFileInput').click()">Browse</button>
                             </div>
                         </div>
-                        <div class="canvas-preview" id="canvasPreview" style="display: none;"></div>
-                        <input type="file" id="editorFileInput" style="display: none;" 
-                               accept="image/*,video/*,audio/*,.obj,.glb,.gltf,.fbx,.stl,.py,.js,.html,.css,.json,.txt,.md"
-                               onchange="handleEditorFileSelect(event)">
                     </div>
-                    
-                    <!-- File Info Bar -->
-                    <div class="editor-file-info" id="editorFileInfo" style="display: none;">
-                        <span class="file-info-name" id="editorFileName">filename.png</span>
-                        <span class="file-info-size" id="editorFileSize">1.2 MB</span>
-                        <button class="file-info-clear" onclick="clearEditorFile()">✕</button>
+                    <div class="ab-divider">
+                        <span class="ab-arrow">→</span>
                     </div>
-                    
-                    <!-- URL Input -->
-                    <div class="editor-url-section">
-                        <input type="text" class="editor-url-input" id="editorFileUrl" 
-                               placeholder="Paste URL or path..."
-                               oninput="handleEditorUrlInput()">
+                    <div class="ab-panel ab-result" id="abResult">
+                        <div class="ab-label">Result</div>
+                        <div class="ab-content" id="abResultContent">
+                            <span class="ab-placeholder">Edit to see result</span>
+                        </div>
                     </div>
+                    <input type="file" id="editorFileInput" style="display: none;" 
+                           accept="image/*,video/*,audio/*,.obj,.glb,.gltf,.fbx,.stl,.py,.js,.html,.css,.json,.txt,.md"
+                           onchange="handleEditorFileSelect(event)">
+                </div>
+                
+                <!-- URL Input (compact) -->
+                <div class="editor-url-bar">
+                    <input type="text" class="editor-url-input" id="editorFileUrl" 
+                           placeholder="Paste URL or path..."
+                           oninput="handleEditorUrlInput()">
+                    <button class="url-clear-btn" onclick="clearEditorFile()" title="Clear">✕</button>
+                </div>
+                
+                <!-- Scrollable Tools Section -->
+                <div class="editor-scroll-content">
                     
                     <!-- Tools Panel - Canva style -->
                     <div class="editor-tools-panel">
@@ -5177,42 +5436,27 @@
                     
                     <!-- Custom Instruction -->
                     <div class="editor-custom-section">
-                        <div class="custom-label">Custom Edit</div>
                         <textarea class="editor-instruction-input" id="editorInstruction" 
-                            placeholder="Describe what you want..."></textarea>
-                        <button class="editor-custom-btn" onclick="executeEdit()">
-                            ✨ Apply
+                            placeholder="Describe what you want to do..."></textarea>
+                    </div>
+                </div>
+                
+                <!-- Fixed Bottom Action Bar -->
+                <div class="editor-action-bar">
+                    <div class="editor-status-mini" id="editorStatusMini">
+                        <div class="status-spinner-mini"></div>
+                        <span id="editorStatusTextMini"></span>
+                    </div>
+                    <div class="editor-actions">
+                        <button class="editor-action-btn secondary" onclick="downloadEditorResult()" id="editorDownloadBtn" disabled>
+                            ⬇️ Download
                         </button>
-                    </div>
-                    
-                    <!-- Result Section -->
-                    <div class="editor-result" id="editorResultSection">
-                        <div class="result-header">
-                            <span class="result-title">✅ Done!</span>
-                        </div>
-                        <div class="result-preview" id="editorResultPreview"></div>
-                        <div class="result-actions">
-                            <button class="result-btn primary" onclick="downloadEditorResult()">⬇️ Download</button>
-                            <button class="result-btn" onclick="useResultAsInput()">🔄 Edit More</button>
-                            <button class="result-btn" onclick="sendResultToChat()">💬 To Chat</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Enhanced Status Bar -->
-                    <div class="editor-status-bar" id="editorStatusBar">
-                        <div class="status-content">
-                            <div class="status-spinner"></div>
-                            <span id="editorStatusText">Processing...</span>
-                        </div>
-                        <div class="status-progress-bar">
-                            <div class="status-progress-fill" id="editorProgressFill"></div>
-                        </div>
-                        <div class="status-steps" id="editorStatusSteps">
-                            <span class="status-step" data-step="analyze">🔍 Analyze</span>
-                            <span class="status-step" data-step="prepare">📤 Prepare</span>
-                            <span class="status-step" data-step="process">⚙️ Process</span>
-                            <span class="status-step" data-step="complete">✅ Done</span>
-                        </div>
+                        <button class="editor-action-btn secondary" onclick="useResultAsInput()" id="editorEditMoreBtn" disabled>
+                            🔄 Use Result
+                        </button>
+                        <button class="editor-action-btn primary" onclick="executeEdit()" id="editorApplyBtn">
+                            ✨ Apply Edit
+                        </button>
                     </div>
                 </div>
             </div>
@@ -7817,37 +8061,27 @@
         
         function handleEditorUrlInput() {
             const url = document.getElementById('editorFileUrl').value.trim();
-            updateCanvasPreview(url);
+            updateABOriginal(url);
         }
         
-        // Update Canva-style canvas preview
-        function updateCanvasPreview(url, filename = null) {
-            const canvas = document.getElementById('editorCanvas');
-            const placeholder = document.getElementById('canvasPlaceholder');
-            const preview = document.getElementById('canvasPreview');
-            const fileInfo = document.getElementById('editorFileInfo');
-            const fileNameEl = document.getElementById('editorFileName');
-            const fileSizeEl = document.getElementById('editorFileSize');
+        // Update A/B Original preview
+        function updateABOriginal(url, filename = null) {
+            const originalContent = document.getElementById('abOriginalContent');
+            const dropZone = document.getElementById('abDropZone');
             
             if (!url) {
-                placeholder.style.display = 'block';
-                preview.style.display = 'none';
-                fileInfo.style.display = 'none';
-                canvas.classList.remove('has-file');
+                originalContent.innerHTML = `
+                    <div class="ab-drop-zone" id="abDropZone">
+                        <span class="ab-drop-icon">📁</span>
+                        <span class="ab-drop-text">Drop file or paste URL</span>
+                        <button class="ab-browse-btn" onclick="document.getElementById('editorFileInput').click()">Browse</button>
+                    </div>`;
                 editorCurrentFile = null;
                 return;
             }
             
             editorCurrentFile = url;
-            canvas.classList.add('has-file');
-            placeholder.style.display = 'none';
-            preview.style.display = 'flex';
-            
-            // Show file info
             const fname = filename || url.split('/').pop().split('?')[0] || 'file';
-            fileNameEl.textContent = fname.length > 40 ? fname.substring(0, 37) + '...' : fname;
-            fileSizeEl.textContent = '';
-            fileInfo.style.display = 'flex';
             
             // Detect type and show preview
             const ext = fname.split('.').pop().toLowerCase();
@@ -7858,45 +8092,62 @@
             const modelExts = ['obj', 'glb', 'gltf', 'fbx', 'stl', 'ply'];
             
             if (imageExts.some(e => ext === e) || url.includes('replicate.delivery') || url.includes('oaidalleapiprodscus')) {
-                preview.innerHTML = `<img src="${url}" onerror="this.parentNode.innerHTML='<div style=\\'text-align:center;color:#ef4444\\'>⚠️ Could not load image</div>'">`;
+                originalContent.innerHTML = `<img src="${url}" onerror="this.parentNode.innerHTML='<span class=\\'ab-placeholder\\'>⚠️ Load failed</span>'">`;
             } else if (videoExts.some(e => ext === e)) {
-                preview.innerHTML = `<video src="${url}" controls></video>`;
+                originalContent.innerHTML = `<video src="${url}" controls style="max-width:100%;max-height:100%"></video>`;
             } else if (audioExts.some(e => ext === e)) {
-                preview.innerHTML = `<audio src="${url}" controls></audio>`;
+                originalContent.innerHTML = `<audio src="${url}" controls></audio>`;
             } else if (codeExts.some(e => ext === e)) {
-                preview.innerHTML = `<div style="text-align:center;padding:20px"><span style="font-size:40px">📄</span><br><span style="color:var(--text-muted)">${ext.toUpperCase()} File</span></div>`;
-                // Try to load and display code
-                fetchAndDisplayCode(url, preview);
+                originalContent.innerHTML = `<div style="text-align:center;padding:15px"><span style="font-size:28px">📄</span><br><span style="font-size:10px;color:var(--text-muted)">${ext.toUpperCase()}</span></div>`;
             } else if (modelExts.some(e => ext === e)) {
-                preview.innerHTML = `<div style="text-align:center;padding:20px"><span style="font-size:50px">🧊</span><br><span style="color:var(--text-muted)">3D Model (${ext.toUpperCase()})</span></div>`;
+                originalContent.innerHTML = `<div style="text-align:center;padding:15px"><span style="font-size:28px">🧊</span><br><span style="font-size:10px;color:var(--text-muted)">${ext.toUpperCase()}</span></div>`;
             } else {
-                preview.innerHTML = `<div style="text-align:center;padding:20px"><span style="font-size:40px">📁</span><br><span style="color:var(--text-muted)">${fname}</span></div>`;
+                originalContent.innerHTML = `<div style="text-align:center;padding:15px"><span style="font-size:28px">📁</span><br><span style="font-size:10px;color:var(--text-muted)">${fname.slice(0,15)}</span></div>`;
             }
         }
         
-        async function fetchAndDisplayCode(url, container) {
-            try {
-                const res = await fetch(url);
-                if (res.ok) {
-                    const text = await res.text();
-                    const preview = text.length > 1000 ? text.substring(0, 1000) + '\n...' : text;
-                    container.innerHTML = `<pre>${escapeHtml(preview)}</pre>`;
-                }
-            } catch (e) {
-                console.log('Could not load code preview:', e);
+        // Update A/B Result preview
+        function updateABResult(url, type = 'image') {
+            const resultPanel = document.getElementById('abResult');
+            const resultContent = document.getElementById('abResultContent');
+            const downloadBtn = document.getElementById('editorDownloadBtn');
+            const editMoreBtn = document.getElementById('editorEditMoreBtn');
+            
+            if (!url) {
+                resultContent.innerHTML = `<span class="ab-placeholder">Edit to see result</span>`;
+                resultPanel.classList.remove('has-result');
+                if (downloadBtn) downloadBtn.disabled = true;
+                if (editMoreBtn) editMoreBtn.disabled = true;
+                return;
+            }
+            
+            resultPanel.classList.add('has-result');
+            if (downloadBtn) downloadBtn.disabled = false;
+            if (editMoreBtn) editMoreBtn.disabled = false;
+            editorResultUrl = url;
+            
+            if (type === 'image' || url.match(/\.(jpg|jpeg|png|gif|webp)$/i) || url.includes('replicate.delivery')) {
+                resultContent.innerHTML = `<img src="${url}" onerror="this.parentNode.innerHTML='<span class=\\'ab-placeholder\\'>⚠️ Load failed</span>'">`;
+            } else if (type === 'video' || url.match(/\.(mp4|mov|webm)$/i)) {
+                resultContent.innerHTML = `<video src="${url}" controls style="max-width:100%;max-height:100%"></video>`;
+            } else if (type === 'audio' || url.match(/\.(mp3|wav|ogg)$/i)) {
+                resultContent.innerHTML = `<audio src="${url}" controls></audio>`;
+            } else {
+                resultContent.innerHTML = `<div style="text-align:center;padding:15px"><span style="font-size:28px">✅</span><br><span style="font-size:10px;color:#22c55e">Complete</span></div>`;
             }
         }
         
         function clearEditorFile() {
             document.getElementById('editorFileUrl').value = '';
-            updateCanvasPreview(null);
+            updateABOriginal(null);
+            updateABResult(null);
         }
         
         async function handleEditorFileSelect(event) {
             const file = event.target.files[0];
             if (!file) return;
             
-            showEditorStatus('Uploading...', 'processing');
+            showEditorStatusMini('Uploading...', 'processing');
             
             const formData = new FormData();
             formData.append('file', file);
@@ -7912,41 +8163,64 @@
                 if (data.id) {
                     const url = `${location.origin}/files/${data.id}`;
                     document.getElementById('editorFileUrl').value = url;
-                    updateCanvasPreview(url, file.name);
-                    showEditorStatus('File uploaded!', 'success');
+                    updateABOriginal(url, file.name);
+                    showEditorStatusMini('File uploaded!', 'success');
                     loadFiles();
                 } else if (data.url) {
                     document.getElementById('editorFileUrl').value = data.url;
-                    updateCanvasPreview(data.url, file.name);
-                    showEditorStatus('File uploaded!', 'success');
+                    updateABOriginal(data.url, file.name);
+                    showEditorStatusMini('File uploaded!', 'success');
                 } else {
-                    showEditorStatus('Upload failed: ' + (data.detail || 'Unknown error'), 'error');
+                    showEditorStatusMini('Upload failed', 'error');
                 }
             } catch (e) {
                 console.error('Upload error:', e);
-                showEditorStatus('Upload error: ' + e.message, 'error');
+                showEditorStatusMini('Upload error', 'error');
             }
             
             event.target.value = '';
         }
         
-        // Editor drag and drop - Canva style
+        // Mini status for bottom bar
+        function showEditorStatusMini(message, type = 'processing') {
+            const status = document.getElementById('editorStatusMini');
+            const text = document.getElementById('editorStatusTextMini');
+            const spinner = status.querySelector('.status-spinner-mini');
+            
+            status.classList.remove('success', 'error');
+            status.classList.add('visible', type);
+            text.textContent = message;
+            
+            if (type === 'processing') {
+                spinner.style.display = 'block';
+            } else {
+                spinner.style.display = 'none';
+                setTimeout(() => status.classList.remove('visible'), 3000);
+            }
+        }
+        
+        function hideEditorStatusMini() {
+            const status = document.getElementById('editorStatusMini');
+            status.classList.remove('visible');
+        }
+        
+        // Editor drag and drop - A/B style
         function initEditorDropzone() {
-            const canvas = document.getElementById('editorCanvas');
-            if (!canvas) return;
+            const abPreview = document.getElementById('editorABPreview');
+            if (!abPreview) return;
             
-            canvas.addEventListener('dragover', (e) => {
+            abPreview.addEventListener('dragover', (e) => {
                 e.preventDefault();
-                canvas.classList.add('dragover');
+                abPreview.style.background = 'rgba(139, 92, 246, 0.1)';
             });
             
-            canvas.addEventListener('dragleave', () => {
-                canvas.classList.remove('dragover');
+            abPreview.addEventListener('dragleave', () => {
+                abPreview.style.background = '';
             });
             
-            canvas.addEventListener('drop', async (e) => {
+            abPreview.addEventListener('drop', async (e) => {
                 e.preventDefault();
-                canvas.classList.remove('dragover');
+                abPreview.style.background = '';
                 
                 // Check for URL drop from chat (image drag)
                 const imageUrl = e.dataTransfer.getData('text/image-url');
@@ -7998,14 +8272,15 @@
             
             // Set the URL and update preview
             document.getElementById('editorFileUrl').value = url;
-            updateCanvasPreview(url);
+            updateABOriginal(url);
+            updateABResult(null);
             
             // Focus on instruction
             setTimeout(() => {
                 document.getElementById('editorInstruction').focus();
             }, 100);
             
-            showEditorStatus('File loaded! Choose an action or describe what you want.', 'success');
+            showEditorStatusMini('File loaded!', 'success');
         }
         
         // Quick image edit from chat overlay
@@ -8166,27 +8441,15 @@
             // Show the instruction
             document.getElementById('editorInstruction').value = instruction;
             
-            // Reset and show initial status with progress
-            resetStatusSteps();
-            showEditorStatusEnhanced(`🔍 Analyzing ${toolName.replace(/_/g, ' ')} task...`, 'processing', 0.05, 'analyze');
-            
-            // Simulate progress updates during processing
-            let progressInterval = setInterval(() => {
-                const progressFill = document.getElementById('editorProgressFill');
-                if (progressFill) {
-                    const current = parseFloat(progressFill.style.width) || 5;
-                    if (current < 75) {
-                        progressFill.style.width = `${current + 2}%`;
-                    }
-                }
-            }, 500);
+            // Show processing status
+            showEditorStatusMini(`Processing ${toolName.replace(/_/g, ' ')}...`, 'processing');
+            const applyBtn = document.getElementById('editorApplyBtn');
+            if (applyBtn) {
+                applyBtn.classList.add('processing');
+                applyBtn.disabled = true;
+            }
             
             try {
-                // Update status to prepare
-                setTimeout(() => {
-                    showEditorStatusEnhanced('📤 Preparing file for AI...', 'processing', 0.15, 'prepare');
-                }, 500);
-                
                 const res = await fetch('/api/media/edit', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -8197,24 +8460,29 @@
                     })
                 });
                 
-                clearInterval(progressInterval);
-                
                 const data = await res.json();
+                
+                if (applyBtn) {
+                    applyBtn.classList.remove('processing');
+                    applyBtn.disabled = false;
+                }
                 
                 if (data.success && (data.output_url || data.output_text)) {
                     if (data.output_url) {
                         editorResultUrl = data.output_url;
                         lastGeneratedUrl = data.output_url;
                     }
-                    showEditorStatusEnhanced(`✅ ${toolName.replace(/_/g, ' ')} complete!`, 'success', 1.0, 'complete');
                     showEditorResultNew(data);
                 } else {
-                    showEditorStatusEnhanced(data.error || `${toolName} failed`, 'error', 0);
+                    showEditorStatusMini(data.error || `${toolName} failed`, 'error');
                 }
             } catch (e) {
-                clearInterval(progressInterval);
+                if (applyBtn) {
+                    applyBtn.classList.remove('processing');
+                    applyBtn.disabled = false;
+                }
                 console.error('Tool error:', e);
-                showEditorStatusEnhanced(`❌ Error: ${e.message}`, 'error', 0);
+                showEditorStatusMini(`Error: ${e.message}`, 'error');
             }
         }
         
@@ -8328,8 +8596,7 @@
         }
         
         function hideEditorStatus() {
-            document.getElementById('editorStatusBar').classList.remove('visible');
-            resetStatusSteps();
+            hideEditorStatusMini();
         }
         
         function previewEditorFile() {
@@ -8398,135 +8665,109 @@
             const instruction = document.getElementById('editorInstruction').value.trim();
             
             if (!fileUrl) {
-                alert('Please provide a file URL or upload a file');
+                showEditorStatusMini('Please add a file first', 'error');
                 return;
             }
             
             if (!instruction) {
-                alert('Please describe what you want to do');
+                showEditorStatusMini('Please describe what to do', 'error');
                 return;
             }
             
-            // Reset and show initial status
-            resetStatusSteps();
-            showEditorStatusEnhanced('🔍 Analyzing file and task...', 'processing', 0.05, 'analyze');
-            
-            // Hide previous result
-            document.getElementById('editorResultSection').classList.remove('visible');
-            
-            // Simulate progress updates during processing
-            let progressInterval = setInterval(() => {
-                const progressFill = document.getElementById('editorProgressFill');
-                if (progressFill) {
-                    const current = parseFloat(progressFill.style.width) || 5;
-                    if (current < 75) {
-                        progressFill.style.width = `${current + 2}%`;
-                    }
-                }
-            }, 500);
+            // Show processing status
+            showEditorStatusMini('Processing...', 'processing');
+            const applyBtn = document.getElementById('editorApplyBtn');
+            if (applyBtn) {
+                applyBtn.classList.add('processing');
+                applyBtn.disabled = true;
+            }
             
             try {
-                // Update status to prepare
-                setTimeout(() => {
-                    showEditorStatusEnhanced('📤 Preparing file for AI...', 'processing', 0.15, 'prepare');
-                }, 500);
-                
-                // Update to processing
-                setTimeout(() => {
-                    showEditorStatusEnhanced('⚙️ Processing with AI model...', 'processing', 0.4, 'process');
-                }, 1500);
-                
                 const res = await fetch('/api/media/edit', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         file_url: fileUrl,
                         instruction: instruction,
-                        media_type: currentMediaType !== 'all' ? currentMediaType : null
+                        media_type: currentEditorMediaType !== 'image' ? currentEditorMediaType : null
                     })
                 });
                 
-                clearInterval(progressInterval);
-                
                 const data = await res.json();
+                
+                if (applyBtn) {
+                    applyBtn.classList.remove('processing');
+                    applyBtn.disabled = false;
+                }
                 
                 if (data.success && (data.output_url || data.output_text)) {
                     if (data.output_url) {
                         editorResultUrl = data.output_url;
                         lastGeneratedUrl = data.output_url;
                     }
-                    showEditorStatusEnhanced(`✅ ${(data.task || 'Edit').replace(/_/g, ' ')} complete!`, 'success', 1.0, 'complete');
                     showEditorResultNew(data);
                 } else {
-                    showEditorStatusEnhanced(data.error || 'Edit failed', 'error', 0);
+                    showEditorStatusMini(data.error || 'Edit failed', 'error');
                 }
             } catch (e) {
-                clearInterval(progressInterval);
+                if (applyBtn) {
+                    applyBtn.classList.remove('processing');
+                    applyBtn.disabled = false;
+                }
                 console.error('Edit error:', e);
-                showEditorStatusEnhanced('❌ Request failed: ' + e.message, 'error', 0);
+                showEditorStatusMini('Request failed', 'error');
             }
         }
         
         function showEditorResultNew(data) {
-            const resultSection = document.getElementById('editorResultSection');
-            const resultPreview = document.getElementById('editorResultPreview');
-            
-            resultSection.classList.add('visible');
+            // Update A/B result panel instead of separate section
+            hideEditorStatusMini();
             
             // Handle text output
             if (data.output_type === 'text' || data.output_text) {
                 const text = data.output_text || data.output;
-                resultPreview.innerHTML = `
-                    <div style="background: rgba(0,0,0,0.3); padding: 16px; border-radius: 8px; text-align: left; max-height: 200px; overflow-y: auto; white-space: pre-wrap; font-family: monospace; font-size: 12px;">
-                        ${escapeHtml(text)}
+                const resultContent = document.getElementById('abResultContent');
+                resultContent.innerHTML = `
+                    <div style="padding: 10px; text-align: left; max-height: 160px; overflow-y: auto; white-space: pre-wrap; font-family: monospace; font-size: 10px; color: var(--text);">
+                        ${escapeHtml(text.slice(0, 500))}${text.length > 500 ? '...' : ''}
                     </div>
-                    <button onclick="copyToClipboard('${encodeURIComponent(text)}')" style="margin-top: 12px; padding: 8px 16px; background: var(--accent-purple); border: none; border-radius: 6px; color: white; cursor: pointer;">
-                        📋 Copy Text
-                    </button>
                 `;
+                document.getElementById('abResult').classList.add('has-result');
+                document.getElementById('editorDownloadBtn').disabled = true;
+                document.getElementById('editorEditMoreBtn').disabled = true;
+                editorResultUrl = null;
+                showEditorStatusMini('✅ Complete!', 'success');
                 return;
             }
             
             // Handle stems/multi-output audio
             if (data.output_type === 'stems' && data.stems) {
-                let stemsHtml = '<div style="display: grid; gap: 8px;">';
+                const resultContent = document.getElementById('abResultContent');
+                let stemsHtml = '<div style="padding: 8px; display: flex; flex-direction: column; gap: 4px; width: 100%;">';
                 for (const [name, url] of Object.entries(data.stems)) {
                     if (url && typeof url === 'string') {
                         stemsHtml += `
-                            <div style="background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px;">
-                                <div style="font-size: 12px; color: var(--accent-cyan); margin-bottom: 4px;">🎵 ${name}</div>
-                                <audio src="${url}" controls style="width: 100%; height: 32px;"></audio>
-                            </div>
+                            <div style="font-size: 10px; color: var(--accent-cyan);">🎵 ${name}</div>
+                            <audio src="${url}" controls style="width: 100%; height: 24px;"></audio>
                         `;
                     }
                 }
                 stemsHtml += '</div>';
-                resultPreview.innerHTML = stemsHtml;
+                resultContent.innerHTML = stemsHtml;
+                document.getElementById('abResult').classList.add('has-result');
+                showEditorStatusMini('✅ Complete!', 'success');
                 return;
             }
             
             const url = data.output_url;
             if (!url) {
-                resultPreview.innerHTML = '<div style="color: var(--text-muted);">No output URL available</div>';
+                showEditorStatusMini('No output', 'error');
                 return;
             }
             
             const mediaType = data.media_type || 'image';
-            
-            if (mediaType === 'image' || url.match(/\.(jpg|jpeg|png|gif|webp)/i)) {
-                resultPreview.innerHTML = `<img src="${url}">`;
-            } else if (mediaType === 'video' || url.match(/\.(mp4|mov|webm)/i)) {
-                resultPreview.innerHTML = `<video src="${url}" controls></video>`;
-            } else if (mediaType === 'audio' || url.match(/\.(mp3|wav|ogg)/i)) {
-                resultPreview.innerHTML = `<audio src="${url}" controls style="width: 100%;"></audio>`;
-            } else if (mediaType === '3d' || url.match(/\.(glb|gltf|obj)/i)) {
-                resultPreview.innerHTML = `<a href="${url}" target="_blank" style="color: var(--accent-cyan); display: block; padding: 20px;">🧊 Download 3D Model</a>`;
-            } else {
-                resultPreview.innerHTML = `<a href="${url}" target="_blank" style="color: var(--accent-cyan);">📥 Download Result</a>`;
-            }
-            
-            lastGeneratedUrl = url;
-            editorResultUrl = url;
+            updateABResult(url, mediaType);
+            showEditorStatusMini('✅ Complete!', 'success');
         }
         
         function escapeHtml(text) {
@@ -8538,7 +8779,7 @@
         function copyToClipboard(encodedText) {
             const text = decodeURIComponent(encodedText);
             navigator.clipboard.writeText(text).then(() => {
-                showEditorStatus('📋 Copied to clipboard!', 'success');
+                showEditorStatusMini('📋 Copied!', 'success');
             });
         }
         
@@ -8558,9 +8799,9 @@
         function useResultAsInput() {
             if (editorResultUrl) {
                 document.getElementById('editorFileUrl').value = editorResultUrl;
-                updateCanvasPreview(editorResultUrl);
+                updateABOriginal(editorResultUrl);
+                updateABResult(null);
                 document.getElementById('editorInstruction').value = '';
-                document.getElementById('editorResultSection').classList.remove('visible');
             }
         }
         
