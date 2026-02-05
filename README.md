@@ -17,6 +17,22 @@ Otto Chat is a sophisticated autonomous AI platform that combines Claude's intel
 
 ---
 
+## 📸 Screenshots
+
+<p align="center">
+  <img src="docs/screenshots/main-chat.png" alt="Otto Chat - Main Interface" width="100%">
+  <br>
+  <em>Modern chat interface with gradient sidebars and real-time progress tracking</em>
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/settings-sidebar.png" alt="Otto Chat - Settings Panel" width="100%">
+  <br>
+  <em>Sleek settings panel with premium toggle controls</em>
+</p>
+
+---
+
 ## ✨ Features
 
 ### 🧠 Super Intelligent Planning Agent
