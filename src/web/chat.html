@@ -591,7 +591,7 @@
             overflow: hidden;
             white-space: nowrap;
             border-right: 3px solid var(--accent-purple);
-            animation: typing 2s steps(20, end) forwards, blink-caret 0.75s step-end infinite;
+            animation: typing 2s steps(20, end) forwards, blink-caret 0.75s step-end 5, hide-caret 0.1s ease 3.75s forwards;
         }
         
         @keyframes typing {
@@ -602,6 +602,11 @@
         @keyframes blink-caret {
             from, to { border-color: transparent; }
             50% { border-color: var(--accent-purple); }
+        }
+        
+        @keyframes hide-caret {
+            to { border-color: transparent; }
+        }
         }
         
         .welcome p {
