@@ -197,6 +197,7 @@
             width: var(--sidebar-width);
             min-width: 200px;
             max-width: 400px;
+            height: 100vh;
             background: 
                 var(--sidebar-glow),
                 var(--sidebar-gradient),
@@ -209,8 +210,7 @@
                 4px 0 24px rgba(0, 0, 0, 0.4),
                 1px 0 0 rgba(139, 92, 246, 0.1);
             position: relative;
-            overflow: hidden;
-            min-height: 0;
+            overflow: visible;
         }
         
         /* Subtle animated glow effect */
@@ -1490,6 +1490,28 @@
             font-size: 12px;
         }
         .voice-status .cancel-btn:hover { background: #ef4444; color: white; }
+        
+        /* Queue Button */
+        .queue-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: none;
+            background: var(--bg-chat);
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+            flex-shrink: 0;
+            font-size: 16px;
+        }
+        .queue-btn:hover { 
+            background: linear-gradient(135deg, rgba(34, 211, 238, 0.2), rgba(139, 92, 246, 0.2)); 
+            color: var(--accent-cyan);
+            border: 1px solid var(--accent-cyan);
+        }
         
         /* File analysis results */
         .file-analysis-result {
@@ -3185,6 +3207,29 @@
             -webkit-text-fill-color: transparent;
         }
         
+        .queue-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .queue-run-all-btn {
+            padding: 6px 12px;
+            background: linear-gradient(135deg, rgba(34, 211, 238, 0.15), rgba(139, 92, 246, 0.15));
+            border: 1px solid rgba(34, 211, 238, 0.3);
+            border-radius: 6px;
+            color: var(--accent-cyan);
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .queue-run-all-btn:hover {
+            background: linear-gradient(135deg, rgba(34, 211, 238, 0.25), rgba(139, 92, 246, 0.25));
+            border-color: var(--accent-cyan);
+            transform: translateY(-1px);
+        }
+        
         .queue-tabs {
             display: flex;
             gap: 4px;
@@ -4189,13 +4234,16 @@
                             <button class="voice-btn" id="voiceBtn" onclick="toggleVoiceRecording()" title="Voice dictation (V key or hold Space)">
                                 🎤
                             </button>
+                            <button class="queue-btn" onclick="queueCurrentInput()" title="Add to Queue (Ctrl+Q)">
+                                📋
+                            </button>
                             <button class="send-btn" id="sendBtn" onclick="sendMessage()">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                     <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
                                 </svg>
                             </button>
                         </div>
-                        <div class="input-hint">Enter to send · Shift+Enter for new line · 🎤 for voice input</div>
+                        <div class="input-hint">Enter to send · Shift+Enter for new line · Ctrl+Q to queue · 🎤 for voice</div>
                     </div>
                 </div>
             </div>
@@ -4777,7 +4825,10 @@
                 <div class="sidebar-resize-handle left" data-sidebar="queueSidebar" data-direction="left"></div>
                 <div class="queue-header">
                     <h2>📋 Queue & Schedule</h2>
-                    <button class="close-btn" onclick="toggleQueue()">×</button>
+                    <div class="queue-header-actions">
+                        <button class="queue-run-all-btn" onclick="runAllQueuedTasks()" title="Run all queued tasks">▶️ Run All</button>
+                        <button class="close-btn" onclick="toggleQueue()">×</button>
+                    </div>
                 </div>
                 
                 <div class="queue-tabs">
@@ -5686,6 +5737,11 @@
                 e.preventDefault();
                 sendMessage();
             }
+            // Ctrl+Q or Cmd+Q to queue instead of send
+            if (e.key === 'q' && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                queueCurrentInput();
+            }
         }
         
         function sendSuggestion(text) {
@@ -6085,9 +6141,15 @@
                 
                 loadFiles();
                 
+                // Notify queue system that message completed successfully
+                onMessageComplete(true);
+                
             } catch (error) {
                 document.getElementById('thinking')?.remove();
                 addMessageToDOM('assistant', 'Sorry, something went wrong. Please try again.', false);
+                
+                // Notify queue system that message failed
+                onMessageComplete(false);
             }
             
             isProcessing = false;
@@ -6579,19 +6641,71 @@
             task.status = 'running';
             renderQueueTasks();
             
+            // Track this as the active queue task
+            window.activeQueueTask = task;
+            
             // Send to chat for execution
             document.getElementById('input').value = task.instruction || task.title;
             sendMessage();
             
-            // Mark as completed after sending
-            setTimeout(() => {
-                task.status = 'completed';
+            // We'll mark completion in the message handler instead of timeout
+            // This provides better tracking of actual completion
+        }
+        
+        // Called when a message completes processing
+        function onMessageComplete(success = true) {
+            if (window.activeQueueTask) {
+                const task = window.activeQueueTask;
+                task.status = success ? 'completed' : 'failed';
+                task.completedAt = Date.now();
                 completedTasks.unshift(task);
-                queueTasks = queueTasks.filter(t => t.id !== taskId);
+                queueTasks = queueTasks.filter(t => t.id !== task.id);
                 localStorage.setItem('queueTasks', JSON.stringify(queueTasks));
                 localStorage.setItem('completedTasks', JSON.stringify(completedTasks));
                 renderQueueTasks();
-            }, 1000);
+                window.activeQueueTask = null;
+                
+                // Auto-run next task if queue is not empty
+                const nextTask = queueTasks.find(t => t.status === 'queued' || t.status === 'pending');
+                if (nextTask && localStorage.getItem('autoRunQueue') === 'true') {
+                    setTimeout(() => runTask(nextTask.id), 2000);
+                }
+            }
+        }
+        
+        // Add current input to queue instead of sending
+        function queueCurrentInput() {
+            const input = document.getElementById('input');
+            const message = input.value.trim();
+            if (!message) return;
+            
+            addToQueue({
+                title: message.substring(0, 50) + (message.length > 50 ? '...' : ''),
+                instruction: message,
+                type: detectTaskType(message)
+            });
+            
+            input.value = '';
+            input.style.height = 'auto';
+            
+            // Open queue sidebar to show the added task
+            if (!document.getElementById('queueSidebar').classList.contains('open')) {
+                toggleQueue();
+            }
+        }
+        
+        // Run all queued tasks sequentially
+        async function runAllQueuedTasks() {
+            const queuedTasks = queueTasks.filter(t => t.status === 'queued' || t.status === 'pending');
+            if (queuedTasks.length === 0) return;
+            
+            localStorage.setItem('autoRunQueue', 'true');
+            runTask(queuedTasks[0].id);
+        }
+        
+        // Stop auto-running queue
+        function stopQueueRunner() {
+            localStorage.setItem('autoRunQueue', 'false');
         }
         
         function pauseTask(taskId) {

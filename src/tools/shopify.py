@@ -136,6 +136,178 @@ class ShopifyTools(ToolBase):
         }
     
     @tool(
+        name="shopify_search_products",
+        description="Search for products by title, product type, or vendor. Use this to find specific products like 'coasters', 'mugs', 'hoodies', etc. ALWAYS use this when user asks about specific product types.",
+        category="shopify"
+    )
+    async def search_products(
+        self,
+        query: str = None,
+        product_type: str = None,
+        vendor: str = None,
+        collection_id: str = None,
+        limit: int = 250
+    ) -> Dict[str, Any]:
+        """
+        Search for products with filtering.
+        
+        Args:
+            query: Search term to match against title
+            product_type: Filter by product type (e.g., 'Coaster', 'Mug', 'T-Shirt')
+            vendor: Filter by vendor name
+            collection_id: Filter by collection
+            limit: Maximum products to return
+        
+        Returns:
+            Dict with matching products and count
+        """
+        try:
+            # Build query params
+            params = [f"limit={limit}", "status=active"]
+            if product_type:
+                params.append(f"product_type={product_type}")
+            if vendor:
+                params.append(f"vendor={vendor}")
+            if collection_id:
+                params.append(f"collection_id={collection_id}")
+                
+            endpoint = f"/products.json?{'&'.join(params)}"
+            result = await self._request("GET", endpoint)
+            products = result.get("products", [])
+            
+            # Additional title filtering if query provided
+            if query:
+                query_lower = query.lower()
+                products = [
+                    p for p in products 
+                    if query_lower in p.get("title", "").lower() or
+                       query_lower in p.get("product_type", "").lower() or
+                       query_lower in (p.get("tags") or "").lower()
+                ]
+            
+            # Format response with clear data
+            product_list = []
+            for p in products:
+                variants = p.get("variants", [{}])
+                price = variants[0].get("price", "0.00") if variants else "0.00"
+                product_list.append({
+                    "id": p.get("id"),
+                    "title": p.get("title"),
+                    "product_type": p.get("product_type"),
+                    "price": price,
+                    "vendor": p.get("vendor"),
+                    "status": p.get("status"),
+                    "variant_ids": [v.get("id") for v in variants]
+                })
+            
+            return {
+                "total_found": len(product_list),
+                "search_query": query,
+                "product_type_filter": product_type,
+                "message": f"Found {len(product_list)} products matching your search",
+                "products": product_list
+            }
+        except Exception as e:
+            logger.error(f"Search products error: {e}")
+            return {"success": False, "error": str(e), "products": []}
+    
+    @tool(
+        name="shopify_bulk_update_prices",
+        description="Update prices for multiple products at once. Use when user wants to change prices on several products. Provide product IDs or search criteria and the new price or price adjustment.",
+        category="shopify"
+    )
+    async def bulk_update_prices(
+        self,
+        product_ids: List[str] = None,
+        product_type: str = None,
+        price_adjustment: float = None,
+        new_price: float = None,
+        include_compare_at: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Bulk update prices for multiple products.
+        
+        Args:
+            product_ids: List of product IDs to update
+            product_type: Update all products of this type
+            price_adjustment: Amount to add/subtract (e.g., 5.00 to add $5, -5.00 to subtract)
+            new_price: Set all to this exact price
+            include_compare_at: If True, set compare_at_price to old price (shows discount)
+        
+        Returns:
+            Dict with update results
+        """
+        try:
+            if not price_adjustment and not new_price:
+                return {"success": False, "error": "Must provide either price_adjustment or new_price"}
+            
+            # Get products to update
+            if product_ids:
+                products_to_update = []
+                for pid in product_ids:
+                    try:
+                        prod = await self._request("GET", f"/products/{pid}.json")
+                        if prod.get("product"):
+                            products_to_update.append(prod["product"])
+                    except:
+                        pass
+            elif product_type:
+                result = await self._request("GET", f"/products.json?product_type={product_type}&limit=250")
+                products_to_update = result.get("products", [])
+            else:
+                return {"success": False, "error": "Must provide product_ids or product_type to filter"}
+            
+            updated = []
+            failed = []
+            
+            for product in products_to_update:
+                product_id = product.get("id")
+                variants = product.get("variants", [])
+                
+                for variant in variants:
+                    variant_id = variant.get("id")
+                    current_price = float(variant.get("price", 0))
+                    
+                    if new_price is not None:
+                        updated_price = new_price
+                    else:
+                        updated_price = current_price + price_adjustment
+                    
+                    # Ensure price isn't negative
+                    updated_price = max(0.01, updated_price)
+                    
+                    variant_data = {"variant": {"price": f"{updated_price:.2f}"}}
+                    if include_compare_at and updated_price < current_price:
+                        variant_data["variant"]["compare_at_price"] = f"{current_price:.2f}"
+                    
+                    try:
+                        await self._request("PUT", f"/variants/{variant_id}.json", variant_data)
+                        updated.append({
+                            "product": product.get("title"),
+                            "variant_id": variant_id,
+                            "old_price": current_price,
+                            "new_price": updated_price
+                        })
+                    except Exception as e:
+                        failed.append({
+                            "product": product.get("title"),
+                            "variant_id": variant_id,
+                            "error": str(e)
+                        })
+            
+            return {
+                "success": len(failed) == 0,
+                "updated_count": len(updated),
+                "failed_count": len(failed),
+                "message": f"Updated {len(updated)} variants, {len(failed)} failed",
+                "updated": updated[:10],  # First 10 for brevity
+                "failed": failed
+            }
+        except Exception as e:
+            logger.error(f"Bulk price update error: {e}")
+            return {"success": False, "error": str(e)}
+    
+    @tool(
         name="shopify_create_product",
         description="Create a new product on Shopify",
         category="shopify"
