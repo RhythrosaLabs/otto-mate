@@ -67,6 +67,12 @@ PRINTIFY_PRODUCT_CATALOG = {
     "mousepad": {"blueprint_id": 389, "print_provider_id": 56, "name": "Mouse Pad"},
     "mouse pad": {"blueprint_id": 389, "print_provider_id": 56, "name": "Mouse Pad"},
     "coaster": {"blueprint_id": 548, "print_provider_id": 56, "name": "Coaster Set"},
+    "clock": {"blueprint_id": 462, "print_provider_id": 56, "name": "Wall Clock"},
+    "wall clock": {"blueprint_id": 462, "print_provider_id": 56, "name": "Wall Clock"},
+    "acrylic clock": {"blueprint_id": 462, "print_provider_id": 56, "name": "Wall Clock"},
+    "cutting board": {"blueprint_id": 492, "print_provider_id": 56, "name": "Cutting Board"},
+    "towel": {"blueprint_id": 507, "print_provider_id": 56, "name": "Beach Towel"},
+    "beach towel": {"blueprint_id": 507, "print_provider_id": 56, "name": "Beach Towel"},
     
     # ── Wall Art & Posters ──
     "canvas": {"blueprint_id": 384, "print_provider_id": 56, "name": "Canvas Print"},
@@ -113,10 +119,27 @@ PRINTIFY_PRODUCT_CATALOG = {
     "cap": {"blueprint_id": 373, "print_provider_id": 44, "name": "Dad Hat"},
     "dad hat": {"blueprint_id": 373, "print_provider_id": 44, "name": "Dad Hat"},
     "beanie": {"blueprint_id": 452, "print_provider_id": 44, "name": "Knit Beanie"},
+    "knit beanie": {"blueprint_id": 452, "print_provider_id": 44, "name": "Knit Beanie"},
+    "winter hat": {"blueprint_id": 452, "print_provider_id": 44, "name": "Knit Beanie"},
     "socks": {"blueprint_id": 488, "print_provider_id": 56, "name": "Crew Socks"},
+    "crew socks": {"blueprint_id": 488, "print_provider_id": 56, "name": "Crew Socks"},
     "flip flops": {"blueprint_id": 510, "print_provider_id": 56, "name": "Flip Flops"},
     "apron": {"blueprint_id": 474, "print_provider_id": 56, "name": "Kitchen Apron"},
+    "kitchen apron": {"blueprint_id": 474, "print_provider_id": 56, "name": "Kitchen Apron"},
     "face mask": {"blueprint_id": 532, "print_provider_id": 99, "name": "Face Mask"},
+    "leggings": {"blueprint_id": 459, "print_provider_id": 56, "name": "Leggings"},
+    "yoga leggings": {"blueprint_id": 459, "print_provider_id": 56, "name": "Leggings"},
+    
+    # ── Novelty & Gifts ──
+    "puzzle": {"blueprint_id": 520, "print_provider_id": 56, "name": "Jigsaw Puzzle"},
+    "jigsaw puzzle": {"blueprint_id": 520, "print_provider_id": 56, "name": "Jigsaw Puzzle"},
+    "ornament": {"blueprint_id": 554, "print_provider_id": 56, "name": "Christmas Ornament"},
+    "christmas ornament": {"blueprint_id": 554, "print_provider_id": 56, "name": "Christmas Ornament"},
+    "playing cards": {"blueprint_id": 560, "print_provider_id": 56, "name": "Playing Cards"},
+    "cards": {"blueprint_id": 560, "print_provider_id": 56, "name": "Playing Cards"},
+    "flag": {"blueprint_id": 534, "print_provider_id": 56, "name": "Garden Flag"},
+    "garden flag": {"blueprint_id": 534, "print_provider_id": 56, "name": "Garden Flag"},
+    "yard flag": {"blueprint_id": 534, "print_provider_id": 56, "name": "Garden Flag"},
     
     # ── Pet Products ──
     "pet bandana": {"blueprint_id": 540, "print_provider_id": 56, "name": "Pet Bandana"},
@@ -774,6 +797,11 @@ class PrintifyTools(ToolBase):
     
     BASE_URL = "https://api.printify.com/v1"
     
+    # Cache for blueprints - loaded once from API
+    _blueprint_cache: Optional[List[Dict[str, Any]]] = None
+    _blueprint_cache_time: float = 0
+    CACHE_TTL = 3600  # 1 hour cache
+    
     def __init__(self, api_token: str, shop_id: str, shopify_tools=None):
         self.api_token = api_token
         self.shop_id = shop_id
@@ -879,70 +907,137 @@ class PrintifyTools(ToolBase):
     # DYNAMIC BLUEPRINT DISCOVERY - Query Printify API for product types
     # ═══════════════════════════════════════════════════════════════════
     
-    async def get_all_blueprints(self) -> List[Dict[str, Any]]:
+    async def get_all_blueprints(self, force_refresh: bool = False) -> List[Dict[str, Any]]:
         """
-        Fetch all available blueprints from Printify API.
+        Fetch all available blueprints from Printify API with caching.
         
         Returns list of blueprints with id, title, description, and images.
         This is the source of truth for all available product types.
+        Results are cached for 1 hour to avoid repeated API calls.
+        
+        Args:
+            force_refresh: If True, bypasses cache and fetches fresh data
         """
+        import time
+        
+        # Check cache first
+        current_time = time.time()
+        if not force_refresh and PrintifyTools._blueprint_cache is not None:
+            cache_age = current_time - PrintifyTools._blueprint_cache_time
+            if cache_age < PrintifyTools.CACHE_TTL:
+                logger.debug(f"📦 Using cached blueprints ({len(PrintifyTools._blueprint_cache)} items, {int(cache_age)}s old)")
+                return PrintifyTools._blueprint_cache
+        
         try:
             endpoint = "/catalog/blueprints.json"
             result = await self._request("GET", endpoint)
             if isinstance(result, list):
-                logger.info(f"📦 Fetched {len(result)} blueprints from Printify API")
+                logger.info(f"📦 Fetched {len(result)} blueprints from Printify API (fresh)")
+                # Cache the results
+                PrintifyTools._blueprint_cache = result
+                PrintifyTools._blueprint_cache_time = current_time
                 return result
-            return result.get("data", []) if isinstance(result, dict) else []
+            data = result.get("data", []) if isinstance(result, dict) else []
+            PrintifyTools._blueprint_cache = data
+            PrintifyTools._blueprint_cache_time = current_time
+            return data
         except Exception as e:
             logger.error(f"Failed to fetch blueprints: {e}")
+            # Return stale cache if available
+            if PrintifyTools._blueprint_cache is not None:
+                logger.warning("Using stale cached blueprints due to API error")
+                return PrintifyTools._blueprint_cache
             return []
     
     async def search_blueprint(self, product_type: str) -> Optional[Dict[str, Any]]:
         """
         Search Printify catalog for a blueprint matching the product type.
         
-        This dynamically queries the Printify API to find products that
-        may not be in our static catalog.
+        Uses advanced scoring:
+        - Exact matches get highest priority
+        - Multi-word matching with bonus for all words matching
+        - Common aliases and variations handled
+        - Returns best available provider
         
         Args:
-            product_type: Human-readable product type (e.g., "canvas tote bag", "mug")
+            product_type: Human-readable product type (e.g., "canvas tote bag", "mug", "beanie")
             
         Returns:
-            Blueprint info or None if not found
+            Blueprint info with blueprint_id, print_provider_id, name, etc.
         """
         try:
             blueprints = await self.get_all_blueprints()
             product_type_lower = product_type.lower().strip()
+            query_words = set(product_type_lower.split())
             
-            # Score blueprints by how well they match the query
+            # Common word normalizations
+            word_aliases = {
+                "tee": "t-shirt", "top": "t-shirt",
+                "cup": "mug", "tumbler": "mug",
+                "cap": "hat", "beanie": "beanie",
+                "pullover": "hoodie", "sweater": "sweatshirt",
+                "poster": "poster", "print": "print", "art": "art",
+                "notebook": "notebook", "journal": "journal",
+                "pillow": "pillow", "cushion": "pillow",
+                "blanket": "blanket", "throw": "blanket",
+                "clock": "clock", "watch": "watch",
+                "sock": "socks", "socks": "socks",
+            }
+            
+            # Normalize query words
+            normalized_query = set()
+            for word in query_words:
+                normalized_query.add(word_aliases.get(word, word))
+            
             scores = []
             for bp in blueprints:
                 title = bp.get("title", "").lower()
                 description = bp.get("description", "").lower()
+                title_words = set(title.split())
                 
                 score = 0
                 
-                # Exact title match
+                # 1. Exact title match (highest priority)
                 if product_type_lower == title:
-                    score += 100
+                    score += 1000
                 
-                # Title contains query
+                # 2. Query is fully contained in title
                 elif product_type_lower in title:
-                    score += 50
+                    score += 500
                 
-                # Query contains title
+                # 3. Title is fully contained in query  
                 elif title in product_type_lower:
-                    score += 40
+                    score += 400
                 
-                # Word matching
-                query_words = product_type_lower.split()
-                title_words = title.split()
-                matching_words = sum(1 for w in query_words if any(w in tw for tw in title_words))
-                score += matching_words * 10
+                # 4. All query words appear in title (bonus)
+                words_in_title = sum(1 for w in normalized_query if w in title)
+                if words_in_title == len(normalized_query) and len(normalized_query) > 0:
+                    score += 300  # All words match bonus
                 
-                # Description matching
-                if product_type_lower in description:
-                    score += 5
+                # 5. Individual word matching with position weighting
+                for word in normalized_query:
+                    if len(word) < 2:
+                        continue
+                    # Check if word is in title
+                    if word in title:
+                        score += 50
+                        # Bonus if it's a primary word (first or key descriptor)
+                        if title.startswith(word) or f" {word}" in title:
+                            score += 25
+                    # Partial word match (e.g., "hood" in "hoodie")
+                    elif any(word in tw or tw in word for tw in title_words if len(tw) > 2):
+                        score += 20
+                
+                # 6. Description matching (lower weight)
+                for word in normalized_query:
+                    if len(word) > 2 and word in description:
+                        score += 5
+                
+                # 7. Penalize generic matches (e.g., "Classic T-Shirt" when asking for "beanie")
+                # If none of the core query words are in the title, heavily penalize
+                core_match = any(w in title for w in query_words if len(w) > 3)
+                if not core_match and score < 100:
+                    score = max(0, score - 50)
                 
                 if score > 0:
                     scores.append((score, bp))
@@ -950,17 +1045,25 @@ class PrintifyTools(ToolBase):
             # Sort by score descending
             scores.sort(key=lambda x: x[0], reverse=True)
             
-            if scores:
+            if scores and scores[0][0] >= 20:  # Minimum threshold
                 best_match = scores[0][1]
-                logger.info(f"🎯 Dynamic blueprint search: '{product_type}' → #{best_match.get('id')} {best_match.get('title')}")
+                logger.info(f"🎯 Dynamic blueprint search: '{product_type}' → #{best_match.get('id')} {best_match.get('title')} (score: {scores[0][0]})")
+                
+                # Log top 3 matches for debugging
+                if len(scores) >= 3:
+                    logger.debug(f"Top matches: {[(s[0], s[1].get('title')) for s in scores[:3]]}")
                 
                 # Get print providers for this blueprint
                 blueprint_id = best_match.get("id")
                 providers = await self.get_print_providers(blueprint_id)
                 
                 if providers:
-                    # Pick the first available provider
-                    provider = providers[0]
+                    # Sort by title to prefer consistent providers
+                    if isinstance(providers, list) and len(providers) > 1:
+                        # Prefer providers with more options usually
+                        providers = sorted(providers, key=lambda p: p.get("title", ""), reverse=False)
+                    
+                    provider = providers[0] if isinstance(providers, list) else providers
                     provider_id = provider.get("id")
                     
                     return {
@@ -969,9 +1072,11 @@ class PrintifyTools(ToolBase):
                         "name": best_match.get("title"),
                         "description": best_match.get("description", ""),
                         "matched_from": "dynamic_api_search",
-                        "match_score": scores[0][0]
+                        "match_score": scores[0][0],
+                        "all_providers": [p.get("id") for p in providers] if isinstance(providers, list) else [provider_id]
                     }
             
+            logger.warning(f"No blueprint found for '{product_type}'")
             return None
             
         except Exception as e:
@@ -1090,6 +1195,105 @@ class PrintifyTools(ToolBase):
         
         return catalog
     
+    @tool(
+        name="printify_list_all_products",
+        description="List ALL available product types from the FULL Printify catalog (fetched from API). Shows everything available - beanies, clocks, puzzles, ornaments, etc.",
+        category="printify"
+    )
+    async def list_all_products(self, category_filter: str = None, limit: int = 100) -> Dict[str, Any]:
+        """
+        Fetch and list ALL available product types from the Printify API.
+        
+        Unlike get_catalog, this dynamically fetches from Printify's API
+        to show every single product available, not just our curated list.
+        
+        Args:
+            category_filter: Optional filter (e.g., "accessories", "home", "apparel")
+            limit: Max results (default 100)
+        
+        Returns:
+            Complete list of available products from Printify
+        """
+        try:
+            blueprints = await self.get_all_blueprints()
+            
+            # Group by detected category
+            categories = {
+                "apparel": [],
+                "drinkware": [],
+                "home": [],
+                "accessories": [],
+                "bags": [],
+                "wall_art": [],
+                "stationery": [],
+                "tech": [],
+                "pet": [],
+                "kids": [],
+                "novelty": [],
+                "other": []
+            }
+            
+            # Category detection keywords
+            category_keywords = {
+                "apparel": ["shirt", "tee", "hoodie", "sweatshirt", "tank", "jersey", "polo", "dress", "legging", "shorts", "pants", "jacket"],
+                "drinkware": ["mug", "cup", "tumbler", "bottle", "glass", "can", "cooler"],
+                "home": ["pillow", "blanket", "towel", "curtain", "doormat", "rug", "mat", "clock", "coaster"],
+                "accessories": ["hat", "cap", "beanie", "socks", "mask", "apron", "bandana", "scarf", "gloves"],
+                "bags": ["bag", "tote", "pouch", "backpack", "fanny", "clutch"],
+                "wall_art": ["canvas", "poster", "print", "frame", "metal print", "acrylic", "tapestry"],
+                "stationery": ["notebook", "journal", "sticker", "magnet", "card", "postcard"],
+                "tech": ["phone", "case", "mousepad", "laptop", "mouse pad"],
+                "pet": ["pet", "dog", "cat"],
+                "kids": ["baby", "kid", "infant", "onesie", "bib", "toddler"],
+                "novelty": ["puzzle", "ornament", "flag", "playing card", "game", "cutting board"]
+            }
+            
+            for bp in blueprints[:limit]:
+                title = bp.get("title", "").lower()
+                blueprint_id = bp.get("id")
+                
+                # Detect category
+                detected_category = "other"
+                for cat, keywords in category_keywords.items():
+                    if any(kw in title for kw in keywords):
+                        detected_category = cat
+                        break
+                
+                # Skip if filter doesn't match
+                if category_filter and category_filter.lower() not in detected_category:
+                    continue
+                
+                categories[detected_category].append({
+                    "name": bp.get("title"),
+                    "blueprint_id": blueprint_id,
+                    "description": bp.get("description", "")[:80] if bp.get("description") else ""
+                })
+            
+            # Build result
+            result = {
+                "success": True,
+                "total_blueprints": len(blueprints),
+                "showing": min(limit, len(blueprints)),
+                "categories": {},
+                "how_to_use": "Use printify_smart_create_product with any product name to create it automatically"
+            }
+            
+            for cat, products in categories.items():
+                if products:  # Only include non-empty categories
+                    result["categories"][cat] = {
+                        "count": len(products),
+                        "products": products[:20]  # Limit per category
+                    }
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Failed to list all products: {e}")
+            return {
+                "success": False,
+                "error": str(e)
+            }
+
     @tool(
         name="printify_list_products",
         description="List all products in the Printify shop",
@@ -1337,7 +1541,7 @@ class PrintifyTools(ToolBase):
     
     @tool(
         name="printify_smart_create_product",
-        description="Smart product creation - just specify the product type (t-shirt, mug, phone case, journal, etc.) and design. Auto-resolves all technical IDs. PREFERRED over printify_create_product.",
+        description="Smart product creation - works for ANY product type (beanie, socks, clock, coaster, hoodie, mug, journal, poster, etc). Just specify product type and design. Auto-discovers all parameters.",
         category="printify"
     )
     async def smart_create_product(
@@ -1352,139 +1556,66 @@ class PrintifyTools(ToolBase):
         **kwargs
     ) -> Dict[str, Any]:
         """
-        Create a product using human-readable product type.
+        Create ANY PRODUCT TYPE using human-readable product type.
         
-        Automatically resolves blueprint_id and print_provider_id from product type.
+        This is the MAIN entry point for creating products. It:
+        1. Searches the FULL Printify catalog dynamically
+        2. Auto-discovers blueprint IDs and print providers
+        3. Auto-fills all required parameters
+        4. Works for ANY product - from beanies to clocks to wall art
         
-        Supported product types:
-        - Apparel: t-shirt, hoodie, sweatshirt, tank top, long sleeve, crop top, v-neck
-        - Drinkware: mug, coffee mug, tumbler, water bottle, travel mug
+        Supported product types (examples - works for ANYTHING on Printify):
+        - Apparel: t-shirt, hoodie, sweatshirt, tank top, beanie, socks, leggings
+        - Drinkware: mug, tumbler, water bottle, travel mug
         - Phone cases: phone case, iphone case, samsung case
-        - Home: pillow, blanket, canvas, poster, shower curtain, doormat
+        - Home: pillow, blanket, canvas, poster, clock, coaster, doormat, shower curtain
+        - Wall Art: canvas print, framed poster, metal print, acrylic print, wood print
         - Stationery: notebook, journal, sticker, magnet, greeting card, postcard
-        - Bags: tote bag, backpack, fanny pack
-        - Accessories: hat, cap, beanie, socks, apron
+        - Bags: tote bag, backpack, fanny pack, drawstring bag
+        - Accessories: hat, cap, beanie, socks, apron, flip flops
+        - Novelty: puzzle, ornament, playing cards, garden flag
         - Pet: pet bandana, dog bowl
         - Kids: baby onesie, kids t-shirt
         
         Args:
             title: Product title
             description: Product description
-            product_type: Human-readable product type (e.g., "journal", "phone case", "mug")
+            product_type: ANY product type - e.g., "beanie", "clock", "socks", "poster"
             image_url: URL of design image
             design_url: Alias for image_url
             tags: Product tags
             price_cents: Price in cents (default: 2499 = $24.99)
         
         Returns:
-            Created product data including ID and URL
+            Created product data including ID, URL, and status
         """
-        # Resolve product type to blueprint/provider IDs
-        resolved = resolve_product_type(product_type)
-        blueprint_id = resolved["blueprint_id"]
-        print_provider_id = resolved["print_provider_id"]
-        product_name = resolved["name"]
-        matched_from = resolved.get("matched_from", "")
-        
-        # If we got a "default" fallback match, try dynamic API search for better results
-        if "default" in matched_from or "no match" in matched_from:
-            logger.info(f"⚠️ Static catalog returned default for '{product_type}', trying dynamic API search...")
-            try:
-                dynamic_result = await self.search_blueprint(product_type)
-                if dynamic_result and dynamic_result.get("blueprint_id"):
-                    blueprint_id = dynamic_result["blueprint_id"]
-                    print_provider_id = dynamic_result["print_provider_id"]
-                    product_name = dynamic_result["name"]
-                    matched_from = dynamic_result.get("matched_from", "dynamic_api")
-                    logger.info(f"✓ Dynamic API found: '{product_type}' → {product_name} (blueprint={blueprint_id})")
-            except Exception as e:
-                logger.warning(f"Dynamic API search failed, using static default: {e}")
-        
-        logger.info(f"🎯 Smart product creation: '{product_type}' → {product_name} (blueprint={blueprint_id}, provider={print_provider_id}, matched_from={matched_from})")
-        
         # Get actual image URL
         actual_image_url = image_url or design_url or kwargs.get("url") or kwargs.get("design_image_url")
         
         if not actual_image_url:
             return {
                 "success": False,
-                "error": "Must provide image_url or design_url for the product design"
+                "error": "Must provide image_url or design_url for the product design",
+                "hint": "Provide the URL of your design image"
             }
         
-        # Route to specialized helper functions for better handling
-        product_type_lower = product_type.lower()
+        # Prepare tags
+        product_tags = tags or [product_type.lower(), "custom", "design"]
         
-        try:
-            # Use specialized helpers for known product types
-            if any(kw in product_type_lower for kw in ["notebook", "journal", "notepad", "diary"]):
-                logger.info(f"🔀 Routing to create_notebook helper for {product_name}")
-                return await self.create_notebook(
-                    title=title,
-                    description=description,
-                    image_url=actual_image_url,
-                    price_cents=price_cents
-                    # Don't pass blueprint/provider - let it auto-discover
-                )
-            
-            elif any(kw in product_type_lower for kw in ["t-shirt", "tshirt", "t shirt", "tee"]):
-                logger.info(f"🔀 Routing to create_tshirt helper for {product_name}")
-                return await self.create_tshirt(
-                    title=title,
-                    description=description,
-                    image_url=actual_image_url,
-                    price_cents=price_cents,
-                    blueprint_id=blueprint_id,
-                    print_provider_id=print_provider_id
-                )
-            
-            elif any(kw in product_type_lower for kw in ["mug", "coffee mug", "cup"]):
-                logger.info(f"🔀 Routing to create_mug helper for {product_name}")
-                return await self.create_mug(
-                    title=title,
-                    description=description,
-                    image_url=actual_image_url,
-                    price_cents=price_cents,
-                    blueprint_id=blueprint_id,
-                    print_provider_id=print_provider_id
-                )
-            
-            elif any(kw in product_type_lower for kw in ["coaster", "coasters", "drink coaster"]):
-                logger.info(f"🔀 Routing to create_coaster helper for {product_name}")
-                return await self.create_coaster(
-                    title=title,
-                    description=description,
-                    image_url=actual_image_url,
-                    price_cents=price_cents
-                    # Don't pass blueprint/provider - let it auto-discover
-                )
-            
-            # For other product types, use the base create_product method
-            result = await self.create_product(
-                title=title,
-                description=description,
-                blueprint_id=blueprint_id,
-                print_provider_id=print_provider_id,
-                image_url=actual_image_url,
-                tags=tags or [product_type.lower(), "custom", "design"]
-            )
-            
-            # Add helpful info to response
-            if result and isinstance(result, dict):
-                result["product_type_resolved"] = product_name
-                result["blueprint_id"] = blueprint_id
-                result["print_provider_id"] = print_provider_id
-            
-            return result
-            
-        except Exception as e:
-            logger.error(f"Smart product creation failed: {e}")
-            return {
-                "success": False,
-                "error": str(e),
-                "product_type": product_type,
-                "resolved_to": product_name,
-                "hint": f"Try creating a {product_name} manually with blueprint_id={blueprint_id}, print_provider_id={print_provider_id}"
-            }
+        # Use the UNIVERSAL product creator for ALL products
+        # This dynamically searches the Printify catalog and auto-fills everything
+        logger.info(f"🚀 Smart create: '{product_type}' - '{title}'")
+        
+        result = await self._create_any_product(
+            title=title,
+            description=description,
+            product_type=product_type,
+            image_url=actual_image_url,
+            price_cents=price_cents,
+            tags=product_tags
+        )
+        
+        return result
     
     @tool(
         name="printify_upload_image",
@@ -2175,6 +2306,250 @@ class PrintifyTools(ToolBase):
             })
         
         return variants
+
+    async def _create_any_product(
+        self,
+        title: str,
+        description: str,
+        product_type: str,
+        image_url: str,
+        price_cents: int = 2499,
+        tags: Optional[List[str]] = None
+    ) -> Dict[str, Any]:
+        """
+        UNIVERSAL product creator - works for ANY product type by auto-discovering everything.
+        
+        This is the core method that handles ANY product type available on Printify:
+        - Beanies, socks, watches, clocks, coasters, journals, hoodies, etc.
+        - Automatically discovers the right blueprint from Printify API
+        - Automatically finds available print providers
+        - Automatically gets variants and placeholders
+        - Creates the product with all parameters filled in
+        
+        Args:
+            title: Product title
+            description: Product description
+            product_type: Any product type (e.g., "beanie", "clock", "socks", "wall art")
+            image_url: URL of the design image
+            price_cents: Price in cents (default: 2499 = $24.99)
+            tags: Optional product tags
+        
+        Returns:
+            Dict with product info including success status
+        """
+        logger.info(f"🔧 Universal product creator: '{product_type}' - '{title}'")
+        
+        # Step 1: ALWAYS use dynamic API search for the blueprint
+        # This ensures we search the full Printify catalog
+        search_result = await self.search_blueprint(product_type)
+        
+        if not search_result:
+            # Try again with normalized product type
+            normalized = product_type.lower().strip()
+            # Common aliases for better matching
+            search_aliases = {
+                "wall clock": "clock", "desk clock": "clock",
+                "wrist watch": "watch", "wristwatch": "watch",
+                "drink coasters": "coaster", "coaster set": "coaster",
+                "knit cap": "beanie", "winter cap": "beanie", "knit beanie": "beanie",
+                "crew sock": "socks", "dress socks": "socks", "athletic socks": "socks",
+                "wall poster": "poster", "art poster": "poster",
+                "wall canvas": "canvas", "canvas art": "canvas",
+                "hardcover journal": "journal", "lined journal": "journal",
+                "spiral notebook": "notebook", "ruled notebook": "notebook",
+                "face mask": "mask", "fabric mask": "mask",
+                "jigsaw puzzle": "puzzle", "puzzle": "puzzle",
+                "ornament": "ornament", "christmas ornament": "ornament",
+                "garden flag": "flag", "yard flag": "flag",
+                "cutting board": "cutting board", "cheese board": "cutting board",
+                "beach towel": "towel", "bath towel": "towel",
+                "tote": "tote bag", "canvas bag": "tote bag",
+                "fanny pack": "fanny pack", "hip bag": "fanny pack",
+                "dad cap": "dad hat", "baseball hat": "dad hat",
+            }
+            
+            alias = search_aliases.get(normalized, normalized)
+            if alias != normalized:
+                logger.info(f"Trying alias: '{normalized}' → '{alias}'")
+                search_result = await self.search_blueprint(alias)
+        
+        if not search_result:
+            return {
+                "success": False,
+                "error": f"Could not find a Printify product matching '{product_type}'",
+                "hint": "Try being more specific (e.g., 'knit beanie' instead of just 'hat')",
+                "suggestion": "Use printify_list_all_products to see available product types"
+            }
+        
+        blueprint_id = search_result["blueprint_id"]
+        print_provider_id = search_result["print_provider_id"]
+        product_name = search_result["name"]
+        
+        logger.info(f"✓ Found blueprint: {product_name} (ID: {blueprint_id}, Provider: {print_provider_id})")
+        
+        try:
+            # Step 2: Upload the image
+            logger.info(f"Uploading design image: {image_url[:50]}...")
+            upload_result = await self.upload_image(image_url, f"{title.replace(' ', '_')}.png")
+            
+            if not upload_result or upload_result.get("success") == False:
+                error_msg = upload_result.get("message") or upload_result.get("error") or "Unknown upload error"
+                return {
+                    "success": False,
+                    "error": f"Image upload failed: {error_msg}",
+                    "image_url": image_url
+                }
+            
+            image_id = upload_result.get("id")
+            if not image_id:
+                return {
+                    "success": False,
+                    "error": "Failed to get image ID from upload",
+                    "upload_result": upload_result
+                }
+            
+            logger.info(f"✓ Image uploaded: {image_id}")
+            
+            # Step 3: Get variants from the API
+            variants_result = await self.get_variants(blueprint_id, print_provider_id)
+            variants = variants_result.get("variants", [])
+            
+            if not variants:
+                # Try other providers
+                logger.warning(f"No variants for provider {print_provider_id}, trying alternatives...")
+                all_providers = search_result.get("all_providers", [])
+                for alt_provider in all_providers:
+                    if alt_provider != print_provider_id:
+                        variants_result = await self.get_variants(blueprint_id, alt_provider)
+                        variants = variants_result.get("variants", [])
+                        if variants:
+                            print_provider_id = alt_provider
+                            logger.info(f"✓ Found variants with provider {alt_provider}")
+                            break
+            
+            if not variants:
+                return {
+                    "success": False,
+                    "error": f"No variants available for {product_name}",
+                    "blueprint_id": blueprint_id,
+                    "print_provider_id": print_provider_id
+                }
+            
+            # Limit variants to avoid API limits (usually 50-100 max)
+            max_variants = min(len(variants), 50)
+            selected_variants = variants[:max_variants]
+            logger.info(f"Using {len(selected_variants)} of {len(variants)} variants")
+            
+            # Build variant list with pricing
+            variant_list = []
+            variant_ids = []
+            for variant in selected_variants:
+                variant_list.append({
+                    "id": variant["id"],
+                    "price": price_cents,
+                    "is_enabled": True
+                })
+                variant_ids.append(variant["id"])
+            
+            # Step 4: Get placeholders and build print areas
+            placeholders = await self._get_blueprint_placeholders(blueprint_id, print_provider_id)
+            
+            print_areas = []
+            if placeholders:
+                for placeholder in placeholders:
+                    # Only include variant IDs that are in our selected variants
+                    placeholder_variant_ids = [v for v in placeholder.get("variant_ids", []) if v in variant_ids]
+                    if placeholder_variant_ids:
+                        print_areas.append({
+                            "variant_ids": placeholder_variant_ids,
+                            "placeholders": [{
+                                "position": placeholder.get("position", "front"),
+                                "images": [{
+                                    "id": image_id,
+                                    "x": 0.5,
+                                    "y": 0.5,
+                                    "scale": 1.0,
+                                    "angle": 0
+                                }]
+                            }]
+                        })
+            
+            # Fallback: create default print area if none built
+            if not print_areas:
+                print_areas = [{
+                    "variant_ids": variant_ids,
+                    "placeholders": [{
+                        "position": "front",
+                        "images": [{
+                            "id": image_id,
+                            "x": 0.5,
+                            "y": 0.5,
+                            "scale": 1.0,
+                            "angle": 0
+                        }]
+                    }]
+                }]
+            
+            logger.info(f"Built {len(print_areas)} print areas covering {len(variant_ids)} variants")
+            
+            # Step 5: Create the product
+            product_data = {
+                "title": title,
+                "description": description,
+                "blueprint_id": blueprint_id,
+                "print_provider_id": print_provider_id,
+                "variants": variant_list,
+                "print_areas": print_areas
+            }
+            
+            if tags:
+                product_data["tags"] = tags
+            
+            endpoint = f"/shops/{self.shop_id}/products.json"
+            result = await self._request("POST", endpoint, product_data)
+            
+            product_id = result.get("id")
+            logger.info(f"✓ Product created: {product_id}")
+            
+            # Step 6: Auto-publish to Shopify
+            published = False
+            shopify_status = "draft"
+            try:
+                await self.publish_product(product_id, visible=True)
+                published = True
+                shopify_status = "live"
+                logger.info(f"✓ Published to Shopify: {product_id}")
+            except Exception as pub_error:
+                logger.warning(f"Auto-publish failed: {pub_error}")
+            
+            return {
+                "success": True,
+                "product_id": product_id,
+                "title": title,
+                "product_type": product_name,
+                "original_request": product_type,
+                "blueprint_id": blueprint_id,
+                "print_provider_id": print_provider_id,
+                "image_id": image_id,
+                "variants_count": len(variant_list),
+                "price": price_cents / 100.0,
+                "published": published,
+                "shopify_status": shopify_status,
+                "product_url": f"https://printify.com/app/products/{product_id}",
+                "note": f"{product_name} is now LIVE on your store" if published else f"{product_name} created but not yet published"
+            }
+            
+        except Exception as e:
+            logger.error(f"Universal product creation failed: {e}")
+            import traceback
+            traceback.print_exc()
+            return {
+                "success": False,
+                "error": str(e),
+                "product_type": product_type,
+                "blueprint_found": product_name if search_result else None,
+                "blueprint_id": blueprint_id if search_result else None
+            }
 
     @tool(
         name="printify_create_tshirt",
