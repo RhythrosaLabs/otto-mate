@@ -1,276 +1,411 @@
-# Task Queue
+# Task Queue System
 
-Otto Chat includes a powerful task queue system for managing and scheduling automation tasks.
-
-## Overview
-
-The Task Queue allows you to:
-
-- View all pending, running, and completed tasks
-- Track real-time progress of multi-step operations
-- Schedule tasks for specific dates and times
-- Set priorities and dependencies
-- Create recurring tasks
+The Task Queue provides background task execution, scheduling, dependencies, and calendar integration.
 
 ---
 
-## Accessing the Queue
+## Overview
 
-### Via UI
-
-Click the 📋 **Queue** button in the top toolbar.
-
-### Keyboard Shortcut
-
-Press `⌘+Q` (Mac) or `Ctrl+Q` (Windows).
+```
+┌───────────────────────────────────────────────────────────────────┐
+│                         Task Queue Engine                          │
+├───────────────────────────────────────────────────────────────────┤
+│                                                                    │
+│   ┌─────────────┐     ┌──────────────┐     ┌──────────────┐       │
+│   │   Pending   │────▶│   Running    │────▶│  Completed   │       │
+│   │   Queue     │     │   Workers    │     │   Storage    │       │
+│   └─────────────┘     └──────────────┘     └──────────────┘       │
+│          │                   │                    │               │
+│          │                   │                    │               │
+│   ┌──────▼──────┐     ┌──────▼───────┐    ┌──────▼───────┐       │
+│   │  Scheduler  │     │  WebSocket   │    │    Retry     │       │
+│   │  (Calendar) │     │   Updates    │    │    Queue     │       │
+│   └─────────────┘     └──────────────┘    └──────────────┘       │
+│                                                                    │
+└───────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
 ## Task States
 
-| State | Icon | Description |
-|-------|------|-------------|
-| **Pending** | ⏳ | Waiting to start |
-| **Running** | 🔄 | Currently executing |
-| **Completed** | ✅ | Finished successfully |
-| **Failed** | ❌ | Encountered an error |
-| **Cancelled** | 🚫 | Manually cancelled |
-| **Scheduled** | 📅 | Waiting for scheduled time |
+| State | Description | Icon |
+|-------|-------------|------|
+| `pending` | Waiting to be executed | ⏳ |
+| `scheduled` | Has future execution time | 📅 |
+| `running` | Currently being processed | 🔄 |
+| `completed` | Successfully finished | ✅ |
+| `failed` | Execution failed | ❌ |
+| `cancelled` | Manually cancelled | 🚫 |
+| `paused` | Temporarily suspended | ⏸️ |
+
+### State Transitions
+
+```
+                    ┌──────────────────────────────────────┐
+                    ▼                                      │
+   ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌──────────┐ │
+   │ pending │──▶│ running │──▶│completed│   │  failed  │ │
+   └─────────┘   └─────────┘   └─────────┘   └──────────┘ │
+        │             │                            │      │
+        │             └─────────────▶──────────────┘      │
+        │                                                 │
+        ▼                                                 │
+   ┌─────────┐                ┌─────────┐                │
+   │scheduled│───────────────▶│cancelled│                │
+   └─────────┘                └─────────┘                │
+        │                                                 │
+        └─────────────────────────────────────────────────┘
+                    (when scheduled time arrives)
+```
 
 ---
 
-## Progress Tracking
+## Creating Tasks
 
-### Progress Indicators
+### Via UI
 
-Running tasks show:
+1. Click the Task Queue icon in the sidebar
+2. Click **"Add Task"** button
+3. Fill in task details:
+   - **Title**: Brief description
+   - **Prompt**: What Otto should do
+   - **Priority**: Low, Normal, High, Critical
+   - **Schedule**: Optional future time
 
-- **Progress bar** - Visual percentage complete
-- **Step info** - Current step / total steps
-- **Time elapsed** - Duration since start
-- **ETA** - Estimated time remaining
+### Via Chat
 
-### Live Updates
+Ask Otto naturally:
+- "Schedule a task to generate 10 product images tomorrow at 9am"
+- "Add to my queue: research top competitors in the coffee industry"
+- "Create a recurring task to post on social media every Monday"
 
-Progress updates automatically via WebSocket connection. No refresh needed.
+### Via API
+
+```bash
+# Create a simple task
+curl -X POST http://localhost:8000/api/tasks \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Generate product images",
+    "prompt": "Create 5 t-shirt mockups with nature themes",
+    "priority": "high"
+  }'
+
+# Create a scheduled task
+curl -X POST http://localhost:8000/api/tasks \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Weekly report",
+    "prompt": "Generate analytics report for the past week",
+    "scheduled_at": "2024-12-16T09:00:00Z",
+    "recurring": "weekly"
+  }'
+```
 
 ---
 
-## Priority System
+## Task Priority
 
-| Priority | Description | Use Case |
-|----------|-------------|----------|
-| **Urgent** | Immediate execution | Critical business needs |
-| **High** | Next in queue | Important tasks |
-| **Normal** | Standard order | Default priority |
-| **Low** | After other tasks | Background jobs |
+| Priority | Value | Behavior |
+|----------|-------|----------|
+| `critical` | 4 | Executes immediately, interrupts queue |
+| `high` | 3 | Moves to front of queue |
+| `normal` | 2 | Standard FIFO order |
+| `low` | 1 | Executes when queue is empty |
 
-### Setting Priority
+Priority affects execution order but not scheduled times.
 
-Via chat:
-```
-"Create product images with high priority"
-```
+---
 
-Via API:
+## Scheduling Options
+
+### One-Time Schedule
+
+Execute task at specific date/time:
+
 ```json
 {
-  "message": "Generate report",
-  "priority": "high"
+  "title": "Black Friday sale",
+  "prompt": "Update all product prices with 30% discount",
+  "scheduled_at": "2024-11-29T00:00:00Z"
 }
+```
+
+### Recurring Tasks
+
+| Pattern | Description |
+|---------|-------------|
+| `hourly` | Every hour |
+| `daily` | Every day at same time |
+| `weekly` | Every week on same day |
+| `monthly` | Every month on same date |
+| `custom` | Cron expression |
+
+```json
+{
+  "title": "Daily backup",
+  "prompt": "Export all data to backup storage",
+  "scheduled_at": "2024-12-15T02:00:00Z",
+  "recurring": "daily"
+}
+```
+
+### Cron Expressions
+
+For complex schedules:
+
+```json
+{
+  "title": "Quarterly report",
+  "prompt": "Generate quarterly business report",
+  "cron": "0 9 1 */3 *"
+}
+```
+
+| Field | Values |
+|-------|--------|
+| Minute | 0-59 |
+| Hour | 0-23 |
+| Day of Month | 1-31 |
+| Month | 1-12 |
+| Day of Week | 0-6 (0=Sunday) |
+
+---
+
+## Task Dependencies
+
+Tasks can depend on other tasks:
+
+```json
+{
+  "title": "Upload products to Shopify",
+  "prompt": "Push all new products to Shopify store",
+  "depends_on": ["task_abc123", "task_def456"]
+}
+```
+
+The task won't execute until all dependencies are `completed`.
+
+### Dependency Chain Example
+
+```
+┌─────────────────┐
+│ Generate Images │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Create Products │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Publish to Shop │
+└─────────────────┘
 ```
 
 ---
 
 ## Calendar Integration
 
-### Scheduling Tasks
-
-Click the 📅 calendar icon in the queue sidebar to view scheduled tasks.
-
-#### Schedule via Chat
-
-```
-"Tomorrow at 9am, generate the weekly sales report"
-
-"Every Monday at 10am, create social media posts"
-
-"On February 15th, launch the new product line"
-```
-
-#### Schedule via UI
-
-1. Open Task Queue
-2. Click "Schedule Task"
-3. Enter task description
-4. Select date and time
-5. Set optional recurrence
+The Task Queue integrates with a visual calendar.
 
 ### Viewing Calendar
 
-The calendar view shows:
+1. Click Task Queue icon in sidebar
+2. Click the **Calendar** tab
+3. View scheduled tasks by day/week/month
 
-- **Today's tasks** - Highlighted
-- **Upcoming tasks** - Next 7 days
-- **Overdue tasks** - Marked in red
-- **Recurring tasks** - With repeat icon
+### Calendar Features
 
----
-
-## Recurring Tasks
-
-### Recurrence Options
-
-| Pattern | Description |
+| Feature | Description |
 |---------|-------------|
-| **Daily** | Every day at specified time |
-| **Weekly** | Same day each week |
-| **Monthly** | Same date each month |
-| **Custom** | Flexible cron-like schedule |
+| Drag & Drop | Move tasks to reschedule |
+| Quick Add | Click on date to add task |
+| Color Coding | By priority level |
+| Recurring Indicators | Icon for repeating tasks |
+| Conflict Detection | Warns of overlapping tasks |
 
-### Examples
+### Keyboard Shortcuts
 
-```
-"Every day at 8am, check for new orders"
-
-"Every Friday at 5pm, create weekly summary"
-
-"First Monday of each month, generate report"
-```
-
-### Managing Recurring Tasks
-
-- Edit individual instances or entire series
-- Pause recurrence without deleting
-- Skip specific occurrences
+| Shortcut | Action |
+|----------|--------|
+| `←` / `→` | Navigate days |
+| `T` | Jump to today |
+| `M` | Month view |
+| `W` | Week view |
+| `D` | Day view |
 
 ---
 
-## Task Dependencies
+## Monitoring Tasks
 
-Chain tasks that depend on each other:
+### Real-Time Updates
 
+WebSocket events stream task updates:
+
+```javascript
+const ws = new WebSocket('ws://localhost:8000/ws');
+
+ws.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  if (data.type === 'task_update') {
+    console.log(`Task ${data.task_id}: ${data.status}`);
+  }
+};
 ```
-"After the product images are done, create the listings"
-```
 
-The queue will:
-1. Run the first task
-2. Wait for completion
-3. Pass results to dependent task
-4. Execute dependent task
+### Event Types
 
-### Dependency Graph
-
-Complex workflows show as a visual graph:
-
-```
-Task A ──┬── Task B ── Task D
-         │
-         └── Task C ──┘
-```
+| Event | Description |
+|-------|-------------|
+| `task_created` | New task added |
+| `task_started` | Execution began |
+| `task_progress` | Progress update (0-100%) |
+| `task_completed` | Successfully finished |
+| `task_failed` | Execution failed |
+| `task_cancelled` | Manually cancelled |
 
 ---
 
-## Queue Management
+## Retry System
 
-### Actions
+Failed tasks can automatically retry.
 
-| Action | Description |
-|--------|-------------|
-| **Pause** | Stop processing new tasks |
-| **Resume** | Continue processing |
-| **Clear Completed** | Remove finished tasks |
-| **Cancel All** | Stop all pending tasks |
-| **Retry Failed** | Re-run failed tasks |
+### Retry Configuration
 
-### Filters
+```json
+{
+  "title": "API call",
+  "prompt": "Fetch data from external API",
+  "retry": {
+    "max_attempts": 3,
+    "delay": 60,
+    "backoff": "exponential"
+  }
+}
+```
 
-Filter tasks by:
-- Status (pending, running, completed, failed)
-- Priority
-- Date range
-- Category
+| Option | Description | Default |
+|--------|-------------|---------|
+| `max_attempts` | Total attempts | 3 |
+| `delay` | Seconds between retries | 60 |
+| `backoff` | `linear`, `exponential`, `fixed` | `exponential` |
 
-### Sorting
+### Backoff Strategies
 
-Sort by:
-- Created date
-- Priority
-- Status
-- Progress
+| Strategy | Delay Pattern |
+|----------|---------------|
+| `fixed` | 60s, 60s, 60s |
+| `linear` | 60s, 120s, 180s |
+| `exponential` | 60s, 120s, 240s |
 
 ---
 
-## API Endpoints
+## API Reference
 
 ### List Tasks
 
-```http
-GET /api/tasks?status=running&limit=20
+```bash
+GET /api/tasks
+GET /api/tasks?status=pending
+GET /api/tasks?priority=high
+GET /api/tasks?from=2024-12-01&to=2024-12-31
 ```
 
-### Get Task
+### Get Task Details
 
-```http
+```bash
 GET /api/tasks/{task_id}
+```
+
+### Update Task
+
+```bash
+PUT /api/tasks/{task_id}
+Content-Type: application/json
+
+{
+  "priority": "critical",
+  "scheduled_at": "2024-12-20T10:00:00Z"
+}
 ```
 
 ### Cancel Task
 
-```http
-POST /api/tasks/{task_id}/cancel
+```bash
+DELETE /api/tasks/{task_id}
 ```
 
-### Schedule Task
+### Pause/Resume Task
 
-```http
-POST /api/tasks/schedule
-Content-Type: application/json
-
-{
-  "message": "Generate weekly report",
-  "scheduled_for": "2026-02-10T09:00:00Z",
-  "priority": "high",
-  "recurring": "weekly"
-}
+```bash
+POST /api/tasks/{task_id}/pause
+POST /api/tasks/{task_id}/resume
 ```
 
-### Retry Task
+### Retry Failed Task
 
-```http
+```bash
 POST /api/tasks/{task_id}/retry
+```
+
+### Get Task Output
+
+```bash
+GET /api/tasks/{task_id}/output
 ```
 
 ---
 
 ## Best Practices
 
-1. **Use priorities wisely** - Don't make everything urgent
-2. **Schedule off-peak** - Run heavy tasks during low-usage times
-3. **Chain related tasks** - Use dependencies for workflows
-4. **Monitor the queue** - Check for stuck or failed tasks
-5. **Clear completed regularly** - Keep the queue manageable
-6. **Set realistic schedules** - Account for task duration
+### Task Design
+
+1. **Atomic Tasks**: Make tasks do one thing well
+2. **Clear Prompts**: Be specific in task descriptions
+3. **Error Handling**: Use retry for network-dependent tasks
+4. **Dependencies**: Break complex workflows into dependent tasks
+
+### Scheduling
+
+1. **Spread Load**: Don't schedule many tasks at same time
+2. **Off-Peak**: Run heavy tasks during low-usage hours
+3. **Buffer Time**: Account for variable execution times
+4. **Timezone**: All times are UTC unless specified
+
+### Monitoring
+
+1. **Check Failures**: Review failed tasks regularly
+2. **Set Alerts**: Configure notifications for critical failures
+3. **Clean Up**: Archive old completed tasks
+4. **Logs**: Check task logs for optimization opportunities
 
 ---
 
 ## Troubleshooting
 
-### Task Stuck in Pending
+### Task Stuck in "Running"
 
-- Check if queue is paused
-- Verify no higher priority tasks
-- Check for dependency deadlocks
+```bash
+# Force cancel
+curl -X POST http://localhost:8000/api/tasks/{task_id}/force-cancel
 
-### Task Keeps Failing
+# Or restart the worker
+curl -X POST http://localhost:8000/api/admin/restart-workers
+```
 
-- Check error message in task details
-- Verify API keys are valid
-- Check external service status
+### Dependencies Not Resolving
 
-### Schedule Not Running
+Check that all dependency tasks exist and are completed:
 
-- Verify server is running at scheduled time
-- Check timezone settings
-- Ensure task wasn't accidentally cancelled
+```bash
+curl http://localhost:8000/api/tasks/{task_id}/dependencies
+```
+
+### Scheduled Tasks Not Executing
+
+1. Verify server timezone settings
+2. Check that scheduler service is running
+3. Ensure `scheduled_at` is in the future

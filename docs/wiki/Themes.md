@@ -1,165 +1,360 @@
 # Themes
 
-Otto Chat includes 14 beautiful themes to customize your experience.
+Otto Chat includes 14 professionally designed color themes with both dark and light variants.
+
+---
 
 ## Available Themes
 
-| Theme | Primary Colors | Best For |
-|-------|----------------|----------|
-| **Classic** | Purple/Pink gradient | Default, modern look |
-| **Midnight** | Deep blues | Night work, reduced eye strain |
-| **Sunset** | Orange/Pink warm | Creative, energetic mood |
-| **Ocean** | Blues and teals | Calm, focused work |
-| **Forest** | Natural greens | Nature-inspired, peaceful |
-| **Cherry** | Vibrant reds | Bold, energetic |
-| **Retro** | 80s neon | Fun, nostalgic |
-| **Copper** | Warm metallics | Professional, elegant |
-| **Nordic** | Clean whites/grays | Minimalist, light |
-| **Matrix** | Terminal green | Developer, hacker aesthetic |
-| **Lavender** | Soft purples | Gentle, relaxing |
-| **Neon** | Bright cyberpunk | Bold, futuristic |
-| **Monochrome** | Black and white | Classic, distraction-free |
-| **Sakura** | Cherry blossom pink | Spring, delicate |
+### Dark Themes
 
-## Changing Themes
+| Theme | Primary | Accent | Best For |
+|-------|---------|--------|----------|
+| **Default Dark** | `#1a1a2e` | `#4f46e5` | General use |
+| **Cyberpunk** | `#0d0d0d` | `#ff00ff` | Tech/gaming |
+| **Forest** | `#1a2e1a` | `#22c55e` | Nature/eco |
+| **Ocean** | `#0f172a` | `#06b6d4` | Calm/professional |
+| **Sunset** | `#1f1a1e` | `#f97316` | Warm/creative |
+| **Midnight** | `#0a0a14` | `#8b5cf6` | Late night |
+| **Monochrome** | `#121212` | `#888888` | Minimal |
 
-### Via Settings
+### Light Themes
 
-1. Click the ⚙️ Settings button
-2. Find "Theme" dropdown in Preferences
-3. Select your preferred theme
-4. Changes apply immediately
-
-### Keyboard Shortcut
-
-Press `⌘+,` (Mac) or `Ctrl+,` (Windows) to open Settings.
+| Theme | Primary | Accent | Best For |
+|-------|---------|--------|----------|
+| **Default Light** | `#f8fafc` | `#4f46e5` | General use |
+| **Cream** | `#fdfaf5` | `#d97706` | Warm/readable |
+| **Paper** | `#fafafa` | `#525252` | Minimal |
+| **Sky** | `#f0f9ff` | `#0284c7` | Fresh/clean |
+| **Lavender** | `#faf5ff` | `#9333ea` | Creative |
+| **Mint** | `#f0fdf4` | `#16a34a` | Fresh/natural |
+| **Rose** | `#fff1f2` | `#e11d48` | Soft/feminine |
 
 ---
 
-## Theme Previews
+## Theme Colors Reference
 
-### Classic (Default)
-```
-Background: Deep purple-black (#0a0a0f)
-Accent: Purple gradient (#8b5cf6 → #ec4899)
-Text: White (#ffffff)
-```
-
-### Midnight
-```
-Background: Navy blue (#0f172a)
-Accent: Blue (#3b82f6)
-Text: Light gray (#e2e8f0)
+### Default Dark
+```css
+--bg-primary: #1a1a2e;
+--bg-secondary: #16162a;
+--bg-tertiary: #252544;
+--text-primary: #f1f5f9;
+--text-secondary: #94a3b8;
+--accent: #4f46e5;
+--accent-hover: #6366f1;
+--border: #2e2e4a;
 ```
 
-### Sunset
-```
-Background: Dark warm (#1a0f0f)
-Accent: Orange/Pink (#f97316 → #ec4899)
-Text: Warm white (#fef3c7)
-```
-
-### Ocean
-```
-Background: Deep teal (#0f1729)
-Accent: Cyan (#06b6d4)
-Text: Light blue (#e0f2fe)
+### Cyberpunk
+```css
+--bg-primary: #0d0d0d;
+--bg-secondary: #1a1a1a;
+--bg-tertiary: #262626;
+--text-primary: #00ffff;
+--text-secondary: #ff00ff;
+--accent: #ff00ff;
+--accent-hover: #ff66ff;
+--border: #ff00ff33;
 ```
 
 ### Forest
-```
-Background: Dark green (#0f1f0f)
-Accent: Green (#22c55e)
-Text: Light green (#dcfce7)
+```css
+--bg-primary: #1a2e1a;
+--bg-secondary: #152815;
+--bg-tertiary: #1f3a1f;
+--text-primary: #d4f5d4;
+--text-secondary: #86c086;
+--accent: #22c55e;
+--accent-hover: #4ade80;
+--border: #2d4a2d;
 ```
 
-### Matrix
+### Ocean
+```css
+--bg-primary: #0f172a;
+--bg-secondary: #0c1420;
+--bg-tertiary: #1e293b;
+--text-primary: #e2e8f0;
+--text-secondary: #64748b;
+--accent: #06b6d4;
+--accent-hover: #22d3ee;
+--border: #1e3a5f;
 ```
-Background: Pure black (#000000)
-Accent: Terminal green (#00ff00)
-Text: Green (#4ade80)
-Font: Monospace
+
+### Sunset
+```css
+--bg-primary: #1f1a1e;
+--bg-secondary: #1a1518;
+--bg-tertiary: #2d252b;
+--text-primary: #fde6d8;
+--text-secondary: #d4a088;
+--accent: #f97316;
+--accent-hover: #fb923c;
+--border: #3d2d36;
+```
+
+### Midnight
+```css
+--bg-primary: #0a0a14;
+--bg-secondary: #050510;
+--bg-tertiary: #15152a;
+--text-primary: #e8e8ff;
+--text-secondary: #8888bb;
+--accent: #8b5cf6;
+--accent-hover: #a78bfa;
+--border: #25254a;
+```
+
+### Monochrome
+```css
+--bg-primary: #121212;
+--bg-secondary: #0a0a0a;
+--bg-tertiary: #1f1f1f;
+--text-primary: #e0e0e0;
+--text-secondary: #888888;
+--accent: #888888;
+--accent-hover: #aaaaaa;
+--border: #2a2a2a;
 ```
 
 ---
 
-## Light Mode Support
+## Light Theme Colors
 
-All themes are optimized for both dark and light modes. The system respects your OS preference or can be manually toggled.
+### Default Light
+```css
+--bg-primary: #f8fafc;
+--bg-secondary: #f1f5f9;
+--bg-tertiary: #e2e8f0;
+--text-primary: #1e293b;
+--text-secondary: #475569;
+--accent: #4f46e5;
+--accent-hover: #6366f1;
+--border: #cbd5e1;
+```
 
-### Light Mode Adjustments
+### Cream
+```css
+--bg-primary: #fdfaf5;
+--bg-secondary: #faf5eb;
+--bg-tertiary: #f5ecdc;
+--text-primary: #422006;
+--text-secondary: #78350f;
+--accent: #d97706;
+--accent-hover: #f59e0b;
+--border: #e6d5c0;
+```
 
-- Higher contrast text colors
-- Lighter backgrounds
-- Adjusted accent colors for visibility
-- Softer shadows
+### Paper
+```css
+--bg-primary: #fafafa;
+--bg-secondary: #f5f5f5;
+--bg-tertiary: #e5e5e5;
+--text-primary: #171717;
+--text-secondary: #525252;
+--accent: #525252;
+--accent-hover: #737373;
+--border: #d4d4d4;
+```
+
+### Sky
+```css
+--bg-primary: #f0f9ff;
+--bg-secondary: #e0f2fe;
+--bg-tertiary: #bae6fd;
+--text-primary: #0c4a6e;
+--text-secondary: #0369a1;
+--accent: #0284c7;
+--accent-hover: #0ea5e9;
+--border: #7dd3fc;
+```
+
+### Lavender
+```css
+--bg-primary: #faf5ff;
+--bg-secondary: #f3e8ff;
+--bg-tertiary: #e9d5ff;
+--text-primary: #3b0764;
+--text-secondary: #6b21a8;
+--accent: #9333ea;
+--accent-hover: #a855f7;
+--border: #d8b4fe;
+```
+
+### Mint
+```css
+--bg-primary: #f0fdf4;
+--bg-secondary: #dcfce7;
+--bg-tertiary: #bbf7d0;
+--text-primary: #14532d;
+--text-secondary: #166534;
+--accent: #16a34a;
+--accent-hover: #22c55e;
+--border: #86efac;
+```
+
+### Rose
+```css
+--bg-primary: #fff1f2;
+--bg-secondary: #ffe4e6;
+--bg-tertiary: #fecdd3;
+--text-primary: #4c0519;
+--text-secondary: #881337;
+--accent: #e11d48;
+--accent-hover: #f43f5e;
+--border: #fda4af;
+```
 
 ---
 
-## Custom Themes (Advanced)
+## Changing Themes
 
-You can create custom themes by modifying CSS variables:
+### Via UI
+
+1. Click the Settings icon in the sidebar (or press `Ctrl+,`)
+2. Navigate to **Appearance** section
+3. Select from the theme dropdown
+4. Theme changes apply immediately
+
+### Via Keyboard
+
+Press `Ctrl+T` to cycle through themes.
+
+### Via API
+
+```bash
+# Get current theme
+curl http://localhost:8000/api/settings
+
+# Set theme
+curl -X PUT http://localhost:8000/api/settings \
+  -H "Content-Type: application/json" \
+  -d '{"theme": "cyberpunk"}'
+```
+
+---
+
+## Creating Custom Themes
+
+### Step 1: Create Theme File
+
+Create a new CSS file in `frontends/vanilla-js/css/themes/`:
 
 ```css
-:root {
-  /* Background colors */
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #12121a;
-  --bg-tertiary: #1a1a24;
+/* my-theme.css */
+:root[data-theme="my-theme"] {
+  /* Backgrounds */
+  --bg-primary: #1a1a2e;
+  --bg-secondary: #16162a;
+  --bg-tertiary: #252544;
+  --bg-hover: #2e2e4a;
   
-  /* Accent colors */
-  --accent-purple: #8b5cf6;
-  --accent-pink: #ec4899;
-  --accent-blue: #3b82f6;
-  --accent-cyan: #06b6d4;
+  /* Text */
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
   
-  /* Text colors */
-  --text: #ffffff;
-  --text-muted: #9ca3af;
-  --text-dim: #6b7280;
+  /* Accent */
+  --accent: #4f46e5;
+  --accent-hover: #6366f1;
+  --accent-muted: #4f46e533;
   
-  /* Gradients */
-  --sidebar-gradient: linear-gradient(180deg, 
-    rgba(139, 92, 246, 0.08) 0%, 
-    transparent 100%);
+  /* Borders */
+  --border: #2e2e4a;
+  --border-strong: #404060;
+  
+  /* Status Colors */
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
+  
+  /* Component Specific */
+  --input-bg: var(--bg-secondary);
+  --button-bg: var(--accent);
+  --message-user: var(--accent);
+  --message-assistant: var(--bg-tertiary);
+  --sidebar-bg: var(--bg-secondary);
+  --scrollbar: #444;
+  --scrollbar-hover: #555;
 }
 ```
 
-### Adding a Custom Theme
+### Step 2: Import Theme
 
-1. Edit `src/web/chat.html`
-2. Find the theme selector section
-3. Add your theme option
-4. Add CSS variables for your theme
+Add to `frontends/vanilla-js/css/main.css`:
 
----
+```css
+@import 'themes/my-theme.css';
+```
 
-## Theme-Aware Components
+### Step 3: Register Theme
 
-These UI elements automatically adapt to themes:
+Add to theme list in `frontends/vanilla-js/js/settings.js`:
 
-- **Chat bubbles** - Background and text colors
-- **Sidebars** - Gradients and borders
-- **Buttons** - Accent colors and hover states
-- **Inputs** - Borders and focus states
-- **Cards** - Backgrounds and shadows
-- **Toggles** - Active/inactive states
-- **Progress bars** - Fill colors
-- **Badges** - Status colors
+```javascript
+const themes = [
+  // ... existing themes
+  { id: 'my-theme', name: 'My Theme', type: 'dark' }
+];
+```
 
 ---
 
-## Accessibility
+## CSS Variables Reference
 
-All themes meet WCAG 2.1 contrast requirements:
+### Required Variables
 
-- **AA Standard** - Minimum 4.5:1 for normal text
-- **AAA Standard** - 7:1 for enhanced contrast (available in settings)
+| Variable | Description |
+|----------|-------------|
+| `--bg-primary` | Main background |
+| `--bg-secondary` | Sidebar, cards |
+| `--bg-tertiary` | Active states, nested elements |
+| `--text-primary` | Main text color |
+| `--text-secondary` | Subdued text |
+| `--accent` | Primary action color |
+| `--border` | Standard borders |
 
-### High Contrast Mode
+### Optional Variables
 
-Optional high contrast mode increases readability:
+| Variable | Default Fallback |
+|----------|-----------------|
+| `--bg-hover` | Lighter `--bg-tertiary` |
+| `--text-muted` | Lighter `--text-secondary` |
+| `--accent-hover` | Lighter `--accent` |
+| `--accent-muted` | `--accent` at 20% opacity |
+| `--border-strong` | Darker `--border` |
 
-1. Open Settings
-2. Enable "High Contrast" toggle
-3. Text and UI elements become more distinct
+---
+
+## Theme Best Practices
+
+### Contrast Ratios
+
+Ensure accessibility with proper contrast:
+
+| Element | Minimum Ratio |
+|---------|--------------|
+| Body text | 4.5:1 |
+| Large text | 3:1 |
+| UI components | 3:1 |
+
+### Testing
+
+1. Check readability in both bright and dark environments
+2. Test all component states (hover, active, disabled)
+3. Verify color-blind accessibility
+4. Test on different screen types (OLED, LCD)
+
+### Light Theme Considerations
+
+- Ensure sufficient contrast for text on light backgrounds
+- Use subtle shadows instead of heavy borders
+- Consider eye strain for extended use
+
+### Dark Theme Considerations
+
+- Avoid pure black (`#000000`) - use dark grays instead
+- Ensure white text isn't too bright (use `#f1f5f9` instead of `#ffffff`)
+- Add subtle background differentiation between sections

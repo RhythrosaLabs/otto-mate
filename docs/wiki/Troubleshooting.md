@@ -1,202 +1,461 @@
 # Troubleshooting
 
-Common issues and their solutions.
+Solutions for common issues with Otto Chat.
 
-## Server Issues
+---
 
-### Server Won't Start
+## Quick Diagnostics
 
-**Symptoms:** Error when running `python run.py`
+Run the diagnostic command:
+
+```bash
+python -c "from src.utils.diagnostics import run_diagnostics; run_diagnostics()"
+```
+
+Or via API:
+
+```bash
+curl http://localhost:8000/api/health/detailed
+```
+
+---
+
+## Installation Issues
+
+### Python Version Errors
+
+**Problem:** `Python 3.11+ required`
+
+**Solution:**
+```bash
+# Check Python version
+python --version
+
+# Install Python 3.11+
+# macOS
+brew install python@3.11
+
+# Ubuntu/Debian
+sudo apt install python3.11
+
+# Use specific version
+python3.11 -m venv venv
+```
+
+### Dependency Installation Fails
+
+**Problem:** `pip install` errors
 
 **Solutions:**
 
-1. **Check Python version**
-   ```bash
-   python --version
-   # Should be 3.11+
-   ```
+```bash
+# Upgrade pip
+pip install --upgrade pip
 
-2. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+# Install with legacy resolver
+pip install -r requirements.txt --use-deprecated=legacy-resolver
 
-3. **Check .env file**
-   ```bash
-   cat .env
-   # Ensure ANTHROPIC_API_KEY is set
-   ```
+# Missing system dependencies (Ubuntu)
+sudo apt install python3-dev build-essential libffi-dev
 
-4. **Check port availability**
-   ```bash
-   lsof -i :8000
-   # Kill existing process if needed:
-   lsof -ti:8000 | xargs kill -9
-   ```
+# macOS
+xcode-select --install
+brew install openssl
+```
+
+### Node.js/npm Errors
+
+**Problem:** Frontend build fails
+
+**Solution:**
+```bash
+# Check Node version (16+ required)
+node --version
+
+# Clear npm cache
+npm cache clean --force
+
+# Delete node_modules and reinstall
+rm -rf node_modules package-lock.json
+npm install
+```
+
+---
+
+## Server Issues
 
 ### Port Already in Use
 
-```bash
-# Find and kill process on port 8000
-lsof -ti:8000 | xargs kill -9
+**Problem:** `Address already in use: 8000`
 
-# Or use a different port
-python -m uvicorn src.api.main:app --port 8001
+**Solution:**
+```bash
+# Find process using port
+lsof -i :8000
+
+# Kill process
+kill -9 <PID>
+
+# Or use different port
+python run.py --port 8001
 ```
 
-### "Module Not Found" Errors
+### Server Won't Start
+
+**Problem:** Server crashes on startup
+
+**Checklist:**
+1. Check logs: `tail -f logs/otto.log`
+2. Verify `.env` file exists and has required keys
+3. Check database connection
+4. Verify ChromaDB data isn't corrupted
 
 ```bash
-# Ensure virtual environment is activated
-source venv/bin/activate
+# Reset ChromaDB
+rm -rf data/chroma
+python run.py  # Will recreate
+```
 
-# Reinstall dependencies
-pip install -r requirements.txt --force-reinstall
+### Memory Issues
+
+**Problem:** `MemoryError` or slow performance
+
+**Solutions:**
+```bash
+# Check memory usage
+ps aux | grep python
+
+# Limit ChromaDB memory
+export CHROMA_SERVER_NOFILE_LIMIT=65535
+export CHROMA_SERVER_MEMORY_LIMIT=2G
+
+# Use minimal requirements
+pip install -r requirements-minimal.txt
 ```
 
 ---
 
 ## API Key Issues
 
-### "Anthropic API Key Required"
+### Invalid API Key
 
-1. Get key from [Anthropic Console](https://console.anthropic.com/settings/keys)
-2. Add to `.env`:
-   ```env
-   ANTHROPIC_API_KEY=sk-ant-...
-   ```
-3. Restart server
+**Problem:** `AuthenticationError: Invalid API Key`
 
-### "Invalid API Key"
+**Solutions:**
 
-- Check for extra spaces or quotes
-- Verify key hasn't expired
-- Test directly:
-  ```bash
-  curl https://api.anthropic.com/v1/messages \
-    -H "x-api-key: $ANTHROPIC_API_KEY" \
-    -H "anthropic-version: 2023-06-01"
-  ```
+1. **Check .env file format:**
+```env
+# Correct
+OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxx
 
-### Replicate Token Issues
+# Wrong (no quotes needed)
+OPENAI_API_KEY="sk-xxxxxxxxxxxxxxxx"
+```
 
-Test token:
+2. **Verify key is active:**
 ```bash
-curl -H "Authorization: Token $REPLICATE_API_TOKEN" \
-  https://api.replicate.com/v1/account
+# OpenAI
+curl https://api.openai.com/v1/models \
+  -H "Authorization: Bearer $OPENAI_API_KEY"
+
+# Anthropic
+curl https://api.anthropic.com/v1/messages \
+  -H "x-api-key: $ANTHROPIC_API_KEY" \
+  -H "anthropic-version: 2023-06-01"
+```
+
+3. **Check for billing issues** on provider dashboard
+
+### Rate Limiting
+
+**Problem:** `429 Too Many Requests`
+
+**Solutions:**
+```env
+# Add to .env to enable rate limiting
+RATE_LIMIT_ENABLED=true
+RATE_LIMIT_REQUESTS=60
+RATE_LIMIT_PERIOD=60
+```
+
+Or wait and retry - most limits reset within a minute.
+
+### Key Not Being Read
+
+**Problem:** API key in `.env` but not working
+
+**Solutions:**
+```bash
+# Ensure .env is in project root
+ls -la .env
+
+# Restart server (keys read at startup)
+# Ctrl+C then:
+python run.py
+
+# Verify key is loaded
+python -c "from dotenv import load_dotenv; import os; load_dotenv(); print(os.getenv('OPENAI_API_KEY', 'NOT FOUND')[:10])"
 ```
 
 ---
 
-## Image Generation Issues
+## AI Generation Issues
 
-### Images Not Generating
+### Image Generation Fails
 
-1. **Check Replicate token**
-   - Verify `REPLICATE_API_TOKEN` in `.env`
-   - Check token balance at [replicate.com](https://replicate.com)
+**Problem:** Image tools return errors
 
-2. **Check model availability**
-   - Some models may be temporarily unavailable
-   - Try a different model (e.g., switch from Flux Pro to SDXL)
+| Error | Solution |
+|-------|----------|
+| `NSFW content detected` | Modify prompt to be SFW |
+| `Invalid dimensions` | Use supported aspect ratio |
+| `Timeout` | Image is processing, wait longer |
+| `Credit limit` | Check Replicate/API credits |
 
-3. **Check error messages**
-   - Look at server logs for detailed errors
-   - API rate limits may apply
-
-### Wrong Image Size/Aspect Ratio
-
-Specify explicitly:
-```
-"Generate a portrait image (2:3) of a sunset"
-"Create a landscape banner at 1920x1080"
+```bash
+# Check Replicate status
+curl https://api.replicate.com/v1/predictions \
+  -H "Authorization: Token $REPLICATE_API_TOKEN"
 ```
 
-### Image Quality Issues
+### Video Generation Times Out
 
-- Use Flux Pro 1.1 for highest quality
-- Enable upscaling for larger images
-- Add style keywords like "high quality, detailed, professional"
+**Problem:** Video generation never completes
+
+**Solutions:**
+1. Videos can take 2-5 minutes - be patient
+2. Check generation status via API
+3. Simplify prompt (fewer motion elements)
+4. Use shorter duration
+
+```bash
+# Check video status
+curl http://localhost:8000/api/generations/{generation_id}
+```
+
+### Wrong Model Being Used
+
+**Problem:** Response quality not as expected
+
+**Solution:** Specify model in settings:
+```json
+{
+  "default_model": "claude-3-5-sonnet-20241022",
+  "fallback_model": "gpt-4o"
+}
+```
 
 ---
 
 ## Printify Issues
 
-### "Cannot Connect to Printify"
+### Connection Failed
 
-1. Verify API token at [Printify](https://printify.com/app/settings/api)
-2. Check shop ID is correct
-3. Test connection in Settings
+**Problem:** Can't connect to Printify
 
-### "Product Not Found"
+**Checklist:**
+1. Verify API token is correct
+2. Check token has correct scopes
+3. Token not expired
 
-- Blueprints change - run `get_blueprints` to get current options
-- Some products are region-specific
-- Check product is available for your shop
+```bash
+# Test Printify connection
+curl https://api.printify.com/v1/shops.json \
+  -H "Authorization: Bearer $PRINTIFY_API_TOKEN"
+```
 
 ### Image Upload Fails
 
-- Ensure image URL is publicly accessible
-- Image must be PNG or JPEG
-- Minimum resolution varies by product (usually 150 DPI)
+**Problem:** Images won't upload to Printify
+
+**Solutions:**
+1. Image must be accessible URL (not localhost)
+2. Check image dimensions meet requirements
+3. Format must be PNG, JPG, or SVG
+4. File size under 50MB
+
+```bash
+# Upload test
+curl -X POST https://api.printify.com/v1/uploads/images.json \
+  -H "Authorization: Bearer $PRINTIFY_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"file_name": "test.png", "url": "https://example.com/image.png"}'
+```
+
+### Product Creation Fails
+
+**Problem:** Can't create products
+
+**Common causes:**
+- Invalid blueprint ID
+- Missing required print areas
+- Invalid variant selections
+
+```bash
+# Get valid blueprints
+curl https://api.printify.com/v1/catalog/blueprints.json \
+  -H "Authorization: Bearer $PRINTIFY_API_TOKEN"
+```
+
+---
+
+## Shopify Issues
+
+### Authentication Failed
+
+**Problem:** Shopify API returns 401
+
+**Solutions:**
+1. Verify Access Token is correct
+2. Check app has required scopes
+3. Store URL is correct format
+
+```env
+# Correct format
+SHOPIFY_STORE_URL=your-store.myshopify.com
+SHOPIFY_ACCESS_TOKEN=shpat_xxxxxxxxxxxxxxxx
+```
+
+### Product Sync Issues
+
+**Problem:** Products not syncing correctly
+
+**Checklist:**
+- Check product status is `active`
+- Verify inventory tracking settings
+- Check for duplicate SKUs
 
 ---
 
 ## Plugin Issues
 
-### Plugin Not Discovered
+### Plugin Not Loading
 
+**Problem:** Installed plugin doesn't appear
+
+**Checklist:**
 1. Check plugin directory structure:
    ```
-   plugins/
-   └── my_plugin/
-       ├── manifest.yaml
-       └── main.py
+   plugins/my-plugin/
+   ├── manifest.json
+   └── main.py
    ```
+2. Verify manifest.json is valid JSON
+3. Check for Python syntax errors in main.py
+4. Restart server after installing
 
-2. Validate manifest.yaml syntax
-3. Click "Discover" in Settings → Plugins
+```bash
+# Check plugin logs
+grep "plugin" logs/otto.log | tail -50
+```
 
-### Plugin Won't Enable
+### Plugin Dependency Missing
 
-1. Check for import errors in main.py
-2. Verify all dependencies are installed
-3. Check server logs for error details
+**Problem:** `ModuleNotFoundError` in plugin
 
-### Plugin Tools Not Working
+**Solution:**
+```bash
+# Install plugin dependencies
+pip install -r plugins/plugin-name/requirements.txt
 
-1. Verify tool is listed in manifest `provides`
-2. Check method signature matches manifest
-3. Ensure async/await is used correctly
+# Or install specific package
+pip install package-name
+```
+
+### Plugin Conflicts
+
+**Problem:** Multiple plugins conflict
+
+**Solutions:**
+1. Check for duplicate tool names
+2. Disable conflicting plugin in settings
+3. Check plugin load order
 
 ---
 
 ## UI Issues
 
-### Interface Not Loading
+### UI Not Loading
 
-1. Clear browser cache
-2. Check browser console for errors (F12)
-3. Verify server is running
-4. Try incognito/private window
+**Problem:** Blank page or JavaScript errors
+
+**Solutions:**
+```bash
+# Check browser console for errors
+# Chrome: F12 → Console
+
+# Hard refresh
+# Chrome: Ctrl+Shift+R
+# Safari: Cmd+Shift+R
+
+# Clear cache
+rm -rf frontends/vanilla-js/dist
+```
 
 ### Theme Not Applying
 
-1. Clear browser cache
-2. Check localStorage:
-   ```javascript
-   localStorage.getItem('otto-theme')
-   ```
-3. Reset to default:
-   ```javascript
-   localStorage.removeItem('otto-theme')
-   ```
+**Problem:** Theme changes don't take effect
 
-### Keyboard Shortcuts Not Working
+**Solutions:**
+1. Hard refresh browser
+2. Check for CSS caching
+3. Verify theme name in settings
 
-- Ensure focus is on the chat area
-- Check for conflicting browser extensions
-- Some shortcuts may conflict with OS shortcuts
+```javascript
+// Browser console
+localStorage.setItem('otto-theme', 'cyberpunk');
+location.reload();
+```
+
+### WebSocket Disconnections
+
+**Problem:** Real-time updates stop working
+
+**Solutions:**
+1. Check network connectivity
+2. Verify WebSocket URL is correct
+3. Check for proxy/firewall blocking WS
+
+```javascript
+// Test WebSocket
+const ws = new WebSocket('ws://localhost:8000/ws');
+ws.onopen = () => console.log('Connected');
+ws.onerror = (e) => console.log('Error:', e);
+```
+
+---
+
+## Database Issues
+
+### ChromaDB Errors
+
+**Problem:** Vector database errors
+
+**Solutions:**
+```bash
+# Reset ChromaDB
+rm -rf data/chroma
+
+# Or repair
+python -c "from src.memory.chroma_manager import ChromaManager; ChromaManager().repair()"
+```
+
+### Data Corruption
+
+**Problem:** Corrupted conversation data
+
+**Solutions:**
+```bash
+# Backup current data
+cp -r data data.backup
+
+# Reset specific data
+rm -rf data/conversations
+rm -rf data/chroma
+
+# Restart server
+python run.py
+```
 
 ---
 
@@ -204,87 +463,84 @@ Specify explicitly:
 
 ### Slow Responses
 
-1. Check network connection
-2. Reduce concurrent tasks
-3. Use simpler prompts for faster processing
-4. Check API rate limits
+**Checklist:**
+1. Check API latency:
+   ```bash
+   curl -w "@curl-format.txt" -o /dev/null -s http://localhost:8000/api/health
+   ```
+2. Monitor memory: `htop` or Activity Monitor
+3. Check task queue - too many pending tasks
+4. Reduce context length in settings
+
+### High CPU Usage
+
+**Solutions:**
+```bash
+# Check worker processes
+ps aux | grep python
+
+# Limit concurrent tasks
+export MAX_CONCURRENT_TASKS=2
+
+# Reduce embedding operations
+export EMBEDDING_BATCH_SIZE=100
+```
 
 ### High Memory Usage
 
-1. Clear completed tasks from queue
-2. Close unused browser tabs
-3. Restart server periodically for long-running instances
-
-### File Storage Full
-
+**Solutions:**
 ```bash
-# Check storage usage
-du -sh data/files/
+# Limit conversation history length
+curl -X PUT http://localhost:8000/api/settings \
+  -d '{"max_context_messages": 20}'
 
-# Clean up old files
-find data/files/ -type f -mtime +30 -delete
+# Clear old data
+python -c "from src.utils.cleanup import cleanup_old_data; cleanup_old_data(days=30)"
 ```
 
 ---
 
-## Docker Issues
+## Error Messages Reference
 
-### Container Won't Start
-
-```bash
-# Check logs
-docker-compose logs otto
-
-# Rebuild
-docker-compose build --no-cache
-docker-compose up -d
-```
-
-### Volume Permissions
-
-```bash
-# Fix permissions
-chmod -R 755 data/
-```
+| Error | Meaning | Solution |
+|-------|---------|----------|
+| `ECONNREFUSED` | Server not running | Start server |
+| `ETIMEDOUT` | Network timeout | Check connectivity |
+| `ENOMEM` | Out of memory | Increase RAM or reduce load |
+| `ENOENT` | File not found | Check file paths |
+| `EPERM` | Permission denied | Check file permissions |
+| `SQLITE_CORRUPT` | DB corruption | Reset database |
 
 ---
 
 ## Getting Help
 
-### Collect Debug Information
+### Logs
 
 ```bash
-# System info
-python --version
-pip list | grep -E "fastapi|anthropic|pydantic"
-
-# Server logs
+# View recent logs
 tail -100 logs/otto.log
 
-# Check config
-cat .env | grep -v KEY | grep -v TOKEN
+# Search for errors
+grep -i error logs/otto.log
+
+# Watch logs in real-time
+tail -f logs/otto.log
 ```
 
-### Contact Support
+### Debug Mode
 
-1. Check existing [GitHub Issues](https://github.com/RhythrosaLabs/otto-chat/issues)
-2. Create new issue with:
-   - Otto version
-   - Python version
-   - OS
-   - Error messages
-   - Steps to reproduce
+```bash
+# Run with debug output
+DEBUG=true python run.py
 
----
+# Or set in .env
+DEBUG=true
+LOG_LEVEL=DEBUG
+```
 
-## Common Error Codes
+### Community Support
 
-| Error | Meaning | Solution |
-|-------|---------|----------|
-| `ANTHROPIC_ERROR` | Claude API issue | Check API key, quota |
-| `REPLICATE_ERROR` | Image gen failed | Check token, try different model |
-| `PRINTIFY_401` | Auth failed | Refresh Printify token |
-| `RATE_LIMITED` | Too many requests | Wait and retry |
-| `TIMEOUT` | Request took too long | Retry with simpler task |
-| `FILE_NOT_FOUND` | Missing file | Check file path |
-| `VALIDATION_ERROR` | Bad input | Check request format |
+- GitHub Issues: [Report bugs](https://github.com/RhythrosaLabs/otto-chat/issues)
+- Discussions: [Ask questions](https://github.com/RhythrosaLabs/otto-chat/discussions)
+- Wiki: [Documentation](https://github.com/RhythrosaLabs/otto-chat/wiki)

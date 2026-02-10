@@ -1,78 +1,220 @@
 # Getting Started
 
-Get Otto Chat up and running in 5 minutes.
+This guide will walk you through setting up Otto Chat from scratch.
+
+---
 
 ## Prerequisites
 
-- **Python 3.11+** - [Download Python](https://python.org/downloads)
-- **Anthropic API Key** - [Get API Key](https://console.anthropic.com/settings/keys)
+Before installing Otto Chat, ensure you have:
+
+| Requirement | Minimum | Recommended |
+|-------------|---------|-------------|
+| **Python** | 3.11 | 3.12 |
+| **RAM** | 4 GB | 8 GB |
+| **Disk Space** | 2 GB | 10 GB |
+| **OS** | macOS, Linux, Windows | macOS, Linux |
+
+### Required API Keys
+
+| Service | Purpose | Required? | Get Key |
+|---------|---------|-----------|---------|
+| **Anthropic** | Claude AI (core) | ✅ Required | [console.anthropic.com](https://console.anthropic.com/settings/keys) |
+| **Replicate** | Image/Video AI | Recommended | [replicate.com](https://replicate.com/account/api-tokens) |
+| **Printify** | Print-on-Demand | Optional | [printify.com/app/settings/api](https://printify.com/app/settings/api) |
+| **Shopify** | E-Commerce | Optional | [shopify.dev](https://shopify.dev/docs/apps/auth/admin-app-access-tokens) |
+| **Serper** | Web Search | Optional | [serper.dev](https://serper.dev) |
+| **OpenAI** | Voice (Whisper) | Optional | [platform.openai.com](https://platform.openai.com/api-keys) |
+| **SendGrid** | Email | Optional | [sendgrid.com](https://app.sendgrid.com/settings/api_keys) |
+
+---
 
 ## Installation
 
-### 1. Clone the Repository
+### Step 1: Clone the Repository
 
 ```bash
 git clone https://github.com/RhythrosaLabs/otto-chat.git
 cd otto-chat
 ```
 
-### 2. Create Virtual Environment
+### Step 2: Create Virtual Environment
 
+**macOS/Linux:**
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+python3 -m venv venv
+source venv/bin/activate
 ```
 
-### 3. Install Dependencies
+**Windows:**
+```powershell
+python -m venv venv
+venv\Scripts\activate
+```
+
+### Step 3: Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Configure Environment
+This installs approximately 50+ packages including:
+- `fastapi` - Web framework
+- `anthropic` - Claude API client
+- `replicate` - AI model access
+- `httpx` - Async HTTP client
+- `pydantic` - Data validation
+- `uvicorn` - ASGI server
+
+### Step 4: Configure Environment
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` with your API keys:
+Edit `.env` with your text editor:
 
-```env
-# Required - Core AI
-ANTHROPIC_API_KEY=sk-ant-...
-
-# Optional - Image Generation
-REPLICATE_API_TOKEN=r8_...
-
-# Optional - Print-on-Demand
-PRINTIFY_API_TOKEN=...
-PRINTIFY_SHOP_ID=...
-
-# Optional - E-commerce
-SHOPIFY_SHOP_NAME=your-store
-SHOPIFY_ACCESS_TOKEN=shpat_...
-
-# Optional - Web Search
-SERPER_API_KEY=...
+```bash
+nano .env
+# or
+code .env
+# or
+vim .env
 ```
 
-### 5. Start the Server
+### Step 5: Add API Keys
+
+Edit your `.env` file:
+
+```env
+# ═══════════════════════════════════════════════════════════════
+# REQUIRED - Core AI (at minimum, you need this)
+# ═══════════════════════════════════════════════════════════════
+ANTHROPIC_API_KEY=sk-ant-api03-xxxxxxxxxxxxxxxxxxxx
+
+# ═══════════════════════════════════════════════════════════════
+# RECOMMENDED - Image & Video Generation
+# ═══════════════════════════════════════════════════════════════
+REPLICATE_API_TOKEN=r8_xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# ═══════════════════════════════════════════════════════════════
+# OPTIONAL - Print-on-Demand (Printify)
+# ═══════════════════════════════════════════════════════════════
+PRINTIFY_API_TOKEN=your_printify_token
+PRINTIFY_SHOP_ID=12345678
+
+# ═══════════════════════════════════════════════════════════════
+# OPTIONAL - E-Commerce (Shopify)
+# ═══════════════════════════════════════════════════════════════
+SHOPIFY_SHOP_NAME=your-store-name
+SHOPIFY_ACCESS_TOKEN=shpat_xxxxxxxxxxxxxxxxxxxx
+
+# ═══════════════════════════════════════════════════════════════
+# OPTIONAL - Web Search
+# ═══════════════════════════════════════════════════════════════
+SERPER_API_KEY=your_serper_key
+
+# ═══════════════════════════════════════════════════════════════
+# OPTIONAL - Voice Features
+# ═══════════════════════════════════════════════════════════════
+OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxx
+
+# ═══════════════════════════════════════════════════════════════
+# OPTIONAL - Email (SendGrid or SMTP)
+# ═══════════════════════════════════════════════════════════════
+SENDGRID_API_KEY=SG.xxxxxxxxxxxxxxxxxxxx
+# Or for SMTP:
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
+```
+
+### Step 6: Start the Server
 
 ```bash
 python run.py
 ```
 
-Visit **http://localhost:8000** to start chatting!
+You should see:
+```
+🚀 Otto Chat starting...
+✅ Anthropic API connected
+✅ Replicate API connected
+✅ Printify API connected
+📡 Server running at http://localhost:8000
+```
 
-## First-Time Setup
+### Step 7: Open in Browser
 
-1. Open http://localhost:8000
-2. You'll be redirected to the onboarding wizard
-3. Enter your API keys
-4. Test connections
-5. Start chatting!
+Navigate to: **http://localhost:8000**
+
+---
+
+## First-Time Setup (Onboarding)
+
+When you first visit Otto, the onboarding wizard will guide you through:
+
+### 1. API Keys Configuration
+Enter your API keys. The wizard will test each connection.
+
+### 2. Connection Testing
+Otto verifies each service is accessible:
+- ✅ Green checkmark = Connected
+- ❌ Red X = Failed (check key)
+- ⚪ Gray circle = Not configured
+
+### 3. Preferences
+Set your defaults:
+- **Default AI Model**: Claude Opus 4 recommended
+- **Default Image Model**: Flux Pro 1.1 recommended
+- **Theme**: Choose from 14 options
+
+### 4. Complete!
+You're ready to start chatting.
+
+---
+
+## Your First Commands
+
+Try these to get familiar with Otto:
+
+### Basic Chat
+```
+"Hello! What can you help me with?"
+```
+
+### Generate an Image
+```
+"Generate a beautiful sunset over mountains in a photorealistic style"
+```
+
+### Create Content
+```
+"Write a blog post about the benefits of AI in small business"
+```
+
+### Research
+```
+"Research the top 5 AI tools launched in 2025"
+```
+
+### E-Commerce (if configured)
+```
+"Create a t-shirt design with an astronaut cat and upload it to Printify"
+```
+
+### Multi-Step Workflow
+```
+"Generate 3 different logo options for a coffee shop called 'Bean There', 
+then create t-shirt products with each design and publish them to my store"
+```
+
+---
 
 ## Keyboard Shortcuts
+
+Master these for power-user productivity:
 
 | Shortcut | Action |
 |----------|--------|
@@ -80,33 +222,108 @@ Visit **http://localhost:8000** to start chatting!
 | `⌘/Ctrl + ,` | Open settings |
 | `⌘/Ctrl + Q` | Open task queue |
 | `⌘/Ctrl + J` | Toggle jobs panel |
-| `?` | Show keyboard shortcuts |
+| `⌘/Ctrl + K` | Quick search |
+| `Escape` | Close sidebars |
+| `↑` | Previous message (when input empty) |
+| `?` | Show all shortcuts |
 
-## Your First Commands
+---
 
-Try these to get started:
+## Directory Structure
+
+After setup, your directory looks like:
 
 ```
-💬 "Generate an image of a sunset over mountains"
-
-💬 "Create a t-shirt design with a space cat"
-
-💬 "Research the top AI tools of 2026"
-
-💬 "Create a promo video for my coffee brand"
+otto-chat/
+├── .env                    # Your API keys (DO NOT COMMIT)
+├── run.py                  # Start script
+├── requirements.txt        # Python dependencies
+│
+├── src/                    # Source code
+│   ├── api/               # FastAPI routes
+│   ├── core/              # Core agents
+│   ├── tools/             # 100+ tool implementations
+│   └── web/               # Frontend HTML/CSS/JS
+│
+├── plugins/                # Third-party plugins
+│   ├── web_scraper/
+│   ├── notification_sender/
+│   └── database_connector/
+│
+├── data/                   # Runtime data
+│   ├── files/             # Generated content
+│   ├── conversations/     # Chat history
+│   ├── task_queue/        # Scheduled tasks
+│   └── brand_brain/       # Brand intelligence
+│
+├── logs/                   # Log files
+│   └── otto.log
+│
+└── docs/                   # Documentation
+    └── wiki/              # Wiki source
 ```
 
-## Docker Deployment
+---
+
+## Verifying Your Installation
+
+### Health Check
 
 ```bash
-docker-compose up -d
+curl http://localhost:8000/health
 ```
 
-See [[Docker Deployment]] for more options.
+Expected response:
+```json
+{
+  "status": "healthy",
+  "version": "2.0.0",
+  "services": {
+    "anthropic": "connected",
+    "replicate": "connected"
+  }
+}
+```
+
+### List Available Tools
+
+```bash
+curl http://localhost:8000/tools | jq '.tools | length'
+```
+
+Should return: `100+`
+
+### Test Chat API
+
+```bash
+curl -X POST http://localhost:8000/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Hello, what tools do you have?"}'
+```
+
+---
+
+## Updating Otto
+
+```bash
+# Stop the running server (Ctrl+C)
+
+# Pull latest changes
+git pull origin main
+
+# Update dependencies
+pip install -r requirements.txt --upgrade
+
+# Restart
+python run.py
+```
+
+---
 
 ## Next Steps
 
 - [[Features]] - Explore all capabilities
-- [[Plugin Development]] - Add custom tools
-- [[Themes]] - Customize the interface
-- [[API Reference]] - Build integrations
+- [[Configuration]] - Advanced configuration options
+- [[Docker Deployment]] - Production deployment
+- [[Plugin Development]] - Extend with custom tools
+- [[Troubleshooting]] - If something goes wrong
