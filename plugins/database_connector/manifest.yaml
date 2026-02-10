@@ -1,0 +1,68 @@
+name: database_connector
+version: 1.0.0
+description: Connect to databases and run queries (SQLite, PostgreSQL, MySQL)
+author: Otto Examples
+type: integration
+
+entry_point: main
+
+provides_tools:
+  - query_database
+  - list_tables
+  - describe_table
+  - insert_data
+
+settings_schema:
+  db_type:
+    type: string
+    description: Database type (sqlite, postgresql, mysql)
+    default: sqlite
+  
+  db_path:
+    type: string
+    description: Path to SQLite database file
+    default: ""
+  
+  db_host:
+    type: string
+    description: Database host
+    default: localhost
+  
+  db_port:
+    type: integer
+    description: Database port
+    default: 5432
+  
+  db_name:
+    type: string
+    description: Database name
+    default: ""
+  
+  db_user:
+    type: string
+    description: Database username
+    default: ""
+  
+  db_password:
+    type: string
+    description: Database password
+    default: ""
+  
+  max_rows:
+    type: integer
+    description: Maximum rows to return in queries
+    default: 100
+
+default_settings:
+  db_type: sqlite
+  db_host: localhost
+  db_port: 5432
+  max_rows: 100
+
+tags:
+  - database
+  - sql
+  - postgresql
+  - mysql
+  - sqlite
+  - data

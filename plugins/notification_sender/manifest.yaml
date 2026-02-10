@@ -1,0 +1,55 @@
+name: notification_sender
+version: 1.0.0
+description: Send notifications via email, SMS, Slack, Discord, and webhooks
+author: Otto Examples
+type: integration
+
+entry_point: main
+
+provides_tools:
+  - send_email
+  - send_slack_message
+  - send_discord_webhook
+  - send_webhook
+
+settings_schema:
+  smtp_host:
+    type: string
+    description: SMTP server host
+    default: ""
+  
+  smtp_port:
+    type: integer
+    description: SMTP server port
+    default: 587
+  
+  smtp_user:
+    type: string
+    description: SMTP username
+    default: ""
+  
+  smtp_password:
+    type: string
+    description: SMTP password
+    default: ""
+  
+  slack_webhook_url:
+    type: string
+    description: Slack incoming webhook URL
+    default: ""
+  
+  discord_webhook_url:
+    type: string
+    description: Discord webhook URL
+    default: ""
+
+default_settings:
+  smtp_port: 587
+
+tags:
+  - notifications
+  - email
+  - slack
+  - discord
+  - webhooks
+  - communication

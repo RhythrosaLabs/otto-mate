@@ -73,8 +73,13 @@ from .task_queue_engine import (
 # Advanced Shopify (bulk operations, metafields, webhooks, discounts)
 from .shopify_advanced import ShopifyAdvancedTools, create_shopify_advanced_tools
 
-# Browser-Use Integration (AI-powered browser automation)
+# Browser-Use Integration (AI-powered browser automation with stealth)
 from .browser_use_advanced import BrowserUseTools, create_browser_use_tools
+from .browser_stealth import (
+    create_stealth_profile, 
+    create_social_media_profile,
+    BROWSER_USE_AVAILABLE as BROWSER_STEALTH_AVAILABLE,
+)
 
 # Advanced Replicate (webhooks, chaining, batch processing)
 from .replicate_advanced import (
@@ -102,6 +107,9 @@ from .universal_editor import UniversalEditor, get_universal_editor, REPLICATE_M
 
 # Codebase Awareness (Otto's self-knowledge)
 from .codebase_awareness import CodebaseAwareness, OTTO_ARCHITECTURE, OTTO_CAPABILITIES
+
+# Social Media Ads (professional ad generation)
+from .social_media_ads import SocialMediaAdsTools, create_social_media_ads_tools
 
 __all__ = [
     "tool", "ToolBase",
@@ -139,8 +147,9 @@ __all__ = [
     # ==========================================
     # Advanced Shopify
     "ShopifyAdvancedTools", "create_shopify_advanced_tools",
-    # Browser-Use Integration
+    # Browser-Use Integration (with stealth)
     "BrowserUseTools", "create_browser_use_tools",
+    "create_stealth_profile", "create_social_media_profile",
     # Advanced Replicate
     "ReplicateAdvancedTools", "ReplicateWebhookHandler", "create_replicate_advanced_tools",
     # Task Scheduler
@@ -152,4 +161,6 @@ __all__ = [
     "UniversalEditor", "get_universal_editor", "REPLICATE_MODELS", "MediaType",
     # Codebase Awareness
     "CodebaseAwareness", "OTTO_ARCHITECTURE", "OTTO_CAPABILITIES",
+    # Social Media Ads
+    "SocialMediaAdsTools", "create_social_media_ads_tools",
 ]

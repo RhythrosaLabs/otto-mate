@@ -2,7 +2,7 @@
 
 > **Universal AI Business Platform** — Automate everything through conversation
 
-Otto Chat is a sophisticated autonomous AI platform that combines Claude's intelligence with 80+ integrated tools. Generate stunning images and videos, create print-on-demand products, produce commercial content, manage e-commerce stores, and automate your entire creative business — all through natural conversation.
+Otto Chat is a sophisticated autonomous AI platform that combines Claude's intelligence with 100+ integrated tools. Generate stunning images and videos, create print-on-demand products, produce commercial content, manage e-commerce stores, and automate your entire creative business — all through natural conversation.
 
 ![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green?logo=fastapi)
@@ -10,8 +10,10 @@ Otto Chat is a sophisticated autonomous AI platform that combines Claude's intel
 ![License](https://img.shields.io/badge/License-Private-red)
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Tools-80+-orange" alt="80+ Tools">
+  <img src="https://img.shields.io/badge/Tools-100+-orange" alt="100+ Tools">
   <img src="https://img.shields.io/badge/AI%20Models-15+-blue" alt="15+ AI Models">
+  <img src="https://img.shields.io/badge/Themes-14-pink" alt="14 Themes">
+  <img src="https://img.shields.io/badge/Plugins-Extensible-green" alt="Extensible">
   <img src="https://img.shields.io/badge/Status-Active-success" alt="Active">
 </p>
 
@@ -47,6 +49,24 @@ Otto Chat is a sophisticated autonomous AI platform that combines Claude's intel
 - **Context Preservation** — Remembers your preferences (aspect ratios, styles, models) across conversations
 - **Smart Dependency Resolution** — Automatically chains outputs between steps (e.g., generated images → products)
 - **Batch Operations** — Create multiple products with different designs in a single request
+- **Specialized Agent Delegation** — Automatically routes tasks to domain-specific agents (content, image, video, research, analytics)
+
+### 🔌 Third-Party Plugin System
+- **Easy Extensibility** — Drop plugins into `/plugins` directory for instant integration
+- **Plugin Types** — Tool plugins (new AI tools), Integration plugins (external services)
+- **JSON Settings Schema** — Declarative configuration with validation
+- **Hot Reloading** — Discover and reload plugins without restart
+- **Example Plugins Included** — Web scraper, notification sender, database connector
+- **Plugin Management UI** — Enable/disable plugins from Settings sidebar
+- **REST API** — Full API for plugin management (`/api/plugins`)
+
+### 📋 Task Queue & Calendar Integration
+- **Visual Task Queue** — See all pending, running, and completed tasks
+- **Calendar View** — Schedule tasks for specific dates and times
+- **Progress Tracking** — Real-time progress indicators with percentage and step info
+- **Priority System** — Set task priorities (low, normal, high, urgent)
+- **Recurring Tasks** — Schedule tasks to repeat daily, weekly, or monthly
+- **Task Dependencies** — Chain tasks that depend on each other
 
 ### 🎨 Advanced Image Generation
 - **15+ AI Models** — Flux Pro 1.1, Flux Dev, SDXL, Recraft V3, Ideogram V2, and more
@@ -90,14 +110,35 @@ Otto Chat is a sophisticated autonomous AI platform that combines Claude's intel
 
 ### 🎨 Modern UI/UX
 - **Sleek Interface** — Modern, colorful design inspired by Canva and Gemini
+- **14 Visual Themes** — Classic, Midnight, Sunset, Ocean, Forest, Cherry, Retro, Copper, Nordic, Matrix, Lavender, Neon, Monochrome, Sakura
 - **Gradient Sidebars** — Beautiful purple/pink/teal color scheme with subtle animations
 - **Real-Time Updates** — Live progress tracking for multi-step operations
 - **Responsive Design** — Works seamlessly on desktop and tablet
+- **A/B Editor Preview** — Side-by-side Original vs Result comparison for image editing
+- **Keyboard Shortcuts** — ⌘+Enter (send), ⌘+, (settings), ⌘+Q (queue), ⌘+J (jobs), ? (help)
+- **Scroll-to-Bottom Button** — Quick navigation in long conversations
+- **Progress Indicators** — Visual progress bars for running tasks
+- **Light/Dark Theme Support** — All themes optimized for readability in light mode
+
+### 📧 Email Marketing
+- **HTML Email Sending** — Send rich formatted emails via chat commands
+- **Multiple Providers** — Support for SendGrid and SMTP
+- **Template Generation** — AI-powered email template creation
+
+### 📁 Enhanced File Management
+- **Download All as ZIP** — Export all files in a single archive organized by category
+- **Direct Downloads** — Improved download buttons that properly download files
+- **Smart Organization** — Automatic categorization by file type
 
 ### 🎙️ Voice Capabilities
 - **Speech-to-Text** — OpenAI Whisper integration
 - **Text-to-Speech** — Natural voice responses
 - **Voice Commands** — Control Otto hands-free
+
+### 🔄 Reliability & Performance
+- **Smart Retry Logic** — Automatic retry with exponential backoff for rate-limited APIs
+- **Improved Error Recovery** — Graceful handling of API failures and timeouts
+- **Connection Resilience** — Automatic reconnection for long-running operations
 
 ### ⚙️ Easy Setup
 - **Onboarding Wizard** — Step-by-step setup for first-time users
@@ -196,6 +237,12 @@ Visit **http://localhost:8000** to start chatting!
 💬 "Create ambient background music for a meditation app"
    → Generates custom AI music with appropriate mood and duration
 
+💬 "Send a promotional email to hello@example.com about our new product launch"
+   → Generates professional HTML email and sends via configured email provider
+
+💬 "Create wall art featuring a sunset over mountains"
+   → Automatically selects correct Printify wall art blueprint (not tote bag!)
+
 💬 "Make me another image like that last one but in landscape"
    → Remembers your previous style and model preferences
 ```
@@ -260,17 +307,20 @@ otto-chat/
 ├── src/
 │   ├── api/
 │   │   ├── main.py              # FastAPI application & routes
+│   │   ├── plugins.py           # Plugin management API
 │   │   ├── settings.py          # Settings API endpoints
 │   │   ├── files.py             # File management API
 │   │   └── connections.py       # Service connections API
 │   │
 │   ├── core/
-│   │   ├── super_planning_agent.py  # Autonomous planning & context preservation
-│   │   ├── execution_agent.py       # Step execution & dependency resolution
-│   │   └── agent_orchestrator.py    # AI orchestration & tool dispatch
+│   │   ├── super_planning_agent.py      # Autonomous planning & context preservation
+│   │   ├── execution_agent.py           # Step execution & dependency resolution
+│   │   ├── agent_orchestrator.py        # AI orchestration & tool dispatch
+│   │   ├── enhanced_agent_delegation.py # Specialized agent routing
+│   │   └── plugin_system.py             # Plugin loading and lifecycle
 │   │
 │   ├── tools/
-│   │   ├── __init__.py          # Tool registry (80+ tools)
+│   │   ├── __init__.py          # Tool registry (100+ tools)
 │   │   ├── printify.py          # Printify integration
 │   │   ├── shopify.py           # Shopify integration
 │   │   ├── image_generation.py  # AI image generation (15+ models)
@@ -295,6 +345,12 @@ otto-chat/
 │       ├── files.html           # File browser
 │       └── onboarding.html      # Setup wizard
 │
+├── plugins/                     # Third-party plugins directory
+│   ├── README.md               # Plugin development guide
+│   ├── web_scraper/            # Example: Web scraping tools
+│   ├── notification_sender/    # Example: Email/Slack/Discord integration
+│   └── database_connector/     # Example: Database queries
+│
 ├── skills/                      # Modular skill packages
 │   ├── business_operations/
 │   ├── content_creation/
@@ -305,7 +361,11 @@ otto-chat/
 │   ├── files/                   # Generated content storage
 │   ├── brand_brain/             # Brand intelligence data
 │   ├── agents/                  # Agent configurations
+│   ├── task_queue/              # Task queue storage
 │   └── workflows/               # Saved workflows
+│
+├── docs/                        # Documentation
+│   └── wiki/                    # GitHub Wiki source
 │
 ├── requirements.txt
 ├── Dockerfile
@@ -415,6 +475,14 @@ otto-chat/
 | `summarize_text` | Text summarization |
 | `rewrite_text` | Content rewriting |
 | `generate_ideas` | Brainstorming |
+
+### 🔌 Plugin Tools (Extensible)
+| Plugin | Description |
+|--------|-------------|
+| `web_scraper` | Scrape pages, extract links, tables, search content |
+| `notification_sender` | Send via Email, Slack, Discord, webhooks |
+| `database_connector` | Query SQLite, PostgreSQL, MySQL databases |
+| *Your plugin here* | [Create your own →](plugins/README.md) |
 
 ---
 
@@ -552,6 +620,13 @@ echo ".env" >> .gitignore
 ## 🗺️ Roadmap
 
 ### ✅ Recently Completed
+- [x] **Plugin System** — Third-party extensibility with example plugins
+- [x] **Agent Delegation** — Specialized agents for different task types
+- [x] **Calendar Integration** — Schedule tasks with recurring support
+- [x] **14 Color Themes** — Including Neon, Monochrome, Sakura
+- [x] **Progress Indicators** — Real-time task progress visualization
+- [x] **Keyboard Shortcuts** — Power-user navigation
+- [x] **Enhanced UI** — Scroll-to-bottom, improved contrast, CSS compatibility
 - [x] Super planning agent with autonomous execution
 - [x] Context preservation across conversations
 - [x] Multi-product batch creation with correct image mapping
@@ -560,20 +635,21 @@ echo ".env" >> .gitignore
 - [x] Premium commercial script generation
 - [x] Framed art product support
 - [x] Modern UI with Canva/Gemini-inspired design
-- [x] Colorful gradient sidebars
+
+### 🚧 In Progress
+- [ ] Workflow automation builder (visual)
+- [ ] Analytics dashboard
+- [ ] Team collaboration features
 
 ### Coming Soon
 - [ ] Multi-user authentication
-- [ ] Workflow automation builder
 - [ ] Scheduled tasks / cron jobs
-- [ ] Plugin system for custom tools
 - [ ] Webhook integrations
-- [ ] Analytics dashboard
+- [ ] Plugin marketplace
 
 ### Future
 - [ ] Mobile app companion
 - [ ] Voice-first mode
-- [ ] Team collaboration
 - [ ] Custom AI model support
 - [ ] White-label deployment
 
@@ -621,10 +697,11 @@ curl -H "Authorization: Token $REPLICATE_API_TOKEN" \
 
 ## 📚 Documentation
 
-- [API Reference](docs/api.md)
-- [Tool Development Guide](docs/tools.md)
-- [Deployment Guide](docs/deployment.md)
-- [Contributing](docs/contributing.md)
+- [Getting Started](docs/GETTING_STARTED.md)
+- [Plugin Development Guide](plugins/README.md)
+- [Architecture Overview](docs/ARCHITECTURE.md)
+- [API Reference](docs/QUICK_START_GUIDE.md)
+- [GitHub Wiki](https://github.com/RhythrosaLabs/otto-chat/wiki)
 
 ---
 

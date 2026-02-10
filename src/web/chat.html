@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Otto</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -184,6 +187,487 @@
                 rgba(34, 197, 94, 0.04) 60%,
                 rgba(251, 146, 60, 0.06) 80%,
                 rgba(239, 68, 68, 0.04) 100%);
+        }
+        
+        /* Theme: Forest - Natural greens with earthy tones */
+        [data-theme="forest"] {
+            --bg: #0a0f0a;
+            --bg-secondary: #111a11;
+            --bg-sidebar: #0c140c;
+            --bg-chat: #0a0f0a;
+            --bg-card: #1a2e1a;
+            --text: #e5f5e5;
+            --text-muted: #86b386;
+            --border: #2d4a2d;
+            --accent-purple: #22c55e;
+            --accent-pink: #86efac;
+            --accent-cyan: #a3e635;
+            --accent-orange: #facc15;
+            --glow-purple: rgba(34, 197, 94, 0.15);
+            --glow-blue: rgba(163, 230, 53, 0.08);
+            --glow-cyan: rgba(134, 239, 172, 0.05);
+            --sidebar-gradient: linear-gradient(180deg, 
+                rgba(34, 197, 94, 0.08) 0%, 
+                rgba(163, 230, 53, 0.05) 50%,
+                rgba(250, 204, 21, 0.03) 100%);
+        }
+        
+        /* Theme: Cherry - Deep red and pink vibes */
+        [data-theme="cherry"] {
+            --bg: #0f0508;
+            --bg-secondary: #1a0a10;
+            --bg-sidebar: #120810;
+            --bg-chat: #0f0508;
+            --bg-card: #2a1020;
+            --text: #ffe5ee;
+            --text-muted: #f9a8c9;
+            --border: #4a1d35;
+            --accent-purple: #f43f5e;
+            --accent-pink: #fb7185;
+            --accent-cyan: #fda4af;
+            --accent-orange: #fb923c;
+            --glow-purple: rgba(244, 63, 94, 0.18);
+            --glow-blue: rgba(251, 113, 133, 0.1);
+            --glow-cyan: rgba(253, 164, 175, 0.06);
+            --sidebar-gradient: linear-gradient(180deg, 
+                rgba(244, 63, 94, 0.1) 0%, 
+                rgba(251, 113, 133, 0.06) 50%,
+                rgba(253, 164, 175, 0.04) 100%);
+        }
+        
+        /* Theme: Retro - 80s synthwave vaporwave */
+        [data-theme="retro"] {
+            --bg: #0c0016;
+            --bg-secondary: #140024;
+            --bg-sidebar: #100020;
+            --bg-chat: #0c0016;
+            --bg-card: #200040;
+            --text: #ff00ff;
+            --text-muted: #ff66ff;
+            --border: #6600cc;
+            --accent-purple: #ff00ff;
+            --accent-pink: #ff6ec7;
+            --accent-cyan: #00ffff;
+            --accent-orange: #ffff00;
+            --glow-purple: rgba(255, 0, 255, 0.25);
+            --glow-blue: rgba(0, 255, 255, 0.15);
+            --glow-cyan: rgba(255, 110, 199, 0.1);
+            --sidebar-gradient: linear-gradient(180deg, 
+                rgba(255, 0, 255, 0.15) 0%, 
+                rgba(0, 255, 255, 0.1) 50%,
+                rgba(255, 110, 199, 0.08) 100%);
+        }
+        
+        /* Theme: Copper - Warm metallic bronze tones */
+        [data-theme="copper"] {
+            --bg: #0f0a08;
+            --bg-secondary: #1a1210;
+            --bg-sidebar: #14100c;
+            --bg-chat: #0f0a08;
+            --bg-card: #2a1e18;
+            --text: #fde68a;
+            --text-muted: #d6a65e;
+            --border: #92400e;
+            --accent-purple: #f59e0b;
+            --accent-pink: #fbbf24;
+            --accent-cyan: #b45309;
+            --accent-orange: #d97706;
+            --glow-purple: rgba(245, 158, 11, 0.18);
+            --glow-blue: rgba(251, 191, 36, 0.1);
+            --glow-cyan: rgba(180, 83, 9, 0.06);
+            --sidebar-gradient: linear-gradient(180deg, 
+                rgba(245, 158, 11, 0.1) 0%, 
+                rgba(180, 83, 9, 0.06) 50%,
+                rgba(217, 119, 6, 0.04) 100%);
+        }
+        
+        /* Theme: Nordic - Clean minimalist scandinavian */
+        [data-theme="nordic"] {
+            --bg: #fafafa;
+            --bg-secondary: #f5f5f5;
+            --bg-sidebar: #efefef;
+            --bg-chat: #ffffff;
+            --bg-card: #f0f0f0;
+            --text: #171717;
+            --text-muted: #525252;
+            --border: #d4d4d4;
+            --accent-purple: #0284c7;
+            --accent-pink: #0369a1;
+            --accent-cyan: #0ea5e9;
+            --accent-orange: #737373;
+            --glow-purple: rgba(2, 132, 199, 0.06);
+            --glow-blue: rgba(14, 165, 233, 0.04);
+            --glow-cyan: rgba(3, 105, 161, 0.03);
+            --sidebar-gradient: linear-gradient(180deg, 
+                rgba(2, 132, 199, 0.04) 0%, 
+                rgba(14, 165, 233, 0.03) 100%);
+        }
+        
+        /* Theme: Matrix - Green terminal hacker */
+        [data-theme="matrix"] {
+            --bg: #000000;
+            --bg-secondary: #001100;
+            --bg-sidebar: #000800;
+            --bg-chat: #000000;
+            --bg-card: #001500;
+            --text: #00ff00;
+            --text-muted: #00aa00;
+            --border: #003300;
+            --accent-purple: #00ff00;
+            --accent-pink: #33ff33;
+            --accent-cyan: #00cc00;
+            --accent-orange: #66ff66;
+            --glow-purple: rgba(0, 255, 0, 0.2);
+            --glow-blue: rgba(0, 255, 0, 0.1);
+            --glow-cyan: rgba(0, 204, 0, 0.08);
+            --sidebar-gradient: linear-gradient(180deg, 
+                rgba(0, 255, 0, 0.1) 0%, 
+                rgba(0, 204, 0, 0.06) 50%,
+                rgba(0, 170, 0, 0.04) 100%);
+        }
+        
+        /* Theme: Lavender - Soft purple pastels */
+        [data-theme="lavender"] {
+            --bg: #faf5ff;
+            --bg-secondary: #f5f0ff;
+            --bg-sidebar: #f0e8ff;
+            --bg-chat: #fdfaff;
+            --bg-card: #ede4ff;
+            --text: #3b0764;
+            --text-muted: #6b21a8;
+            --border: #d8b4fe;
+            --accent-purple: #9333ea;
+            --accent-pink: #a855f7;
+            --accent-cyan: #c084fc;
+            --accent-orange: #7e22ce;
+            --glow-purple: rgba(147, 51, 234, 0.08);
+            --glow-blue: rgba(168, 85, 247, 0.05);
+            --glow-cyan: rgba(192, 132, 252, 0.04);
+            --sidebar-gradient: linear-gradient(180deg, 
+                rgba(147, 51, 234, 0.06) 0%, 
+                rgba(168, 85, 247, 0.04) 50%,
+                rgba(192, 132, 252, 0.03) 100%);
+        }
+        
+        /* Theme: Cyberpunk - Neon pink and electric blue */
+        [data-theme="cyberpunk"] {
+            --bg: #0d0015;
+            --bg-secondary: #1a0028;
+            --bg-sidebar: #120020;
+            --bg-chat: #0d0015;
+            --bg-card: #2a0045;
+            --text: #ff2a6d;
+            --text-muted: #ff6b9d;
+            --border: #7b0055;
+            --accent-purple: #ff2a6d;
+            --accent-pink: #ff6ec7;
+            --accent-cyan: #00f0ff;
+            --accent-orange: #ffcc00;
+            --glow-purple: rgba(255, 42, 109, 0.25);
+            --glow-blue: rgba(0, 240, 255, 0.15);
+            --glow-cyan: rgba(255, 110, 199, 0.1);
+            --sidebar-gradient: linear-gradient(180deg, 
+                rgba(255, 42, 109, 0.15) 0%, 
+                rgba(0, 240, 255, 0.1) 50%,
+                rgba(255, 110, 199, 0.08) 100%);
+        }
+        
+        /* Theme: Mocha - Warm coffee tones */
+        [data-theme="mocha"] {
+            --bg: #1c1410;
+            --bg-secondary: #2a1e18;
+            --bg-sidebar: #231a14;
+            --bg-chat: #1c1410;
+            --bg-card: #3d2e24;
+            --text: #f5e6d3;
+            --text-muted: #c4a882;
+            --border: #5c4333;
+            --accent-purple: #c19a6b;
+            --accent-pink: #dab894;
+            --accent-cyan: #a67c52;
+            --accent-orange: #8b6914;
+            --glow-purple: rgba(193, 154, 107, 0.15);
+            --glow-blue: rgba(218, 184, 148, 0.08);
+            --glow-cyan: rgba(166, 124, 82, 0.06);
+            --sidebar-gradient: linear-gradient(180deg, 
+                rgba(193, 154, 107, 0.1) 0%, 
+                rgba(166, 124, 82, 0.06) 50%,
+                rgba(139, 105, 20, 0.04) 100%);
+        }
+        
+        /* Theme: Arctic - Icy blue minimalism */
+        [data-theme="arctic"] {
+            --bg: #f0f9ff;
+            --bg-secondary: #e0f2fe;
+            --bg-sidebar: #e0f2fe;
+            --bg-chat: #f8fafc;
+            --bg-card: #dbeafe;
+            --text: #0c4a6e;
+            --text-muted: #0369a1;
+            --border: #7dd3fc;
+            --accent-purple: #0284c7;
+            --accent-pink: #0ea5e9;
+            --accent-cyan: #38bdf8;
+            --accent-orange: #06b6d4;
+            --glow-purple: rgba(2, 132, 199, 0.08);
+            --glow-blue: rgba(56, 189, 248, 0.05);
+            --glow-cyan: rgba(14, 165, 233, 0.04);
+            --sidebar-gradient: linear-gradient(180deg, 
+                rgba(2, 132, 199, 0.06) 0%, 
+                rgba(56, 189, 248, 0.04) 100%);
+        }
+        
+        /* Theme: Ember - Warm fire glow */
+        [data-theme="ember"] {
+            --bg: #1a0a05;
+            --bg-secondary: #2a1208;
+            --bg-sidebar: #200e06;
+            --bg-chat: #1a0a05;
+            --bg-card: #3d1a0c;
+            --text: #fef3c7;
+            --text-muted: #fcd34d;
+            --border: #7c2d12;
+            --accent-purple: #ef4444;
+            --accent-pink: #f97316;
+            --accent-cyan: #fb923c;
+            --accent-orange: #fbbf24;
+            --glow-purple: rgba(239, 68, 68, 0.2);
+            --glow-blue: rgba(249, 115, 22, 0.12);
+            --glow-cyan: rgba(251, 146, 60, 0.08);
+            --sidebar-gradient: linear-gradient(180deg, 
+                rgba(239, 68, 68, 0.12) 0%, 
+                rgba(249, 115, 22, 0.08) 50%,
+                rgba(251, 191, 36, 0.06) 100%);
+        }
+        
+        /* Theme: Slate - Professional gray */
+        [data-theme="slate"] {
+            --bg: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-sidebar: #1e293b;
+            --bg-chat: #0f172a;
+            --bg-card: #334155;
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #475569;
+            --accent-purple: #64748b;
+            --accent-pink: #94a3b8;
+            --accent-cyan: #cbd5e1;
+            --accent-orange: #e2e8f0;
+            --glow-purple: rgba(100, 116, 139, 0.1);
+            --glow-blue: rgba(148, 163, 184, 0.06);
+            --glow-cyan: rgba(203, 213, 225, 0.04);
+            --sidebar-gradient: linear-gradient(180deg, 
+                rgba(100, 116, 139, 0.08) 0%, 
+                rgba(148, 163, 184, 0.05) 100%);
+        }
+        
+        /* Theme: Rose - Elegant pink and rose gold */
+        [data-theme="rose"] {
+            --bg: #fff1f2;
+            --bg-secondary: #ffe4e6;
+            --bg-sidebar: #fce7f3;
+            --bg-chat: #fff5f6;
+            --bg-card: #fecdd3;
+            --text: #881337;
+            --text-muted: #be185d;
+            --border: #fda4af;
+            --accent-purple: #e11d48;
+            --accent-pink: #f43f5e;
+            --accent-cyan: #fb7185;
+            --accent-orange: #ec4899;
+            --glow-purple: rgba(225, 29, 72, 0.08);
+            --glow-blue: rgba(244, 63, 94, 0.05);
+            --glow-cyan: rgba(251, 113, 133, 0.04);
+            --sidebar-gradient: linear-gradient(180deg, 
+                rgba(225, 29, 72, 0.06) 0%, 
+                rgba(236, 72, 153, 0.04) 100%);
+        }
+        
+        /* Theme: Nebula - Deep space purples */
+        [data-theme="nebula"] {
+            --bg: #070318;
+            --bg-secondary: #0e0628;
+            --bg-sidebar: #0a0420;
+            --bg-chat: #070318;
+            --bg-card: #1a0a40;
+            --text: #e9d5ff;
+            --text-muted: #c4b5fd;
+            --border: #5b21b6;
+            --accent-purple: #a78bfa;
+            --accent-pink: #c084fc;
+            --accent-cyan: #818cf8;
+            --accent-orange: #e879f9;
+            --glow-purple: rgba(167, 139, 250, 0.2);
+            --glow-blue: rgba(192, 132, 252, 0.12);
+            --glow-cyan: rgba(129, 140, 248, 0.08);
+            --sidebar-gradient: linear-gradient(180deg, 
+                rgba(167, 139, 250, 0.12) 0%, 
+                rgba(192, 132, 252, 0.08) 50%,
+                rgba(232, 121, 249, 0.06) 100%);
+        }
+        
+        /* Theme: Jade - Rich green elegance */
+        [data-theme="jade"] {
+            --bg: #022c22;
+            --bg-secondary: #064e3b;
+            --bg-sidebar: #052e24;
+            --bg-chat: #022c22;
+            --bg-card: #065f46;
+            --text: #d1fae5;
+            --text-muted: #6ee7b7;
+            --border: #059669;
+            --accent-purple: #10b981;
+            --accent-pink: #34d399;
+            --accent-cyan: #6ee7b7;
+            --accent-orange: #a7f3d0;
+            --glow-purple: rgba(16, 185, 129, 0.18);
+            --glow-blue: rgba(52, 211, 153, 0.1);
+            --glow-cyan: rgba(110, 231, 183, 0.06);
+            --sidebar-gradient: linear-gradient(180deg, 
+                rgba(16, 185, 129, 0.1) 0%, 
+                rgba(52, 211, 153, 0.06) 50%,
+                rgba(110, 231, 183, 0.04) 100%);
+        }
+        
+        /* Theme: Sandstorm - Desert warm tones */
+        [data-theme="sandstorm"] {
+            --bg: #1c1917;
+            --bg-secondary: #292524;
+            --bg-sidebar: #231f1d;
+            --bg-chat: #1c1917;
+            --bg-card: #3d3632;
+            --text: #fef3c7;
+            --text-muted: #d6d3d1;
+            --border: #57534e;
+            --accent-purple: #d97706;
+            --accent-pink: #ea580c;
+            --accent-cyan: #f59e0b;
+            --accent-orange: #fbbf24;
+            --glow-purple: rgba(217, 119, 6, 0.15);
+            --glow-blue: rgba(245, 158, 11, 0.08);
+            --glow-cyan: rgba(251, 191, 36, 0.06);
+            --sidebar-gradient: linear-gradient(180deg, 
+                rgba(217, 119, 6, 0.1) 0%, 
+                rgba(234, 88, 12, 0.06) 50%,
+                rgba(251, 191, 36, 0.04) 100%);
+        }
+        
+        /* Theme: Dracula - Classic dark theme */
+        [data-theme="dracula"] {
+            --bg: #282a36;
+            --bg-secondary: #343746;
+            --bg-sidebar: #21222c;
+            --bg-chat: #282a36;
+            --bg-card: #44475a;
+            --text: #f8f8f2;
+            --text-muted: #6272a4;
+            --border: #44475a;
+            --accent-purple: #bd93f9;
+            --accent-pink: #ff79c6;
+            --accent-cyan: #8be9fd;
+            --accent-orange: #ffb86c;
+            --glow-purple: rgba(189, 147, 249, 0.15);
+            --glow-blue: rgba(139, 233, 253, 0.1);
+            --glow-cyan: rgba(255, 121, 198, 0.08);
+            --sidebar-gradient: linear-gradient(180deg, 
+                rgba(189, 147, 249, 0.1) 0%, 
+                rgba(255, 121, 198, 0.06) 50%,
+                rgba(139, 233, 253, 0.04) 100%);
+        }
+        
+        /* Light Theme Contrast Fixes - Override hardcoded light colors for light backgrounds */
+        [data-theme="light"] .history-item.active .history-title,
+        [data-theme="nordic"] .history-item.active .history-title,
+        [data-theme="lavender"] .history-item.active .history-title,
+        [data-theme="arctic"] .history-item.active .history-title,
+        [data-theme="rose"] .history-item.active .history-title {
+            color: var(--text);
+        }
+        
+        [data-theme="light"] .history-item.active .history-time,
+        [data-theme="nordic"] .history-item.active .history-time,
+        [data-theme="lavender"] .history-item.active .history-time,
+        [data-theme="arctic"] .history-item.active .history-time,
+        [data-theme="rose"] .history-item.active .history-time {
+            color: var(--text-muted);
+        }
+        
+        [data-theme="light"] .file-item:hover .file-name,
+        [data-theme="nordic"] .file-item:hover .file-name,
+        [data-theme="lavender"] .file-item:hover .file-name,
+        [data-theme="arctic"] .file-item:hover .file-name,
+        [data-theme="rose"] .file-item:hover .file-name {
+            color: var(--accent-purple);
+        }
+        
+        [data-theme="light"] .add-folder-btn:hover,
+        [data-theme="nordic"] .add-folder-btn:hover,
+        [data-theme="lavender"] .add-folder-btn:hover,
+        [data-theme="arctic"] .add-folder-btn:hover,
+        [data-theme="rose"] .add-folder-btn:hover {
+            color: var(--accent-purple);
+        }
+        
+        [data-theme="light"] .suggestion-icon,
+        [data-theme="nordic"] .suggestion-icon,
+        [data-theme="lavender"] .suggestion-icon,
+        [data-theme="arctic"] .suggestion-icon,
+        [data-theme="rose"] .suggestion-icon {
+            color: var(--text);
+        }
+        
+        [data-theme="light"] .code-editor-textarea,
+        [data-theme="nordic"] .code-editor-textarea,
+        [data-theme="lavender"] .code-editor-textarea,
+        [data-theme="arctic"] .code-editor-textarea,
+        [data-theme="rose"] .code-editor-textarea {
+            background: rgba(0, 0, 0, 0.8);
+            color: #e0e0e0;
+        }
+        
+        [data-theme="light"] .history-action-btn,
+        [data-theme="nordic"] .history-action-btn,
+        [data-theme="lavender"] .history-action-btn,
+        [data-theme="arctic"] .history-action-btn,
+        [data-theme="rose"] .history-action-btn {
+            background: rgba(0, 0, 0, 0.1);
+            color: var(--text-muted);
+        }
+        
+        [data-theme="light"] .history-action-btn:hover,
+        [data-theme="nordic"] .history-action-btn:hover,
+        [data-theme="lavender"] .history-action-btn:hover,
+        [data-theme="arctic"] .history-action-btn:hover,
+        [data-theme="rose"] .history-action-btn:hover {
+            background: rgba(0, 0, 0, 0.2);
+            color: var(--text);
+        }
+        
+        [data-theme="light"] .suggestion-text,
+        [data-theme="nordic"] .suggestion-text,
+        [data-theme="lavender"] .suggestion-text,
+        [data-theme="arctic"] .suggestion-text,
+        [data-theme="rose"] .suggestion-text {
+            color: var(--text);
+        }
+        
+        [data-theme="light"] .message-content pre,
+        [data-theme="nordic"] .message-content pre,
+        [data-theme="lavender"] .message-content pre,
+        [data-theme="arctic"] .message-content pre,
+        [data-theme="rose"] .message-content pre {
+            background: #1e1e2e;
+            color: #cdd6f4;
+        }
+        
+        [data-theme="light"] .copy-btn,
+        [data-theme="nordic"] .copy-btn,
+        [data-theme="lavender"] .copy-btn,
+        [data-theme="arctic"] .copy-btn,
+        [data-theme="rose"] .copy-btn {
+            background: #45475a;
+            color: #cdd6f4;
         }
         
         body {
@@ -1357,6 +1841,13 @@
             font-size: 13px;
             color: var(--text-muted);
             border: 1px solid var(--border);
+            animation: statusFadeIn 0.3s ease;
+            transition: all 0.3s ease;
+        }
+        
+        @keyframes statusFadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .status-update .status-icon {
@@ -1401,6 +1892,39 @@
         }
         
         /* Input area */
+        /* Scroll to bottom button */
+        .scroll-bottom-btn {
+            position: absolute;
+            bottom: 130px;
+            right: 24px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-muted);
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+        }
+        
+        .scroll-bottom-btn:hover {
+            background: var(--accent-purple);
+            color: white;
+            border-color: var(--accent-purple);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(139, 92, 246, 0.3);
+        }
+        
+        .scroll-bottom-btn.visible {
+            display: flex;
+            animation: fadeInUp 0.2s ease;
+        }
+        
         .input-area {
             border-top: 1px solid var(--border);
             padding: 16px 24px 24px;
@@ -2161,6 +2685,210 @@
         .save-btn:hover { background: #059669; }
         
         /* ══════════════════════════════════════════════════════════════
+           PLUGINS MANAGEMENT STYLES
+           ══════════════════════════════════════════════════════════════ */
+        .plugins-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 0 4px;
+        }
+        
+        .plugins-count {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        
+        .plugins-discover-btn,
+        .plugins-reload-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--text);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .plugins-discover-btn:hover,
+        .plugins-reload-btn:hover {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: rgba(139, 92, 246, 0.5);
+        }
+        
+        .plugins-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 12px;
+        }
+        
+        .plugins-loading {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 20px;
+            font-size: 13px;
+        }
+        
+        .plugin-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-radius: 8px;
+            background: rgba(139, 92, 246, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.1);
+            margin-bottom: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .plugin-item:hover {
+            background: rgba(139, 92, 246, 0.1);
+            border-color: rgba(139, 92, 246, 0.2);
+        }
+        
+        .plugin-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .plugin-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 2px;
+        }
+        
+        .plugin-version {
+            font-size: 11px;
+            color: var(--accent-purple);
+            margin-left: 8px;
+        }
+        
+        .plugin-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .plugin-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .plugin-status-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        
+        .plugin-status-badge.active {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+        
+        .plugin-status-badge.inactive {
+            background: rgba(156, 163, 175, 0.2);
+            color: var(--text-muted);
+        }
+        
+        .plugin-status-badge.error {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+        
+        .plugins-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 12px;
+            border-top: 1px solid rgba(139, 92, 246, 0.1);
+        }
+        
+        .plugins-docs-link {
+            font-size: 12px;
+            color: var(--accent-purple);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        
+        .plugins-docs-link:hover {
+            color: var(--accent-pink);
+            text-decoration: underline;
+        }
+        
+        .plugin-toggle {
+            width: 40px;
+            height: 22px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.1) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 11px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .plugin-toggle.enabled {
+            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-pink) 100%);
+            border-color: transparent;
+        }
+        
+        .plugin-toggle::after {
+            content: "";
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .plugin-toggle.enabled::after {
+            transform: translateX(18px);
+        }
+        
+        .plugins-empty {
+            text-align: center;
+            padding: 30px 20px;
+            color: var(--text-muted);
+        }
+        
+        .plugins-empty-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+        
+        .plugins-empty-text {
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+        
+        .plugins-create-btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-pink) 100%);
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .plugins-create-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+        }
+        
+        /* ══════════════════════════════════════════════════════════════
            CANVA-STYLE EDITOR SIDEBAR
            ══════════════════════════════════════════════════════════════ */
         .editor-sidebar {
@@ -2823,6 +3551,7 @@
             font-size: 12px;
             cursor: pointer;
             -webkit-appearance: none;
+            appearance: none;
         }
         .code-language-select option {
             background: #1a1a2e;
@@ -2870,6 +3599,114 @@
             overflow: auto;
             white-space: pre-wrap;
             word-break: break-all;
+        }
+        
+        /* AI Suggestions Panel */
+        .editor-suggestions-panel {
+            margin: 8px 12px;
+            padding: 12px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.05) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 10px;
+        }
+        .suggestions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent-purple);
+        }
+        .refresh-suggestions-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            opacity: 0.7;
+            transition: opacity 0.2s, transform 0.3s;
+        }
+        .refresh-suggestions-btn:hover { opacity: 1; transform: rotate(180deg); }
+        .suggestions-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .suggestion-chip {
+            padding: 6px 12px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(99, 102, 241, 0.1) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 16px;
+            font-size: 11px;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .suggestion-chip:hover {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(99, 102, 241, 0.2) 100%);
+            border-color: rgba(139, 92, 246, 0.5);
+            transform: translateY(-1px);
+        }
+        
+        /* Recent Files Panel */
+        .editor-recent-panel {
+            margin: 8px 12px;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        .recent-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+        .clear-recent-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            color: var(--text-muted);
+            opacity: 0.6;
+            transition: opacity 0.2s, color 0.2s;
+        }
+        .clear-recent-btn:hover { opacity: 1; color: #ef4444; }
+        .recent-files-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+        .recent-file-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .recent-file-item:hover {
+            background: rgba(139, 92, 246, 0.1);
+        }
+        .recent-file-icon { font-size: 14px; }
+        .recent-file-name {
+            flex: 1;
+            font-size: 11px;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .recent-file-time {
+            font-size: 10px;
+            color: var(--text-muted);
         }
         
         /* Result Section */
@@ -3457,6 +4294,171 @@
             box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
         }
 
+        /* Browser Task Modal */
+        .browser-task-modal {
+            max-width: 480px;
+            background: linear-gradient(145deg, rgba(30, 30, 45, 0.98), rgba(20, 20, 35, 0.98));
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(96, 165, 250, 0.15);
+            animation: browserModalSlideIn 0.3s ease-out;
+        }
+        
+        @keyframes browserModalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .browser-task-modal .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(96, 165, 250, 0.2);
+            background: linear-gradient(90deg, rgba(96, 165, 250, 0.1), transparent);
+        }
+        
+        .browser-task-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+            display: block;
+            animation: browserIconPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes browserIconPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .browser-task-modal .modal-title {
+            font-size: 18px;
+            color: var(--accent);
+        }
+        
+        .browser-task-description {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+        
+        .browser-task-modal .modal-body {
+            padding: 24px;
+        }
+        
+        .browser-task-input-label {
+            display: block;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+        
+        .browser-task-modal .modal-input {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            padding: 14px 16px;
+            font-size: 15px;
+            border-radius: 10px;
+        }
+        
+        .browser-task-modal .modal-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(96, 165, 250, 0.2);
+        }
+        
+        .browser-task-modal .modal-actions {
+            padding: 16px 24px 24px;
+            background: rgba(0, 0, 0, 0.2);
+            border-top: 1px solid rgba(96, 165, 250, 0.1);
+        }
+        
+        .browser-task-modal .modal-btn.primary {
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+            padding: 14px 28px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        
+        .browser-task-modal .modal-btn.primary:hover {
+            box-shadow: 0 4px 20px rgba(96, 165, 250, 0.4);
+            transform: translateY(-1px);
+        }
+        
+        .browser-task-modal .modal-btn.primary.loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        
+        .browser-task-modal .modal-btn.primary.loading::after {
+            content: "";
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top-color: white;
+            border-radius: 50%;
+            animation: btnSpin 0.8s linear infinite;
+            margin-left: 8px;
+        }
+        
+        @keyframes btnSpin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .browser-task-examples {
+            margin-top: 16px;
+            padding: 14px 16px;
+            background: rgba(96, 165, 250, 0.08);
+            border-radius: 10px;
+            border: 1px solid rgba(96, 165, 250, 0.15);
+        }
+        
+        .browser-task-examples-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--accent);
+            margin-bottom: 10px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .browser-task-examples-title::before {
+            content: "💡";
+            font-size: 13px;
+        }
+        
+        .browser-task-example {
+            font-size: 13px;
+            color: var(--text-muted);
+            padding: 8px 12px;
+            margin: 6px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid transparent;
+        }
+        
+        .browser-task-example:hover {
+            color: var(--text-primary);
+            background: rgba(96, 165, 250, 0.15);
+            border-color: rgba(96, 165, 250, 0.3);
+            transform: translateX(4px);
+        }
+        
+        .browser-task-example::before {
+            content: '→ ';
+            color: var(--accent);
+        }
+
         /* ══════════════════════════════════════════════════════════════
            QUEUE/CALENDAR SIDEBAR
            ══════════════════════════════════════════════════════════════ */
@@ -3507,6 +4509,7 @@
             gap: 10px;
             background: linear-gradient(135deg, #e0d4fc 0%, #c4b5fd 50%, #a78bfa 100%);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
         
@@ -4007,6 +5010,7 @@
             gap: 10px;
             background: linear-gradient(135deg, #a7f3d0 0%, #5eead4 50%, #2dd4bf 100%);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
         
@@ -4305,6 +5309,406 @@
             box-shadow: 0 4px 15px rgba(45, 212, 191, 0.4);
         }
         
+        /* ══════════════════════════════════════════════════════════════
+           BROWSER USE SIDEBAR
+           ══════════════════════════════════════════════════════════════ */
+        .browser-sidebar {
+            width: 420px;
+            min-width: 350px;
+            max-width: 700px;
+            border-left: 1px solid rgba(96, 165, 250, 0.15);
+            background: var(--sidebar-gradient);
+            display: none;
+            flex-direction: column;
+            box-shadow: -10px 0 50px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            position: relative;
+            min-height: 0;
+        }
+        
+        .browser-sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 120px;
+            background: linear-gradient(180deg, rgba(96, 165, 250, 0.08) 0%, transparent 100%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .browser-sidebar.open { display: flex; }
+        
+        .browser-header {
+            padding: 14px 16px;
+            background: linear-gradient(135deg, rgba(96, 165, 250, 0.08) 0%, rgba(59, 130, 246, 0.04) 100%);
+            border-bottom: 1px solid rgba(96, 165, 250, 0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .browser-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #93c5fd 0%, #60a5fa 50%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .browser-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .browser-control-btn {
+            padding: 6px 10px;
+            background: linear-gradient(135deg, rgba(96, 165, 250, 0.15), rgba(59, 130, 246, 0.15));
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            border-radius: 6px;
+            color: var(--accent-cyan);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .browser-control-btn:hover {
+            background: linear-gradient(135deg, rgba(96, 165, 250, 0.25), rgba(59, 130, 246, 0.25));
+            border-color: var(--accent-cyan);
+        }
+        
+        .browser-status {
+            padding: 10px 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid rgba(96, 165, 250, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--text-muted);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .browser-status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #6b7280;
+        }
+        
+        .browser-status-indicator.idle {
+            background: #6b7280;
+        }
+        
+        .browser-status-indicator.active {
+            background: #22c55e;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .browser-status-indicator.error {
+            background: #ef4444;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); }
+            50% { opacity: 0.8; box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+        }
+        
+        .browser-tabs {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            background: rgba(0,0,0,0.15);
+            border-bottom: 1px solid rgba(96, 165, 250, 0.1);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .browser-tab {
+            flex: 1;
+            padding: 10px 12px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .browser-tab:hover {
+            background: rgba(96, 165, 250, 0.1);
+            color: var(--text);
+        }
+        
+        .browser-tab.active {
+            background: linear-gradient(135deg, rgba(96, 165, 250, 0.2) 0%, rgba(59, 130, 246, 0.15) 100%);
+            color: var(--accent-cyan);
+            box-shadow: 0 2px 8px rgba(96, 165, 250, 0.2);
+        }
+        
+        .browser-content {
+            flex: 1;
+            overflow-y: auto;
+            position: relative;
+            z-index: 1;
+            min-height: 0;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(96, 165, 250, 0.3) transparent;
+        }
+        
+        .browser-content::-webkit-scrollbar { width: 6px; }
+        .browser-content::-webkit-scrollbar-track { background: transparent; }
+        .browser-content::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, rgba(96, 165, 250, 0.4) 0%, rgba(59, 130, 246, 0.3) 100%);
+            border-radius: 3px;
+        }
+        
+        .browser-preview {
+            padding: 16px;
+            min-height: 200px;
+            background: rgba(0, 0, 0, 0.3);
+            margin: 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(96, 165, 250, 0.15);
+        }
+        
+        .browser-preview iframe {
+            width: 100%;
+            height: 300px;
+            border: none;
+            border-radius: 8px;
+            background: white;
+        }
+        
+        .browser-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+        
+        .browser-empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+        
+        .browser-empty p {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .browser-empty-hint {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+        
+        .browser-loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+        
+        .browser-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(96, 165, 250, 0.2);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            animation: browser-spin 1s linear infinite;
+        }
+        
+        @keyframes browser-spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .browser-loading p {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .browser-loading-url {
+            font-size: 12px;
+            color: var(--accent);
+            word-break: break-all;
+        }
+        
+        .browser-action-item {
+            padding: 8px 12px;
+            border-left: 3px solid var(--accent);
+            background: rgba(0, 0, 0, 0.2);
+            margin: 8px 16px;
+            border-radius: 0 8px 8px 0;
+            font-size: 12px;
+        }
+        
+        .browser-action-item.success {
+            border-left-color: #22c55e;
+            background: rgba(34, 197, 94, 0.1);
+        }
+        
+        .browser-action-item.error {
+            border-left-color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+        
+        .browser-action-time {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+        
+        .browser-action-text {
+            color: var(--text-primary);
+        }
+        
+        .browser-url-bar {
+            padding: 10px 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid rgba(96, 165, 250, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        
+        .browser-url-icon {
+            font-size: 14px;
+        }
+        
+        .browser-current-url {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-family: monospace;
+        }
+        
+        .browser-actions-log {
+            padding: 16px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .browser-action-item {
+            padding: 10px 14px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 12px;
+            border-left: 3px solid var(--accent-cyan);
+        }
+        
+        .browser-action-item.success {
+            border-left-color: #22c55e;
+        }
+        
+        .browser-action-item.error {
+            border-left-color: #ef4444;
+        }
+        
+        .browser-action-time {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+        
+        .browser-action-text {
+            color: var(--text);
+        }
+        
+        .browser-history-list {
+            padding: 16px;
+        }
+        
+        .browser-history-item {
+            padding: 12px 14px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .browser-history-item:hover {
+            background: rgba(96, 165, 250, 0.1);
+            transform: translateX(4px);
+        }
+        
+        .browser-history-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+        
+        .browser-history-url {
+            font-size: 11px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .browser-history-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+        
+        .browser-quick-tasks {
+            padding: 16px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .browser-task-card {
+            padding: 16px;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(96, 165, 250, 0.15);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        
+        .browser-task-card:hover {
+            background: rgba(96, 165, 250, 0.1);
+            border-color: rgba(96, 165, 250, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .browser-task-card .task-icon {
+            font-size: 24px;
+        }
+        
+        .browser-task-card .task-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        .browser-task-card .task-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        
         /* Enhanced Image Edit Overlay */
         .image-wrapper {
             position: relative;
@@ -4591,6 +5995,7 @@
                 </div>
                 <button class="btn" onclick="toggleFiles()">📁 Files</button>
                 <button class="btn" onclick="toggleEditor()">✨ Editor</button>
+                <button class="btn" onclick="toggleBrowser()">🌐 Browser</button>
                 <button class="btn" onclick="toggleQueue()">📋 Queue</button>
                 <button class="btn" onclick="toggleContacts()">👥 Contacts</button>
                 <button class="btn" onclick="toggleSettings()">⚙️ Settings</button>
@@ -4870,6 +6275,13 @@
                     </div>
                 </div>
                 
+                <!-- Scroll to bottom button -->
+                <button class="scroll-bottom-btn" id="scrollBottomBtn" onclick="scrollToBottom()" title="Scroll to bottom (⌘J)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20">
+                        <path d="M12 5v14M19 12l-7 7-7-7"/>
+                    </svg>
+                </button>
+                
                 <div class="input-area">
                     <div class="input-wrapper">
                         <div class="voice-status" id="voiceStatus">
@@ -4913,6 +6325,9 @@
                     </button>
                     <button class="quick-action-btn" onclick="refreshFiles()">
                         🔄 Refresh
+                    </button>
+                    <button class="quick-action-btn" onclick="downloadAllFilesAsZip()">
+                        📦 Download All
                     </button>
                     <button class="quick-action-btn" onclick="generateNewFile()">
                         ✨ Generate
@@ -5014,6 +6429,23 @@
                                 <option value="sunset">Sunset (Teal/Orange)</option>
                                 <option value="ocean">Ocean (Teal/Magenta)</option>
                                 <option value="cosmic">Cosmic (Galaxy)</option>
+                                <option value="forest">Forest (Natural Green)</option>
+                                <option value="cherry">Cherry (Deep Red)</option>
+                                <option value="retro">Retro (80s Synthwave)</option>
+                                <option value="copper">Copper (Bronze/Gold)</option>
+                                <option value="nordic">Nordic (Clean Light)</option>
+                                <option value="matrix">Matrix (Hacker Green)</option>
+                                <option value="lavender">Lavender (Soft Purple)</option>
+                                <option value="cyberpunk">Cyberpunk (Neon)</option>
+                                <option value="mocha">Mocha (Coffee)</option>
+                                <option value="arctic">Arctic (Ice Blue)</option>
+                                <option value="ember">Ember (Fire Glow)</option>
+                                <option value="slate">Slate (Professional)</option>
+                                <option value="rose">Rose (Elegant Pink)</option>
+                                <option value="nebula">Nebula (Deep Space)</option>
+                                <option value="jade">Jade (Rich Green)</option>
+                                <option value="sandstorm">Sandstorm (Desert)</option>
+                                <option value="dracula">Dracula (Classic Dark)</option>
                                 <option value="system">System Default</option>
                             </select>
                         </div>
@@ -5191,6 +6623,93 @@
                         </div>
                         <div class="setting-desc" style="margin-top: 8px; padding: 12px; background: var(--bg-chat); border-radius: 8px;">
                             💡 <strong>Tip:</strong> Click 🎤 to start recording, click again to stop. Your speech will be transcribed and placed in the input field for you to review or edit before sending.
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h3>🌐 Browser Automation</h3>
+                        <div class="setting-row">
+                            <div>
+                                <div class="setting-label">Enable Browser Use</div>
+                                <div class="setting-desc">Allow Otto to control a browser for web tasks</div>
+                            </div>
+                            <div class="toggle on" id="browserUseToggle" onclick="toggleSetting(this)"></div>
+                        </div>
+                        <div class="setting-row">
+                            <div>
+                                <div class="setting-label">Show Browser Panel</div>
+                                <div class="setting-desc">Display browser activity in sidebar</div>
+                            </div>
+                            <div class="toggle on" id="browserPanelToggle" onclick="toggleSetting(this)"></div>
+                        </div>
+                        <div class="setting-row">
+                            <div>
+                                <div class="setting-label">Headless Mode</div>
+                                <div class="setting-desc">Run browser in background (faster)</div>
+                            </div>
+                            <div class="toggle" id="browserHeadlessToggle" onclick="toggleSetting(this)"></div>
+                        </div>
+                        <div class="setting-row">
+                            <div><div class="setting-label">Browser LLM</div></div>
+                            <select class="setting-input" id="browserLLM" style="width:auto">
+                                <option value="anthropic" selected>Claude (Anthropic)</option>
+                                <option value="openai">GPT-4o (OpenAI)</option>
+                            </select>
+                        </div>
+                        <div class="setting-desc" style="margin-top: 8px; padding: 12px; background: var(--bg-chat); border-radius: 8px;">
+                            🌐 <strong>Browser Use:</strong> Otto can browse websites, fill forms, extract data, monitor prices, find leads, and automate any web task. Tasks will appear in the Browser panel.
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h3>🔗 E-Commerce</h3>
+                        <div class="setting-row" style="margin-top:8px">
+                            <div>
+                                <div class="setting-label">Shopify Store URL</div>
+                                <div class="setting-desc">Your myshopify.com domain</div>
+                            </div>
+                        </div>
+                        <input type="text" class="setting-input" id="shopifyStore" placeholder="store-name.myshopify.com" style="width:100%;margin-top:8px">
+                        
+                        <div class="setting-row" style="margin-top:16px">
+                            <div>
+                                <div class="setting-label">Shopify Access Token</div>
+                                <div class="setting-desc">Admin API access token</div>
+                            </div>
+                        </div>
+                        <input type="password" class="setting-input" id="shopifyToken" placeholder="shpat_..." style="width:100%;margin-top:8px">
+                        
+                        <div class="setting-row" style="margin-top:16px">
+                            <div>
+                                <div class="setting-label">Auto-sync Printify</div>
+                                <div class="setting-desc">Automatically sync Printify to Shopify</div>
+                            </div>
+                            <div class="toggle on" id="printifySyncToggle" onclick="toggleSetting(this)"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Plugins Section -->
+                    <div class="settings-section">
+                        <div class="section-header" onclick="toggleSettingsSection(this)">
+                            <span>🔌 Plugins</span>
+                            <span class="section-toggle">▼</span>
+                        </div>
+                        <div class="section-content">
+                            <div class="plugins-header">
+                                <span class="plugins-count" id="pluginsCount">0 plugins installed</span>
+                                <button class="plugins-discover-btn" onclick="discoverPlugins()" title="Discover new plugins">
+                                    🔍 Discover
+                                </button>
+                            </div>
+                            <div class="plugins-list" id="pluginsList">
+                                <div class="plugins-loading" id="pluginsLoading">Loading plugins...</div>
+                            </div>
+                            <div class="plugins-actions">
+                                <a href="/plugins/README.md" target="_blank" class="plugins-docs-link">📚 Plugin Development Guide</a>
+                                <button class="plugins-reload-btn" onclick="reloadPlugins()" title="Reload all plugins">
+                                    🔄 Reload All
+                                </button>
+                            </div>
                         </div>
                     </div>
                     
@@ -5434,6 +6953,30 @@
                         </div>
                     </div>
                     
+                    <!-- AI Suggestions Panel -->
+                    <div class="editor-suggestions-panel" id="editorSuggestions">
+                        <div class="suggestions-header">
+                            <span>✨ AI Suggestions</span>
+                            <button class="refresh-suggestions-btn" onclick="refreshSuggestions()" title="Refresh">🔄</button>
+                        </div>
+                        <div class="suggestions-list" id="suggestionsList">
+                            <div class="suggestion-chip" onclick="applySuggestion('enhance quality')">Enhance quality</div>
+                            <div class="suggestion-chip" onclick="applySuggestion('remove background')">Remove background</div>
+                            <div class="suggestion-chip" onclick="applySuggestion('change style')">Change style</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Files Panel -->
+                    <div class="editor-recent-panel" id="editorRecent">
+                        <div class="recent-header">
+                            <span>📂 Recent Files</span>
+                            <button class="clear-recent-btn" onclick="clearRecentFiles()" title="Clear">✕</button>
+                        </div>
+                        <div class="recent-files-list" id="recentFilesList">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                    
                     <!-- Custom Instruction -->
                     <div class="editor-custom-section">
                         <textarea class="editor-instruction-input" id="editorInstruction" 
@@ -5619,6 +7162,100 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Browser Use Sidebar -->
+            <div class="browser-sidebar" id="browserSidebar">
+                <div class="sidebar-resize-handle left" data-sidebar="browserSidebar" data-direction="left"></div>
+                <div class="browser-header">
+                    <h2>🌐 Browser</h2>
+                    <div class="browser-header-actions">
+                        <button class="browser-control-btn" onclick="refreshBrowserPanel()" title="Refresh">🔄</button>
+                        <button class="close-btn" onclick="toggleBrowser()">×</button>
+                    </div>
+                </div>
+                
+                <div class="browser-status" id="browserStatus">
+                    <div class="browser-status-indicator idle"></div>
+                    <span>Idle</span>
+                </div>
+                
+                <div class="browser-tabs">
+                    <button class="browser-tab active" onclick="switchBrowserTab('live', this)">
+                        🔴 Live
+                    </button>
+                    <button class="browser-tab" onclick="switchBrowserTab('history', this)">
+                        📜 History
+                    </button>
+                    <button class="browser-tab" onclick="switchBrowserTab('tasks', this)">
+                        ⚡ Tasks
+                    </button>
+                </div>
+                
+                <div class="browser-content" id="browserContent">
+                    <!-- Live Tab -->
+                    <div id="browserLiveTabContent">
+                        <div class="browser-preview" id="browserPreview">
+                            <div class="browser-empty">
+                                <div class="browser-empty-icon">🌐</div>
+                                <p>No active browser session</p>
+                                <p class="browser-empty-hint">Browser activity will appear here when Otto browses the web</p>
+                            </div>
+                        </div>
+                        <div class="browser-url-bar" id="browserUrlBar" style="display:none;">
+                            <span class="browser-url-icon">🔗</span>
+                            <span class="browser-current-url" id="browserCurrentUrl">about:blank</span>
+                        </div>
+                        <div class="browser-actions-log" id="browserActionsLog">
+                            <!-- Real-time action log will appear here -->
+                        </div>
+                    </div>
+                    
+                    <!-- History Tab -->
+                    <div id="browserHistoryTabContent" style="display: none;">
+                        <div class="browser-history-list" id="browserHistoryList">
+                            <div class="browser-history-empty">
+                                <p>No browsing history yet</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Tasks Tab -->
+                    <div id="browserTasksTabContent" style="display: none;">
+                        <div class="browser-quick-tasks">
+                            <div class="browser-task-card" onclick="runBrowserTask('extract_leads')">
+                                <span class="task-icon">🎯</span>
+                                <span class="task-name">Extract Leads</span>
+                                <span class="task-desc">Find contacts from a website</span>
+                            </div>
+                            <div class="browser-task-card" onclick="runBrowserTask('monitor_price')">
+                                <span class="task-icon">💰</span>
+                                <span class="task-name">Monitor Price</span>
+                                <span class="task-desc">Track product prices</span>
+                            </div>
+                            <div class="browser-task-card" onclick="runBrowserTask('analyze_competitor')">
+                                <span class="task-icon">🔍</span>
+                                <span class="task-name">Analyze Competitor</span>
+                                <span class="task-desc">Research competitor website</span>
+                            </div>
+                            <div class="browser-task-card" onclick="runBrowserTask('fill_form')">
+                                <span class="task-icon">📝</span>
+                                <span class="task-name">Fill Form</span>
+                                <span class="task-desc">Auto-fill web forms</span>
+                            </div>
+                            <div class="browser-task-card" onclick="runBrowserTask('scrape_data')">
+                                <span class="task-icon">📊</span>
+                                <span class="task-name">Scrape Data</span>
+                                <span class="task-desc">Extract structured data</span>
+                            </div>
+                            <div class="browser-task-card" onclick="runBrowserTask('find_influencers')">
+                                <span class="task-icon">⭐</span>
+                                <span class="task-name">Find Influencers</span>
+                                <span class="task-desc">Discover social influencers</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -5668,6 +7305,31 @@
             <div class="modal-actions">
                 <button class="modal-btn secondary" onclick="closeModal()">Cancel</button>
                 <button class="modal-btn primary" onclick="confirmModal()">Create</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Browser Task Modal -->
+    <div class="modal-overlay" id="browserTaskModal" onclick="closeBrowserTaskModal(event)">
+        <div class="modal browser-task-modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <span class="browser-task-icon" id="browserTaskIcon">🎯</span>
+                <span class="modal-title" id="browserTaskTitle">Extract Leads</span>
+                <button class="modal-close" onclick="closeBrowserTaskModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <p class="browser-task-description" id="browserTaskDescription">Extract contact information and leads from any website using AI-powered browser automation.</p>
+                <label class="browser-task-input-label" id="browserTaskInputLabel">Enter URL</label>
+                <input type="text" class="modal-input" id="browserTaskInput" placeholder="https://example.com" onkeydown="handleBrowserTaskKey(event)">
+                <div class="browser-task-examples" id="browserTaskExamples">
+                    <div class="browser-task-examples-title">Examples</div>
+                    <div class="browser-task-example" onclick="setBrowserTaskExample('https://linkedin.com/company/example')">LinkedIn company page</div>
+                    <div class="browser-task-example" onclick="setBrowserTaskExample('https://yelp.com/search?find_desc=restaurants')">Yelp search results</div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn secondary" onclick="closeBrowserTaskModal()">Cancel</button>
+                <button class="modal-btn primary" id="browserStartBtn" onclick="confirmBrowserTask()">🚀 Start Browser</button>
             </div>
         </div>
     </div>
@@ -5997,6 +7659,20 @@
             
             // Add keyboard shortcuts for voice
             setupVoiceKeyboardShortcuts();
+            
+            // Show/hide scroll-to-bottom button based on scroll position
+            const messagesContainer = document.getElementById('messagesContainer');
+            const scrollBtn = document.getElementById('scrollBottomBtn');
+            if (messagesContainer && scrollBtn) {
+                messagesContainer.addEventListener('scroll', () => {
+                    const scrollFromBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight;
+                    if (scrollFromBottom > 200) {
+                        scrollBtn.classList.add('visible');
+                    } else {
+                        scrollBtn.classList.remove('visible');
+                    }
+                });
+            }
         }
         
         function setupVoiceKeyboardShortcuts() {
@@ -6504,6 +8180,16 @@
             });
             
             // Markdown text links: [text](url) - convert to regular links
+            text = text.replace(/\[([^\]]+)\]\((\/files\/[^\)]+)\)/g, (match, linkText, url) => {
+                // Local /files/ URLs - render as media based on context
+                const lt = linkText.toLowerCase();
+                if (lt.includes('video') || lt.includes('clip') || lt.includes('movie')) {
+                    return `<div class="labeled-media"><span class="media-label">${linkText}</span><div class="image-wrapper"><video class="generated-video" controls src="${url}" preload="metadata"></video><div class="image-edit-overlay"><button class="image-edit-btn" onclick="sendToEditor('${url}')" title="Edit">✨ Edit</button><button class="image-edit-btn secondary" onclick="downloadFromUrl('${url}')" title="Download">⬇️</button></div></div></div>`;
+                } else if (lt.includes('audio') || lt.includes('music') || lt.includes('track') || lt.includes('song') || lt.includes('lo-fi') || lt.includes('ambient')) {
+                    return `<div class="audio-wrapper"><div class="audio-label">${linkText}</div><audio class="generated-audio" controls src="${url}" preload="metadata"></audio><div class="audio-actions"><button class="image-edit-btn" onclick="downloadFromUrl('${url}')" title="Download">⬇️</button></div></div>`;
+                }
+                return `<a href="${url}" target="_blank" class="file-link">📎 ${linkText}</a>`;
+            });
             text = text.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, (match, linkText, url) => {
                 // Check if URL is an image/video - show inline with label
                 if (url.match(/\.(png|jpg|jpeg|gif|webp)(\?|$)/i) || url.includes('replicate.delivery') || url.includes('oaidalleapiprodscus')) {
@@ -6524,9 +8210,19 @@
             text = text.replace(/(^|[^"'=])(https?:\/\/(?:pbxt\.)?replicate\.delivery\/[^\s<>\)]+)/g, (match, prefix, url) => {
                 // Skip if already processed
                 if (prefix.includes('src') || prefix.includes('href')) return match;
-                // Check if it's a video by extension
-                if (url.match(/\.(mp4|webm|mov)(\?|$)/i)) {
-                    return `${prefix}<div class="image-wrapper"><video class="generated-video" controls src="${url}"></video><div class="image-edit-overlay"><button class="image-edit-btn" onclick="sendToEditor('${url}')" title="Edit">✨ Edit</button><button class="image-edit-btn secondary" onclick="downloadFromUrl('${url}')" title="Download">⬇️</button></div></div>`;
+                // Check if it's a video by extension OR by common video path patterns
+                const isVideo = url.match(/\.(mp4|webm|mov)(\?|$)/i) || 
+                               url.includes('/videos/') || 
+                               url.includes('/video-') ||
+                               url.includes('kling') ||
+                               url.includes('luma') ||
+                               url.includes('minimax') ||
+                               url.includes('wan') ||
+                               url.includes('ltx-video') ||
+                               url.includes('ray-') ||
+                               url.includes('veo');
+                if (isVideo) {
+                    return `${prefix}<div class="image-wrapper"><video class="generated-video" controls src="${url}" preload="metadata" playsinline></video><div class="image-edit-overlay"><button class="image-edit-btn" onclick="sendToEditor('${url}')" title="Edit">✨ Edit</button><button class="image-edit-btn secondary" onclick="downloadFromUrl('${url}')" title="Download">⬇️</button><button class="image-edit-btn secondary" onclick="addMediaToQueue('${url}', 'video')" title="Add to Queue">📋</button></div></div>`;
                 }
                 return `${prefix}<div class="image-wrapper"><img class="inline-image" src="${url}" onclick="openLightbox('${url}')" draggable="true" ondragstart="handleImageDrag(event, '${url}')" onerror="this.outerHTML='<a href=\\'${url}\\' target=\\'_blank\\'>View Generated Content</a>'" alt="Generated content"><div class="image-edit-overlay"><button class="image-edit-btn" onclick="sendToEditor('${url}')" title="Edit">✨ Edit</button><button class="image-edit-btn secondary" onclick="quickImageEdit('${url}', 'remove_background')" title="Remove BG">🔲</button><button class="image-edit-btn secondary" onclick="quickImageEdit('${url}', 'upscale')" title="Upscale">🔍</button><button class="image-edit-btn secondary" onclick="downloadFromUrl('${url}')" title="Download">⬇️</button></div></div>`;
             });
@@ -6611,13 +8307,30 @@
         }
         
         function showGenerated(data, contentDiv) {
-            const url = data.image_url || data.url || data.saved_image_url || data.video_url || data.audio_url;
+            const url = data.video_url || data.audio_url || data.image_url || data.url || data.saved_image_url;
             if (!url) return;
+            
+            // Prevent duplicate display - check if this URL is already shown
+            if (contentDiv.querySelector(`[data-url="${url}"]`)) return;
             
             // Track generated content for easy access
             lastGeneratedUrl = url;
-            const type = data.type || (url.match(/\.(mp4|webm|mov)/i) ? 'video' : 
-                                       url.match(/\.(mp3|wav|ogg)/i) ? 'audio' : 'image');
+            
+            // Determine media type: explicit type > data key inference > URL extension > AI model hint > default
+            let type = data.type;
+            if (!type) {
+                // Infer from which key the URL came from
+                if (data.video_url || data.video_path) type = 'video';
+                else if (data.audio_url || data.audio_path) type = 'audio';
+                else if (data.image_url || data.saved_image_url) type = 'image';
+                // Check for video model indicators
+                else if (data.model && /kling|luma|ray|minimax|wan|ltx|veo|video/i.test(data.model)) type = 'video';
+                // Fallback: check URL extension
+                else if (url.match(/\.(mp4|webm|mov|avi)/i)) type = 'video';
+                else if (url.match(/\.(mp3|wav|ogg|flac|m4a)/i)) type = 'audio';
+                else type = 'image';
+            }
+            
             trackGeneratedContent(url, type, data.prompt || '');
             
             const div = document.createElement('div');
@@ -6625,7 +8338,39 @@
             div.setAttribute('data-url', url);
             div.setAttribute('data-type', type);
             
-            if (url.match(/\.(png|jpg|jpeg|webp|gif)/i) || data.type === 'image' || url.includes('replicate')) {
+            if (type === 'video') {
+                const videoId = 'video_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                div.innerHTML = `
+                    <div class="image-wrapper video-container">
+                        <video id="${videoId}" class="generated-video" controls preload="metadata" playsinline>
+                            <source src="${url}" type="video/mp4">
+                        </video>
+                        <div class="video-loading" id="${videoId}_loading" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.7); padding:10px 20px; border-radius:8px; color:white;">
+                            <span>⏳ Loading video... <span id="${videoId}_retry_count"></span></span>
+                        </div>
+                        <div class="video-error" id="${videoId}_error" style="display:none; padding:20px; text-align:center;">
+                            ⚠️ Video unavailable <a href="${url}" target="_blank" style="color:var(--accent);">Open in new tab</a>
+                        </div>
+                        <div class="image-edit-overlay">
+                            <button class="image-edit-btn" onclick="sendToEditor('${url}')" title="Edit with AI">✨ Edit</button>
+                            <button class="image-edit-btn secondary" onclick="downloadFromUrl('${url}')" title="Download">⬇️</button>
+                            <button class="image-edit-btn secondary" onclick="addMediaToQueue('${url}', 'video')" title="Add to Queue">📋</button>
+                        </div>
+                    </div>`;
+                // Initialize video with retry logic
+                setTimeout(() => initVideoWithRetry(videoId, url), 100);
+                saveGeneratedFile(url, 'video');
+            } else if (type === 'audio') {
+                div.innerHTML = `
+                    <div class="audio-wrapper">
+                        <audio class="generated-audio" controls src="${url}" preload="metadata"></audio>
+                        <div class="audio-actions">
+                            <button class="image-edit-btn" onclick="sendToEditor('${url}')" title="Edit audio">✨ Edit</button>
+                            <button class="image-edit-btn secondary" onclick="downloadFromUrl('${url}')" title="Download">⬇️</button>
+                        </div>
+                    </div>`;
+                saveGeneratedFile(url, 'audio');
+            } else {
                 div.innerHTML = `
                     <div class="image-wrapper">
                         <img class="generated-image" src="${url}" onclick="openLightbox('${url}')" alt="" draggable="true" ondragstart="handleImageDrag(event, '${url}')">
@@ -6634,23 +8379,45 @@
                             <button class="image-edit-btn drag-hint" draggable="true" ondragstart="handleImageDrag(event, '${url}')" title="Drag to editor">⇄ Drag</button>
                         </div>
                     </div>`;
-                // Auto-save the image
                 saveGeneratedFile(url, 'image');
-            } else if (url.match(/\.(mp4|webm|mov)/i) || data.type === 'video') {
-                div.innerHTML = `
-                    <div class="image-wrapper">
-                        <video class="generated-video" controls src="${url}"></video>
-                        <div class="image-edit-overlay">
-                            <button class="image-edit-btn" onclick="sendToEditor('${url}')" title="Edit with AI">✨ Edit</button>
-                        </div>
-                    </div>`;
-                saveGeneratedFile(url, 'video');
-            } else if (url.match(/\.(mp3|wav|ogg)/i) || data.type === 'audio') {
-                div.innerHTML = `<audio class="generated-audio" controls src="${url}"></audio>`;
-                saveGeneratedFile(url, 'audio');
             }
             
             contentDiv.appendChild(div);
+        }
+        
+        function initVideoWithRetry(videoId, url, maxRetries = 3) {
+            const video = document.getElementById(videoId);
+            const loadingEl = document.getElementById(videoId + '_loading');
+            const errorEl = document.getElementById(videoId + '_error');
+            const retryCountEl = document.getElementById(videoId + '_retry_count');
+            
+            if (!video) return;
+            
+            let retryCount = 0;
+            
+            video.onerror = function() {
+                if (retryCount < maxRetries) {
+                    retryCount++;
+                    if (loadingEl) loadingEl.style.display = 'flex';
+                    if (retryCountEl) retryCountEl.textContent = `(retry ${retryCount}/${maxRetries})`;
+                    
+                    // Exponential backoff: 2s, 4s, 8s
+                    setTimeout(() => {
+                        video.src = url + (url.includes('?') ? '&' : '?') + 't=' + Date.now();
+                        video.load();
+                    }, 2000 * Math.pow(2, retryCount - 1));
+                } else {
+                    if (loadingEl) loadingEl.style.display = 'none';
+                    if (errorEl) errorEl.style.display = 'block';
+                    video.style.display = 'none';
+                }
+            };
+            
+            video.oncanplay = function() {
+                if (loadingEl) loadingEl.style.display = 'none';
+                if (errorEl) errorEl.style.display = 'none';
+                video.style.display = 'block';
+            };
         }
         
         async function saveGeneratedFile(url, type) {
@@ -6664,6 +8431,36 @@
             } catch (e) {
                 console.log('Auto-save failed:', e);
             }
+        }
+        
+        // Add media file to queue with schedule capability
+        function addMediaToQueue(url, type, scheduledTime = null) {
+            const title = `Process ${type}: ${url.split('/').pop().substring(0, 30)}...`;
+            const task = {
+                id: 'media_' + Date.now(),
+                title: title,
+                instruction: `Use ${url} for scheduled ${type} task`,
+                type: type,
+                status: scheduledTime ? 'scheduled' : 'queued',
+                mediaUrl: url,
+                created: Date.now()
+            };
+            
+            if (scheduledTime) {
+                task.scheduledDate = scheduledTime;
+                scheduledTasks.push(task);
+                localStorage.setItem('scheduledTasks', JSON.stringify(scheduledTasks));
+                renderScheduledTasks();
+                renderCalendar();
+                showToast(`${type} scheduled!`, 'success');
+            } else {
+                queueTasks.push(task);
+                localStorage.setItem('queueTasks', JSON.stringify(queueTasks));
+                renderQueueTasks();
+                showToast(`Added ${type} to queue`, 'success');
+            }
+            
+            if (!document.getElementById('queueSidebar').classList.contains('open')) toggleQueue();
         }
         
         async function sendMessage() {
@@ -6728,7 +8525,8 @@
                 
                 if (!response.ok) throw new Error('Request failed');
                 
-                document.getElementById('thinking')?.remove();
+                // Keep thinking div but update it in real-time
+                const thinkingEl = document.getElementById('thinking');
                 
                 const assistantMsg = addMessageToDOM('assistant', '', false);
                 const contentDiv = assistantMsg.querySelector('.message-content');
@@ -6737,6 +8535,7 @@
                 const decoder = new TextDecoder();
                 let fullText = '';
                 let buffer = '';
+                let hasReceivedText = false;
                 
                 while (true) {
                     const { done, value } = await reader.read();
@@ -6751,19 +8550,65 @@
                             try {
                                 const data = JSON.parse(line.substring(6));
                                 
+                                // Handle thinking events - update the thinking indicator
+                                if (data.type === 'thinking') {
+                                    if (thinkingEl) {
+                                        const thinkingText = thinkingEl.querySelector('#thinkingText');
+                                        if (thinkingText) thinkingText.textContent = data.content || 'Working...';
+                                    }
+                                    continue;
+                                }
+                                
                                 if (data.type === 'content' || data.type === 'text') {
+                                    // Remove thinking indicator once text starts arriving
+                                    if (!hasReceivedText) {
+                                        hasReceivedText = true;
+                                        if (thinkingEl) thinkingEl.remove();
+                                        // Clear any status updates so text is clean
+                                        contentDiv.querySelectorAll('.status-update').forEach(el => el.remove());
+                                    }
                                     fullText += data.content || '';
                                     contentDiv.innerHTML = formatContent(fullText);
                                     scrollToBottom();
-                                } else if (data.type === 'status') {
-                                    // Enhanced status updates with better messaging
-                                    const existingStatus = contentDiv.querySelector('.status-update:last-of-type:not(.success)');
-                                    const statusMsg = data.message || data.content || '';
+                                } else if (data.type === 'status' || data.type === 'delegation_started' || data.type === 'agent_selected' || data.type === 'agent_working' || data.type === 'team_assembled') {
+                                    // Enhanced status updates with delegation support
+                                    const existingStatus = contentDiv.querySelector('.status-update.generating:last-of-type');
+                                    let statusMsg = data.message || data.content || '';
+                                    let statusIcon = data.icon || '🔄';
                                     
-                                    if (existingStatus && !statusMsg.includes('Complete')) {
-                                        // Update existing status
+                                    // Special handling for delegation events
+                                    if (data.type === 'delegation_started') {
+                                        statusIcon = '🤖';
+                                        statusMsg = `Delegating task (${data.analysis?.complexity || 'analyzing'}...)`;
+                                    } else if (data.type === 'agent_selected') {
+                                        statusIcon = '👤';
+                                        statusMsg = `<strong>${data.agent_name || data.agent}</strong> taking over${data.match_score ? ` (${Math.round(data.match_score * 100)}% match)` : ''}`;
+                                    } else if (data.type === 'agent_working') {
+                                        statusIcon = '⚡';
+                                        statusMsg = `<strong>${data.agent}</strong> working...`;
+                                    } else if (data.type === 'team_assembled') {
+                                        statusIcon = '👥';
+                                        const team = (data.team || []).join(', ');
+                                        statusMsg = `Collaboration team: <strong>${team}</strong>`;
+                                    }
+                                    
+                                    if (existingStatus && data.state !== 'success') {
+                                        // Update existing in-progress status in place
                                         existingStatus.querySelector('.status-text').innerHTML = statusMsg;
+                                        const icon = existingStatus.querySelector('.status-icon');
+                                        if (icon && data.icon) icon.textContent = data.icon;
+                                        const progressDiv = existingStatus.querySelector('.progress');
+                                        if (progressDiv && data.progress) {
+                                            progressDiv.style.width = data.progress + '%';
+                                        } else if (!progressDiv && data.progress) {
+                                            existingStatus.innerHTML += `
+                                                <div class="progress-bar">
+                                                    <div class="progress" style="width: ${data.progress}%"></div>
+                                                </div>
+                                            `;
+                                        }
                                     } else {
+                                        // Create new status line for completed steps or first status
                                         const statusDiv = document.createElement('div');
                                         statusDiv.className = `status-update ${data.state || 'generating'}`;
                                         statusDiv.innerHTML = `
@@ -6780,8 +8625,8 @@
                                         contentDiv.appendChild(statusDiv);
                                     }
                                     scrollToBottom();
-                                } else if (data.type === 'tool_use' || data.type === 'tool') {
-                                    const name = data.tool || data.name || 'tool';
+                                } else if (data.type === 'tool_use' || data.type === 'tool' || data.type === 'tool_start') {
+                                    const name = data.tool || data.name || data.content || 'tool';
                                     const toolIcons = {
                                         'generate_image': '🎨',
                                         'generate_video': '🎬',
@@ -6813,20 +8658,109 @@
                                     `;
                                     contentDiv.appendChild(statusDiv);
                                     scrollToBottom();
-                                } else if (data.type === 'tool_result' && data.result) {
-                                    // Mark tool as complete
+                                } else if (data.type === 'tool_result' || data.type === 'tool_end') {
+                                    // Mark the most recent generating tool as complete
                                     const toolDiv = contentDiv.querySelector('.status-update.generating:last-of-type');
                                     if (toolDiv) {
                                         toolDiv.classList.remove('generating');
-                                        toolDiv.classList.add('success');
+                                        const success = data.success !== false && (!data.metadata || data.metadata.success !== false);
+                                        toolDiv.classList.add(success ? 'success' : 'error');
                                         const progressBar = toolDiv.querySelector('.progress-bar');
                                         if (progressBar) progressBar.remove();
                                         const statusText = toolDiv.querySelector('.status-text');
-                                        if (statusText) statusText.innerHTML = statusText.innerHTML.replace('in progress...', '✓ Complete');
+                                        if (statusText) {
+                                            const label = statusText.querySelector('strong')?.textContent || '';
+                                            statusText.innerHTML = `<strong>${label}</strong> ${success ? '✓' : '⚠️'}`;
+                                        }
                                     }
-                                    showGenerated(data.result, contentDiv);
-                                } else if ((data.type === 'complete' || data.type === 'done') && data.artifacts) {
-                                    data.artifacts.forEach(a => showGenerated(a, contentDiv));
+                                    if (data.result) {
+                                        // Only show from tool_result if no artifact was emitted for this step
+                                        // (artifact events have proper type info; tool_result doesn't)
+                                        const stepIdx = data.metadata?.step_index;
+                                        if (!contentDiv.querySelector(`.generated-content[data-step="${stepIdx}"]`)) {
+                                            showGenerated(data.result, contentDiv);
+                                        }
+                                    }
+                                    scrollToBottom();
+                                } else if (data.type === 'artifact') {
+                                    // Handle inline artifacts (images, videos, audio, files)
+                                    const artifact = data.artifact || data.content;
+                                    if (artifact && artifact.url) {
+                                        showGenerated(artifact, contentDiv);
+                                        // Mark this step as having an artifact
+                                        const lastGen = contentDiv.querySelector('.generated-content:last-of-type');
+                                        if (lastGen && data.metadata?.step) {
+                                            lastGen.setAttribute('data-step', data.metadata.step);
+                                        }
+                                    }
+                                    scrollToBottom();
+                                } else if (data.type === 'error') {
+                                    const errorMsg = data.content || data.message || 'Something went wrong';
+                                    const statusDiv = document.createElement('div');
+                                    statusDiv.className = 'status-update error';
+                                    statusDiv.innerHTML = `
+                                        <span class="status-icon">❌</span>
+                                        <span class="status-text">${errorMsg}</span>
+                                    `;
+                                    contentDiv.appendChild(statusDiv);
+                                    scrollToBottom();
+                                } else if (data.type === 'queue_add') {
+                                    // AI added a task to the queue — update sidebar
+                                    const taskData = data.task || data;
+                                    addToQueue({
+                                        title: taskData.title || taskData.instruction || 'Queued task',
+                                        instruction: taskData.instruction || taskData.title || '',
+                                        type: taskData.type || 'general',
+                                        priority: taskData.priority || 'normal'
+                                    });
+                                    // Show status in chat
+                                    const qStatusDiv = document.createElement('div');
+                                    qStatusDiv.className = 'status-update success';
+                                    qStatusDiv.innerHTML = `
+                                        <span class="status-icon">📋</span>
+                                        <span class="status-text">Added to queue: <strong>${escapeHtml((taskData.title || '').substring(0, 60))}</strong></span>
+                                    `;
+                                    contentDiv.appendChild(qStatusDiv);
+                                    scrollToBottom();
+                                    // Open queue sidebar to show the addition
+                                    if (!document.getElementById('queueSidebar').classList.contains('open')) {
+                                        toggleQueue();
+                                    } else {
+                                        renderQueueTasks();
+                                    }
+                                } else if (data.type === 'schedule_add') {
+                                    // AI scheduled a task — update sidebar
+                                    const schedData = data.task || data;
+                                    const schedTask = {
+                                        id: schedData.id || ('scheduled_' + Date.now()),
+                                        title: schedData.title || schedData.instruction || 'Scheduled task',
+                                        instruction: schedData.instruction || schedData.title || '',
+                                        type: schedData.type || detectTaskType(schedData.title || ''),
+                                        status: 'scheduled',
+                                        scheduledDate: schedData.scheduledDate || schedData.scheduled_for || new Date().toISOString(),
+                                        repeat: schedData.repeat || 'once',
+                                        created: Date.now()
+                                    };
+                                    scheduledTasks.push(schedTask);
+                                    localStorage.setItem('scheduledTasks', JSON.stringify(scheduledTasks));
+                                    renderScheduledTasks();
+                                    renderCalendar();
+                                    updateScheduledCount();
+                                    // Show status
+                                    const sStatusDiv = document.createElement('div');
+                                    sStatusDiv.className = 'status-update success';
+                                    sStatusDiv.innerHTML = `
+                                        <span class="status-icon">📅</span>
+                                        <span class="status-text">Scheduled: <strong>${escapeHtml((schedData.title || '').substring(0, 60))}</strong></span>
+                                    `;
+                                    contentDiv.appendChild(sStatusDiv);
+                                    scrollToBottom();
+                                } else if ((data.type === 'complete' || data.type === 'done')) {
+                                    // Remove thinking div on completion
+                                    if (thinkingEl) thinkingEl.remove();
+                                    if (data.artifacts) {
+                                        data.artifacts.forEach(a => showGenerated(a, contentDiv));
+                                    }
                                 }
                             } catch (e) {}
                         }
@@ -6836,6 +8770,22 @@
                 // Save the assistant message
                 currentConversation.messages.push({ role: 'assistant', content: fullText });
                 saveCurrentConversation();
+                
+                // Clean up: remove thinking indicator and status updates
+                if (thinkingEl) thinkingEl.remove();
+                
+                // Preserve any generated media (videos, images, audio) that were appended during streaming
+                const generatedEls = contentDiv.querySelectorAll('.generated-content');
+                const savedMedia = [];
+                generatedEls.forEach(el => savedMedia.push(el));
+                
+                if (fullText) {
+                    // Text arrived - clear status updates so final response is clean
+                    contentDiv.querySelectorAll('.status-update').forEach(el => el.remove());
+                    contentDiv.innerHTML = formatContent(fullText);
+                    // Re-append any generated media below the text
+                    savedMedia.forEach(el => contentDiv.appendChild(el));
+                }
                 
                 if (!fullText && !contentDiv.querySelector('.generated-content')) {
                     contentDiv.innerHTML = '<p>Done!</p>';
@@ -6870,7 +8820,7 @@
             formData.append('detail_level', 'comprehensive');
             
             // Show upload/analysis progress
-            addMessage(`📎 Uploading and analyzing ${file.name}...`, 'assistant');
+            addMessageToDOM('assistant', `📎 Uploading and analyzing ${file.name}...`);
             
             try {
                 const res = await fetch('/files/upload-and-analyze', { 
@@ -6961,6 +8911,7 @@
             document.getElementById('editorSidebar').classList.remove('open');
             document.getElementById('queueSidebar').classList.remove('open');
             document.getElementById('contactsSidebar').classList.remove('open');
+            document.getElementById('browserSidebar').classList.remove('open');
             document.getElementById('filesSidebar').classList.toggle('open');
             if (document.getElementById('filesSidebar').classList.contains('open')) loadFiles();
         }
@@ -7152,7 +9103,59 @@
         }
         
         function downloadFile() {
-            if (currentFile) { const a = document.createElement('a'); a.href = currentFile; a.download = ''; a.click(); }
+            if (currentFile) {
+                // Force download with proper headers
+                fetch(currentFile)
+                    .then(response => response.blob())
+                    .then(blob => {
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        // Extract filename from URL or use default
+                        const filename = currentFile.split('/').pop() || 'download';
+                        a.download = filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        a.remove();
+                    })
+                    .catch(() => {
+                        // Fallback for external URLs
+                        const a = document.createElement('a');
+                        a.href = currentFile;
+                        a.download = '';
+                        a.target = '_blank';
+                        a.click();
+                    });
+            }
+        }
+        
+        async function downloadAllFilesAsZip() {
+            showNotification('📦 Preparing download...', 'info');
+            
+            try {
+                // Use the server endpoint to create and download zip
+                const response = await fetch('/files/download-all');
+                
+                if (!response.ok) {
+                    throw new Error('Failed to create zip');
+                }
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'otto_files.zip';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                a.remove();
+                
+                showNotification('✅ Download started!', 'success');
+            } catch (e) {
+                console.error('Download all failed:', e);
+                showNotification('❌ Download failed', 'error');
+            }
         }
         
         function copyUrl() {
@@ -7165,7 +9168,15 @@
             document.getElementById('editorSidebar').classList.remove('open');
             document.getElementById('queueSidebar').classList.remove('open');
             document.getElementById('contactsSidebar').classList.remove('open');
+            document.getElementById('browserSidebar').classList.remove('open');
             document.getElementById('settingsSidebar').classList.toggle('open');
+            
+            // Load plugins when settings sidebar opens
+            if (document.getElementById('settingsSidebar').classList.contains('open')) {
+                if (typeof loadPlugins === 'function') {
+                    loadPlugins();
+                }
+            }
         }
         
         // AI Media Editor
@@ -7179,6 +9190,7 @@
             document.getElementById('settingsSidebar').classList.remove('open');
             document.getElementById('queueSidebar').classList.remove('open');
             document.getElementById('contactsSidebar').classList.remove('open');
+            document.getElementById('browserSidebar').classList.remove('open');
             document.getElementById('editorSidebar').classList.toggle('open');
         }
         
@@ -7193,6 +9205,7 @@
             document.getElementById('settingsSidebar').classList.remove('open');
             document.getElementById('editorSidebar').classList.remove('open');
             document.getElementById('contactsSidebar').classList.remove('open');
+            document.getElementById('browserSidebar').classList.remove('open');
             document.getElementById('queueSidebar').classList.toggle('open');
             if (document.getElementById('queueSidebar').classList.contains('open')) {
                 loadQueueTasks();
@@ -7208,8 +9221,42 @@
             document.getElementById('scheduledTabContent').style.display = tab === 'scheduled' ? 'block' : 'none';
             document.getElementById('historyTabContent').style.display = tab === 'history' ? 'block' : 'none';
             
-            if (tab === 'scheduled') renderCalendar();
+            if (tab === 'scheduled') {
+                loadScheduledTasksFromBackend();
+                renderCalendar();
+            }
             if (tab === 'history') renderCompletedTasks();
+        }
+        
+        async function loadScheduledTasksFromBackend() {
+            try {
+                const res = await fetch('/api/scheduler/tasks');
+                if (res.ok) {
+                    const data = await res.json();
+                    const backendTasks = (data.tasks || []).map(t => ({
+                        id: t.id || t.task_id,
+                        title: t.name || t.title || t.description,
+                        instruction: t.description || t.name,
+                        type: t.action_type || 'general',
+                        status: 'scheduled',
+                        scheduledDate: t.next_run || t.scheduled_date || t.scheduledDate,
+                        repeat: t.schedule_type === 'once' ? 'once' : (t.schedule_type || 'once'),
+                        fromBackend: true
+                    }));
+                    
+                    // Merge with local tasks (local takes priority for same ID)
+                    const localTasks = JSON.parse(localStorage.getItem('scheduledTasks') || '[]');
+                    const localIds = new Set(localTasks.map(t => t.id));
+                    scheduledTasks = [...localTasks, ...backendTasks.filter(t => !localIds.has(t.id))];
+                    
+                    renderScheduledTasks();
+                    updateScheduledCount();
+                }
+            } catch (e) {
+                console.log('Backend scheduler not available, using local storage');
+                scheduledTasks = JSON.parse(localStorage.getItem('scheduledTasks') || '[]');
+                renderScheduledTasks();
+            }
         }
         
         async function loadQueueTasks() {
@@ -7480,7 +9527,7 @@
             event.target.classList.add('selected');
         }
         
-        function scheduleTask() {
+        async function scheduleTask() {
             const taskInput = document.getElementById('scheduleTaskInput');
             const dateInput = document.getElementById('scheduleDate');
             const timeInput = document.getElementById('scheduleTime');
@@ -7506,6 +9553,21 @@
             
             scheduledTasks.push(task);
             localStorage.setItem('scheduledTasks', JSON.stringify(scheduledTasks));
+            
+            // Sync with backend
+            try {
+                await fetch('/task_queue', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        instruction: task.instruction,
+                        title: task.title,
+                        priority: 'normal',
+                        scheduledDate: task.scheduledDate,
+                        status: 'scheduled'
+                    })
+                });
+            } catch (e) {}
             
             taskInput.value = '';
             renderScheduledTasks();
@@ -7646,11 +9708,485 @@
             document.getElementById('settingsSidebar').classList.remove('open');
             document.getElementById('editorSidebar').classList.remove('open');
             document.getElementById('queueSidebar').classList.remove('open');
+            document.getElementById('browserSidebar').classList.remove('open');
             document.getElementById('contactsSidebar').classList.toggle('open');
             if (document.getElementById('contactsSidebar').classList.contains('open')) {
                 loadContacts();
             }
         }
+        
+        // ═══════════════════════════════════════════════════════════════════
+        // BROWSER USE PANEL SYSTEM
+        // ═══════════════════════════════════════════════════════════════════
+        
+        let browserHistory = [];
+        let browserActions = [];
+        let isBrowserActive = false;
+        let browserWs = null;
+        
+        // Initialize Browser WebSocket connection
+        function initBrowserWebSocket() {
+            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${wsProtocol}//${window.location.host}/api/browser/ws`;
+            
+            try {
+                browserWs = new WebSocket(wsUrl);
+                
+                browserWs.onopen = () => {
+                    console.log('Browser WebSocket connected');
+                    // Send ping every 30 seconds to keep alive
+                    setInterval(() => {
+                        if (browserWs && browserWs.readyState === WebSocket.OPEN) {
+                            browserWs.send('ping');
+                        }
+                    }, 30000);
+                };
+                
+                browserWs.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        handleBrowserEvent(data);
+                    } catch (e) {
+                        // Pong response
+                        if (event.data !== 'pong') {
+                            console.log('Browser WS:', event.data);
+                        }
+                    }
+                };
+                
+                browserWs.onclose = () => {
+                    console.log('Browser WebSocket closed, reconnecting in 5s...');
+                    setTimeout(initBrowserWebSocket, 5000);
+                };
+                
+                browserWs.onerror = (err) => {
+                    console.log('Browser WebSocket error (will retry)');
+                };
+            } catch (e) {
+                console.log('Browser WebSocket not available');
+            }
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            initBrowserWebSocket();
+            loadBrowserHistory();
+        });
+        
+        function toggleBrowser() {
+            document.getElementById('filesSidebar').classList.remove('open');
+            document.getElementById('settingsSidebar').classList.remove('open');
+            document.getElementById('editorSidebar').classList.remove('open');
+            document.getElementById('queueSidebar').classList.remove('open');
+            document.getElementById('contactsSidebar').classList.remove('open');
+            document.getElementById('browserSidebar').classList.toggle('open');
+        }
+        
+        function switchBrowserTab(tab, el) {
+            document.querySelectorAll('.browser-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            
+            document.getElementById('browserLiveTabContent').style.display = tab === 'live' ? 'block' : 'none';
+            document.getElementById('browserHistoryTabContent').style.display = tab === 'history' ? 'block' : 'none';
+            document.getElementById('browserTasksTabContent').style.display = tab === 'tasks' ? 'block' : 'none';
+        }
+        
+        function refreshBrowserPanel() {
+            loadBrowserHistory();
+            showToast('Browser panel refreshed');
+        }
+        
+        async function loadBrowserHistory() {
+            try {
+                const res = await fetch('/api/browser/history');
+                const data = await res.json();
+                if (data.success) {
+                    browserHistory = data.history || [];
+                    renderBrowserHistory();
+                }
+            } catch (e) {
+                // Use local storage fallback
+                browserHistory = JSON.parse(localStorage.getItem('browserHistory') || '[]');
+                renderBrowserHistory();
+            }
+        }
+        
+        function renderBrowserHistory() {
+            const list = document.getElementById('browserHistoryList');
+            if (browserHistory.length === 0) {
+                list.innerHTML = '<div class="browser-history-empty"><p>No browsing history yet</p></div>';
+                return;
+            }
+            
+            list.innerHTML = browserHistory.slice(0, 20).map(item => `
+                <div class="browser-history-item" onclick="viewBrowserSession('${item.id}')">
+                    <div class="browser-history-title">${escapeHtml(item.task || 'Browser Session')}</div>
+                    <div class="browser-history-url">${escapeHtml(item.url || '')}</div>
+                </div>
+            `).join('');
+        }
+        
+        function viewBrowserSession(sessionId) {
+            // Open session details in a modal or expand
+            showToast('Loading session details...');
+        }
+        
+        function runBrowserTask(taskType) {
+            const taskConfigs = {
+                'extract_leads': {
+                    icon: '🎯',
+                    title: 'Extract Leads',
+                    description: 'Extract contact information and leads from any website using AI-powered browser automation.',
+                    inputLabel: 'Enter Website URL',
+                    placeholder: 'https://example.com/team',
+                    examples: [
+                        { text: 'LinkedIn company page', value: 'https://linkedin.com/company/example' },
+                        { text: 'Yelp business listings', value: 'https://yelp.com/search?find_desc=restaurants' },
+                        { text: 'Company about page', value: 'https://example.com/about' }
+                    ]
+                },
+                'monitor_price': {
+                    icon: '💰',
+                    title: 'Monitor Price',
+                    description: 'Track product prices on e-commerce sites. The browser will extract current pricing and availability.',
+                    inputLabel: 'Enter Product Page URL',
+                    placeholder: 'https://amazon.com/dp/...',
+                    examples: [
+                        { text: 'Amazon product', value: 'https://amazon.com/dp/B09V3KXJPB' },
+                        { text: 'eBay listing', value: 'https://ebay.com/itm/...' },
+                        { text: 'Best Buy product', value: 'https://bestbuy.com/product/...' }
+                    ]
+                },
+                'analyze_competitor': {
+                    icon: '🔍',
+                    title: 'Analyze Competitor',
+                    description: 'Deep-dive analysis of competitor websites including pricing, features, and market positioning.',
+                    inputLabel: 'Enter Competitor Website',
+                    placeholder: 'https://competitor.com',
+                    examples: [
+                        { text: 'SaaS competitor', value: 'https://competitor-saas.com/pricing' },
+                        { text: 'E-commerce store', value: 'https://competitor-store.com' },
+                        { text: 'Agency website', value: 'https://competitor-agency.com' }
+                    ]
+                },
+                'fill_form': {
+                    icon: '📝',
+                    title: 'Fill Form',
+                    description: 'Automatically fill out web forms with your information. Describe what form to fill and with what data.',
+                    inputLabel: 'Describe the Form Task',
+                    placeholder: 'Fill the contact form at example.com with my business info',
+                    examples: [
+                        { text: 'Contact form submission', value: 'Fill contact form at example.com/contact with name: John, email: john@example.com' },
+                        { text: 'Newsletter signup', value: 'Subscribe to newsletter at example.com with email: me@example.com' }
+                    ]
+                },
+                'scrape_data': {
+                    icon: '📊',
+                    title: 'Scrape Data',
+                    description: 'Extract structured data from web pages such as tables, lists, or product catalogs.',
+                    inputLabel: 'Enter URL and Data Description',
+                    placeholder: 'https://example.com - extract all product names and prices',
+                    examples: [
+                        { text: 'Product catalog', value: 'https://store.com/products - extract names, prices, and images' },
+                        { text: 'Directory listing', value: 'https://directory.com - extract business names and phone numbers' }
+                    ]
+                },
+                'find_influencers': {
+                    icon: '⭐',
+                    title: 'Find Influencers',
+                    description: 'Discover social media influencers in your niche. Specify the platform and topic area.',
+                    inputLabel: 'Platform and Niche',
+                    placeholder: 'Instagram, fitness and wellness',
+                    examples: [
+                        { text: 'Instagram fitness', value: 'Instagram, fitness and health' },
+                        { text: 'Twitter tech', value: 'Twitter, AI and technology' },
+                        { text: 'YouTube beauty', value: 'YouTube, beauty and skincare' }
+                    ]
+                }
+            };
+            
+            const config = taskConfigs[taskType] || {
+                icon: '🌐',
+                title: 'Browser Task',
+                description: 'Describe your browser automation task.',
+                inputLabel: 'Task Description',
+                placeholder: 'Describe what you want the browser to do...',
+                examples: []
+            };
+            
+            // Store current task type
+            window._currentBrowserTaskType = taskType;
+            
+            // Update modal content
+            document.getElementById('browserTaskIcon').textContent = config.icon;
+            document.getElementById('browserTaskTitle').textContent = config.title;
+            document.getElementById('browserTaskDescription').textContent = config.description;
+            document.getElementById('browserTaskInputLabel').textContent = config.inputLabel;
+            document.getElementById('browserTaskInput').placeholder = config.placeholder;
+            document.getElementById('browserTaskInput').value = '';
+            
+            // Update examples
+            const examplesContainer = document.getElementById('browserTaskExamples');
+            if (config.examples.length > 0) {
+                examplesContainer.innerHTML = `
+                    <div class="browser-task-examples-title">Examples</div>
+                    ${config.examples.map(ex => `
+                        <div class="browser-task-example" onclick="setBrowserTaskExample('${ex.value}')">${ex.text}</div>
+                    `).join('')}
+                `;
+                examplesContainer.style.display = 'block';
+            } else {
+                examplesContainer.style.display = 'none';
+            }
+            
+            // Show modal
+            document.getElementById('browserTaskModal').classList.add('open');
+            setTimeout(() => document.getElementById('browserTaskInput').focus(), 100);
+        }
+        
+        function closeBrowserTaskModal(event) {
+            if (event && event.target.id !== 'browserTaskModal') return;
+            document.getElementById('browserTaskModal').classList.remove('open');
+        }
+        
+        function setBrowserTaskExample(value) {
+            document.getElementById('browserTaskInput').value = value;
+        }
+        
+        function handleBrowserTaskKey(event) {
+            if (event.key === 'Enter') {
+                confirmBrowserTask();
+            } else if (event.key === 'Escape') {
+                closeBrowserTaskModal();
+            }
+        }
+        
+        function confirmBrowserTask() {
+            const userInput = document.getElementById('browserTaskInput').value.trim();
+            const taskType = window._currentBrowserTaskType;
+            const startBtn = document.getElementById('browserStartBtn');
+            
+            if (!userInput) {
+                showToast('Please enter the required information', 'warning');
+                return;
+            }
+            
+            // Show loading state briefly
+            startBtn.classList.add('loading');
+            startBtn.innerHTML = '🚀 Launching...';
+            
+            // Close modal after brief delay to show loading
+            setTimeout(() => {
+                document.getElementById('browserTaskModal').classList.remove('open');
+                
+                // Reset button for next use
+                startBtn.classList.remove('loading');
+                startBtn.innerHTML = '🚀 Start Browser';
+            }, 300);
+            
+            // Keep browser sidebar OPEN and switch to Live tab
+            document.getElementById('browserSidebar').classList.add('open');
+            const liveTab = document.querySelector('.browser-tab');
+            if (liveTab) switchBrowserTab('live', liveTab);
+            
+            // Update status to show browsing
+            updateBrowserStatus('active', 'Starting browser...');
+            addBrowserAction(`Task: ${taskType.replace(/_/g, ' ')}`, 'info');
+            addBrowserAction(`Target: ${userInput}`, 'info');
+            
+            // Show loading in preview
+            const preview = document.getElementById('browserPreview');
+            preview.innerHTML = `
+                <div class="browser-loading">
+                    <div class="browser-spinner"></div>
+                    <p>Launching browser...</p>
+                    <p class="browser-loading-url">${escapeHtml(userInput)}</p>
+                </div>
+            `;
+            
+            // Send task to chat
+            const taskMessages = {
+                'extract_leads': `Use browser_extract_leads to extract leads and contact information from ${userInput}`,
+                'monitor_price': `Use browser_monitor_price to track the price of this product: ${userInput}`,
+                'analyze_competitor': `Use browser_analyze_competitor to analyze this website: ${userInput}`,
+                'fill_form': `Use browser_fill_form to ${userInput}`,
+                'scrape_data': `Use browser_extract_data to scrape structured data from: ${userInput}`,
+                'find_influencers': `Use browser_find_influencers to find influencers: ${userInput}`
+            };
+            
+            const message = taskMessages[taskType] || userInput;
+            document.getElementById('userInput').value = message;
+            sendMessage();
+            
+            // Start polling for completion
+            startBrowserPolling();
+        }
+        
+        let browserPollInterval = null;
+        
+        function startBrowserPolling() {
+            // Clear any existing interval
+            if (browserPollInterval) clearInterval(browserPollInterval);
+            
+            let lastActionCount = 0;
+            isBrowserActive = true;
+            
+            browserPollInterval = setInterval(async () => {
+                try {
+                    const res = await fetch('/api/browser/status');
+                    const data = await res.json();
+                    
+                    // Add new actions to the log
+                    if (data.actions && data.actions.length > lastActionCount) {
+                        const newActions = data.actions.slice(lastActionCount);
+                        newActions.forEach(action => {
+                            addBrowserAction(action.text, 'info');
+                        });
+                        lastActionCount = data.actions.length;
+                    }
+                    
+                    if (data.is_active) {
+                        updateBrowserStatus('active', 'Browsing...');
+                        if (data.current_url) {
+                            updateBrowserUrl(data.current_url);
+                        }
+                        if (data.current_task) {
+                            // Update preview with task info
+                            const preview = document.getElementById('browserPreview');
+                            if (preview.querySelector('.browser-loading')) {
+                                preview.innerHTML = `
+                                    <div class="browser-loading">
+                                        <div class="browser-spinner"></div>
+                                        <p>Browser active...</p>
+                                        <p class="browser-loading-url">${escapeHtml(data.current_task)}</p>
+                                    </div>
+                                `;
+                            }
+                        }
+                    } else {
+                        // Check if we just became idle from active state
+                        if (isBrowserActive) {
+                            updateBrowserStatus('idle', 'Complete');
+                            addBrowserAction('Task completed', 'success');
+                            isBrowserActive = false;
+                            
+                            // Update preview
+                            const preview = document.getElementById('browserPreview');
+                            preview.innerHTML = `
+                                <div class="browser-empty">
+                                    <div class="browser-empty-icon">✅</div>
+                                    <p>Browser task completed</p>
+                                    <p class="browser-empty-hint">Check the chat for results</p>
+                                </div>
+                            `;
+                            
+                            // Stop polling
+                            clearInterval(browserPollInterval);
+                            browserPollInterval = null;
+                            
+                            // Try to get last screenshot
+                            if (data.has_screenshot) {
+                                const ssRes = await fetch('/api/browser/screenshot');
+                                const ssData = await ssRes.json();
+                                if (ssData.success && ssData.screenshot) {
+                                    showBrowserPreview(ssData.screenshot);
+                                }
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.log('Browser poll error:', e);
+                }
+            }, 1500);
+            
+            // Auto-stop after 5 minutes
+            setTimeout(() => {
+                if (browserPollInterval) {
+                    clearInterval(browserPollInterval);
+                    browserPollInterval = null;
+                }
+            }, 300000);
+        }
+        
+        function updateBrowserStatus(status, text) {
+            const indicator = document.querySelector('.browser-status-indicator');
+            const statusText = document.querySelector('.browser-status span');
+            
+            indicator.className = 'browser-status-indicator ' + status;
+            statusText.textContent = text || status.charAt(0).toUpperCase() + status.slice(1);
+        }
+        
+        function addBrowserAction(action, status = 'info') {
+            const log = document.getElementById('browserActionsLog');
+            const time = new Date().toLocaleTimeString();
+            
+            const actionHtml = `
+                <div class="browser-action-item ${status}">
+                    <div class="browser-action-time">${time}</div>
+                    <div class="browser-action-text">${escapeHtml(action)}</div>
+                </div>
+            `;
+            
+            log.insertAdjacentHTML('afterbegin', actionHtml);
+            
+            // Keep only last 20 actions
+            const items = log.querySelectorAll('.browser-action-item');
+            if (items.length > 20) {
+                items[items.length - 1].remove();
+            }
+        }
+        
+        function updateBrowserUrl(url) {
+            const urlBar = document.getElementById('browserUrlBar');
+            const urlText = document.getElementById('browserCurrentUrl');
+            
+            urlBar.style.display = 'flex';
+            urlText.textContent = url;
+        }
+        
+        function showBrowserPreview(screenshotUrl) {
+            const preview = document.getElementById('browserPreview');
+            if (screenshotUrl) {
+                preview.innerHTML = `<img src="${screenshotUrl}" style="width:100%;border-radius:8px;">`;
+            }
+        }
+        
+        // Listen for browser events from backend
+        function handleBrowserEvent(event) {
+            const { type, data } = event;
+            
+            switch (type) {
+                case 'browser_start':
+                    updateBrowserStatus('active', 'Browsing...');
+                    isBrowserActive = true;
+                    // Auto-open browser panel if setting enabled
+                    if (document.getElementById('browserPanelToggle')?.classList.contains('on')) {
+                        document.getElementById('browserSidebar').classList.add('open');
+                    }
+                    break;
+                    
+                case 'browser_action':
+                    addBrowserAction(data.action, data.status);
+                    if (data.url) updateBrowserUrl(data.url);
+                    if (data.screenshot) showBrowserPreview(data.screenshot);
+                    break;
+                    
+                case 'browser_complete':
+                    updateBrowserStatus('idle', 'Complete');
+                    isBrowserActive = false;
+                    addBrowserAction('Task completed', 'success');
+                    break;
+                    
+                case 'browser_error':
+                    updateBrowserStatus('error', 'Error');
+                    isBrowserActive = false;
+                    addBrowserAction(data.error || 'An error occurred', 'error');
+                    break;
+            }
+        }
+        
+        // Expose for external calls
+        window.handleBrowserEvent = handleBrowserEvent;
         
         function switchContactsTab(tab, el) {
             document.querySelectorAll('.contacts-tab').forEach(t => t.classList.remove('active'));
@@ -8062,6 +10598,9 @@
         function handleEditorUrlInput() {
             const url = document.getElementById('editorFileUrl').value.trim();
             updateABOriginal(url);
+            if (url) {
+                refreshSuggestions();
+            }
         }
         
         // Update A/B Original preview
@@ -8091,18 +10630,30 @@
             const codeExts = ['py', 'js', 'ts', 'html', 'css', 'json', 'md', 'txt', 'yaml', 'yml', 'sh', 'sql'];
             const modelExts = ['obj', 'glb', 'gltf', 'fbx', 'stl', 'ply'];
             
+            // Determine file type for recent files
+            let fileType = 'file';
             if (imageExts.some(e => ext === e) || url.includes('replicate.delivery') || url.includes('oaidalleapiprodscus')) {
                 originalContent.innerHTML = `<img src="${url}" onerror="this.parentNode.innerHTML='<span class=\\'ab-placeholder\\'>⚠️ Load failed</span>'">`;
+                fileType = 'image';
             } else if (videoExts.some(e => ext === e)) {
                 originalContent.innerHTML = `<video src="${url}" controls style="max-width:100%;max-height:100%"></video>`;
+                fileType = 'video';
             } else if (audioExts.some(e => ext === e)) {
                 originalContent.innerHTML = `<audio src="${url}" controls></audio>`;
+                fileType = 'audio';
             } else if (codeExts.some(e => ext === e)) {
                 originalContent.innerHTML = `<div style="text-align:center;padding:15px"><span style="font-size:28px">📄</span><br><span style="font-size:10px;color:var(--text-muted)">${ext.toUpperCase()}</span></div>`;
+                fileType = 'code';
             } else if (modelExts.some(e => ext === e)) {
                 originalContent.innerHTML = `<div style="text-align:center;padding:15px"><span style="font-size:28px">🧊</span><br><span style="font-size:10px;color:var(--text-muted)">${ext.toUpperCase()}</span></div>`;
+                fileType = '3d';
             } else {
                 originalContent.innerHTML = `<div style="text-align:center;padding:15px"><span style="font-size:28px">📁</span><br><span style="font-size:10px;color:var(--text-muted)">${fname.slice(0,15)}</span></div>`;
+            }
+            
+            // Add to recent files
+            if (typeof addToRecentFiles === 'function') {
+                addToRecentFiles(url, fileType);
             }
         }
         
@@ -8379,6 +10930,143 @@
             document.getElementById('editorInstruction').placeholder = placeholders[type] || 'Describe what you want...';
         }
         
+        // ============================================================================
+        // AI Suggestions & Recent Files
+        // ============================================================================
+        
+        let editorRecentFiles = JSON.parse(localStorage.getItem('editorRecentFiles') || '[]');
+        
+        function refreshSuggestions() {
+            const fileUrl = document.getElementById('editorFileUrl').value.trim();
+            const suggestionsList = document.getElementById('suggestionsList');
+            
+            // Get current media type from active tab
+            const activeTab = document.querySelector('.media-tab.active');
+            const mediaType = activeTab ? activeTab.textContent.toLowerCase() : 'image';
+            
+            const suggestions = {
+                'image': [
+                    { text: 'Remove background', action: 'remove_background' },
+                    { text: 'Upscale 4x', action: 'upscale' },
+                    { text: 'Enhance quality', action: 'enhance' },
+                    { text: 'Add artistic style', action: 'style_transfer' },
+                    { text: 'Convert to video', action: 'image_to_video' },
+                    { text: 'Make 3D model', action: 'image_to_3d' }
+                ],
+                'video': [
+                    { text: 'Add slow motion', action: 'slow_motion' },
+                    { text: 'Stabilize footage', action: 'stabilize' },
+                    { text: 'Add captions', action: 'add_captions' },
+                    { text: 'Remove background', action: 'remove_video_background' },
+                    { text: 'Add music', action: 'add_music' }
+                ],
+                'audio': [
+                    { text: 'Separate vocals', action: 'separate_vocals' },
+                    { text: 'Remove noise', action: 'denoise' },
+                    { text: 'Enhance audio', action: 'audio_enhance' },
+                    { text: 'Transcribe', action: 'transcribe' },
+                    { text: 'Extract stems', action: 'extract_stems' }
+                ],
+                'code': [
+                    { text: 'Explain code', action: 'code_explain' },
+                    { text: 'Refactor', action: 'code_refactor' },
+                    { text: 'Find bugs', action: 'code_debug' },
+                    { text: 'Add tests', action: 'code_test' },
+                    { text: 'Add docs', action: 'code_document' }
+                ],
+                'text': [
+                    { text: 'Summarize', action: 'summarize' },
+                    { text: 'Rewrite', action: 'rewrite' },
+                    { text: 'Translate', action: 'translate' },
+                    { text: 'Expand', action: 'expand' },
+                    { text: 'Format', action: 'format' }
+                ]
+            };
+            
+            const currentSuggestions = suggestions[mediaType] || suggestions['image'];
+            
+            suggestionsList.innerHTML = currentSuggestions
+                .map(s => `<div class="suggestion-chip" onclick="applyTool('${s.action}')">${s.text}</div>`)
+                .join('');
+        }
+        
+        function applySuggestion(text) {
+            document.getElementById('editorInstruction').value = text;
+        }
+        
+        function addToRecentFiles(url, type) {
+            const existing = editorRecentFiles.findIndex(f => f.url === url);
+            if (existing > -1) {
+                editorRecentFiles.splice(existing, 1);
+            }
+            
+            editorRecentFiles.unshift({
+                url: url,
+                type: type || 'file',
+                name: url.split('/').pop() || url.substring(0, 30),
+                time: Date.now()
+            });
+            
+            // Keep only last 10
+            editorRecentFiles = editorRecentFiles.slice(0, 10);
+            localStorage.setItem('editorRecentFiles', JSON.stringify(editorRecentFiles));
+            renderRecentFiles();
+        }
+        
+        function renderRecentFiles() {
+            const list = document.getElementById('recentFilesList');
+            if (!list) return;
+            
+            if (editorRecentFiles.length === 0) {
+                list.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:11px;padding:10px;">No recent files</div>';
+                return;
+            }
+            
+            const icons = {
+                'image': '🖼️',
+                'video': '🎬',
+                'audio': '🎵',
+                'code': '💻',
+                'text': '📄',
+                'file': '📁'
+            };
+            
+            list.innerHTML = editorRecentFiles.map(f => {
+                const ago = getTimeAgo(f.time);
+                return `
+                    <div class="recent-file-item" onclick="loadRecentFile('${f.url}')">
+                        <span class="recent-file-icon">${icons[f.type] || '📁'}</span>
+                        <span class="recent-file-name">${f.name}</span>
+                        <span class="recent-file-time">${ago}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function getTimeAgo(timestamp) {
+            const seconds = Math.floor((Date.now() - timestamp) / 1000);
+            if (seconds < 60) return 'now';
+            if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago';
+            if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
+            return Math.floor(seconds / 86400) + 'd ago';
+        }
+        
+        function loadRecentFile(url) {
+            document.getElementById('editorFileUrl').value = url;
+            handleEditorUrlInput();
+        }
+        
+        function clearRecentFiles() {
+            editorRecentFiles = [];
+            localStorage.removeItem('editorRecentFiles');
+            renderRecentFiles();
+        }
+        
+        // Initialize recent files on load
+        document.addEventListener('DOMContentLoaded', () => {
+            renderRecentFiles();
+        });
+        
         // Tool button handlers for universal editor
         async function applyTool(toolName) {
             const fileUrl = document.getElementById('editorFileUrl').value.trim();
@@ -8601,7 +11289,7 @@
         
         function previewEditorFile() {
             const url = document.getElementById('editorFileUrl').value.trim();
-            updateCanvasPreview(url);
+            updateABOriginal(url);
         }
         
         async function handleEditorUpload(event) {
@@ -8611,7 +11299,7 @@
         function useLastGenerated() {
             if (lastGeneratedUrl) {
                 document.getElementById('editorFileUrl').value = lastGeneratedUrl;
-                updateCanvasPreview(lastGeneratedUrl);
+                updateABOriginal(lastGeneratedUrl);
             } else {
                 alert('No recently generated files. Generate an image or video first!');
             }
@@ -8973,6 +11661,151 @@
         }
         
         // ═══════════════════════════════════════════════════════════════
+        // PLUGIN MANAGEMENT
+        // ═══════════════════════════════════════════════════════════════
+        
+        let pluginsData = [];
+        
+        async function loadPlugins() {
+            const listEl = document.getElementById('pluginsList');
+            const countEl = document.getElementById('pluginsCount');
+            const loadingEl = document.getElementById('pluginsLoading');
+            
+            try {
+                const response = await fetch('/api/plugins');
+                if (!response.ok) throw new Error('Failed to load plugins');
+                
+                const data = await response.json();
+                pluginsData = data.plugins || [];
+                
+                if (pluginsData.length === 0) {
+                    listEl.innerHTML = `
+                        <div class="plugins-empty">
+                            <div class="plugins-empty-icon">🔌</div>
+                            <div class="plugins-empty-text">No plugins installed yet</div>
+                            <button class="plugins-create-btn" onclick="window.open('/plugins/README.md', '_blank')">
+                                Create Your First Plugin
+                            </button>
+                        </div>
+                    `;
+                    countEl.textContent = '0 plugins';
+                    return;
+                }
+                
+                countEl.textContent = `${pluginsData.length} plugin${pluginsData.length === 1 ? '' : 's'}`;
+                
+                listEl.innerHTML = pluginsData.map(plugin => `
+                    <div class="plugin-item" data-plugin-id="${plugin.id}">
+                        <div class="plugin-info">
+                            <div class="plugin-name">
+                                ${plugin.name || plugin.id}
+                                <span class="plugin-version">v${plugin.version || '1.0.0'}</span>
+                            </div>
+                            <div class="plugin-desc">${plugin.description || 'No description'}</div>
+                        </div>
+                        <div class="plugin-status">
+                            <span class="plugin-status-badge ${plugin.enabled ? 'active' : 'inactive'}">
+                                ${plugin.enabled ? 'Active' : 'Inactive'}
+                            </span>
+                            <div class="plugin-toggle ${plugin.enabled ? 'enabled' : ''}" 
+                                 onclick="togglePlugin('${plugin.id}', ${!plugin.enabled})"
+                                 title="${plugin.enabled ? 'Disable' : 'Enable'} plugin">
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Failed to load plugins:', error);
+                listEl.innerHTML = `
+                    <div class="plugins-empty">
+                        <div class="plugins-empty-icon">⚠️</div>
+                        <div class="plugins-empty-text">Could not load plugins</div>
+                    </div>
+                `;
+                countEl.textContent = 'Error';
+            }
+        }
+        
+        async function togglePlugin(pluginId, enable) {
+            try {
+                const endpoint = enable ? 'enable' : 'disable';
+                const response = await fetch(`/api/plugins/${pluginId}/${endpoint}`, {
+                    method: 'POST'
+                });
+                
+                if (!response.ok) throw new Error('Failed to toggle plugin');
+                
+                // Reload the plugins list
+                await loadPlugins();
+                
+            } catch (error) {
+                console.error('Failed to toggle plugin:', error);
+                alert(`Failed to ${enable ? 'enable' : 'disable'} plugin: ${error.message}`);
+            }
+        }
+        
+        async function discoverPlugins() {
+            try {
+                const btn = document.querySelector('.plugins-discover-btn');
+                btn.textContent = '🔄 Scanning...';
+                btn.disabled = true;
+                
+                const response = await fetch('/api/plugins/discover', {
+                    method: 'POST'
+                });
+                
+                if (!response.ok) throw new Error('Failed to discover plugins');
+                
+                const data = await response.json();
+                
+                // Reload plugins list
+                await loadPlugins();
+                
+                btn.textContent = '🔍 Discover';
+                btn.disabled = false;
+                
+                if (data.discovered?.length > 0) {
+                    alert(`Discovered ${data.discovered.length} new plugin(s)!`);
+                } else {
+                    alert('No new plugins found. Place plugins in the /plugins directory.');
+                }
+                
+            } catch (error) {
+                console.error('Failed to discover plugins:', error);
+                const btn = document.querySelector('.plugins-discover-btn');
+                btn.textContent = '🔍 Discover';
+                btn.disabled = false;
+            }
+        }
+        
+        async function reloadPlugins() {
+            try {
+                const btn = document.querySelector('.plugins-reload-btn');
+                btn.textContent = '⏳ Reloading...';
+                btn.disabled = true;
+                
+                const response = await fetch('/api/plugins/reload', {
+                    method: 'POST'
+                });
+                
+                if (!response.ok) throw new Error('Failed to reload plugins');
+                
+                // Reload plugins list
+                await loadPlugins();
+                
+                btn.textContent = '🔄 Reload All';
+                btn.disabled = false;
+                
+            } catch (error) {
+                console.error('Failed to reload plugins:', error);
+                const btn = document.querySelector('.plugins-reload-btn');
+                btn.textContent = '🔄 Reload All';
+                btn.disabled = false;
+            }
+        }
+        
+        // ═══════════════════════════════════════════════════════════════
         // SEAMLESS INTEGRATION: File Browser ↔ Chat ↔ Editor
         // ═══════════════════════════════════════════════════════════════
         
@@ -9063,12 +11896,34 @@
             showNotification('💬 File reference added to chat', 'success');
         }
         
-        // Download file by ID
+        // Download file by ID - forces actual download
         function downloadFileById(fileId) {
-            const a = document.createElement('a');
-            a.href = `/files/${fileId}/download`;
-            a.download = '';
-            a.click();
+            fetch(`/files/${fileId}/download`)
+                .then(response => {
+                    // Get filename from Content-Disposition header if available
+                    const disposition = response.headers.get('Content-Disposition');
+                    let filename = fileId;
+                    if (disposition && disposition.includes('filename=')) {
+                        const matches = disposition.match(/filename="?([^"]+)"?/);
+                        if (matches) filename = matches[1];
+                    }
+                    return response.blob().then(blob => ({ blob, filename }));
+                })
+                .then(({ blob, filename }) => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    a.remove();
+                    showNotification('⬇️ Download started', 'success');
+                })
+                .catch(err => {
+                    console.error('Download failed:', err);
+                    showNotification('❌ Download failed', 'error');
+                });
         }
         
         // Analyze file
@@ -9299,6 +12154,7 @@
                 document.getElementById('filesSidebar').classList.remove('open');
                 document.getElementById('settingsSidebar').classList.remove('open');
                 document.getElementById('editorSidebar').classList.remove('open');
+                closeKeyboardHelp();
             }
             
             // Ctrl/Cmd + E = Open Editor
@@ -9319,12 +12175,106 @@
                 newChat();
             }
             
+            // Ctrl/Cmd + , = Open Settings
+            if ((e.ctrlKey || e.metaKey) && e.key === ',' && !isInputFocused()) {
+                e.preventDefault();
+                toggleSettings();
+            }
+            
+            // Ctrl/Cmd + Q = Open Queue
+            if ((e.ctrlKey || e.metaKey) && e.key === 'q' && !isInputFocused()) {
+                e.preventDefault();
+                switchPanel('queue');
+            }
+            
+            // Ctrl/Cmd + J = Jump to bottom of chat
+            if ((e.ctrlKey || e.metaKey) && e.key === 'j' && !isInputFocused()) {
+                e.preventDefault();
+                const msgs = document.getElementById('messages');
+                if (msgs) msgs.scrollTop = msgs.scrollHeight;
+            }
+            
+            // ? = Show keyboard shortcuts help
+            if (e.key === '?' && !isInputFocused()) {
+                e.preventDefault();
+                showKeyboardHelp();
+            }
+            
             // / key = Focus input (when not in input)
             if (e.key === '/' && !isInputFocused()) {
                 e.preventDefault();
                 document.getElementById('input').focus();
             }
         });
+        
+        // Keyboard shortcuts help
+        function showKeyboardHelp() {
+            const existing = document.getElementById('keyboardHelpModal');
+            if (existing) { existing.remove(); return; }
+            
+            const modal = document.createElement('div');
+            modal.id = 'keyboardHelpModal';
+            modal.className = 'modal-overlay open';
+            modal.innerHTML = `
+                <div class="modal" style="width: 450px;">
+                    <div class="modal-header">
+                        <h3 class="modal-title">⌨️ Keyboard Shortcuts</h3>
+                        <button class="modal-close" onclick="closeKeyboardHelp()">×</button>
+                    </div>
+                    <div class="modal-body" style="max-height: 400px; overflow-y: auto;">
+                        <div style="display: grid; gap: 12px;">
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+                                <span style="color: var(--text-muted);">Focus input</span>
+                                <kbd style="background: var(--bg-card); padding: 4px 8px; border-radius: 4px; font-size: 12px;">/</kbd>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+                                <span style="color: var(--text-muted);">New chat</span>
+                                <kbd style="background: var(--bg-card); padding: 4px 8px; border-radius: 4px; font-size: 12px;">⌘/Ctrl + N</kbd>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+                                <span style="color: var(--text-muted);">Open Files</span>
+                                <kbd style="background: var(--bg-card); padding: 4px 8px; border-radius: 4px; font-size: 12px;">⌘/Ctrl + B</kbd>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+                                <span style="color: var(--text-muted);">Open Editor</span>
+                                <kbd style="background: var(--bg-card); padding: 4px 8px; border-radius: 4px; font-size: 12px;">⌘/Ctrl + E</kbd>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+                                <span style="color: var(--text-muted);">Open Settings</span>
+                                <kbd style="background: var(--bg-card); padding: 4px 8px; border-radius: 4px; font-size: 12px;">⌘/Ctrl + ,</kbd>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+                                <span style="color: var(--text-muted);">Open Queue</span>
+                                <kbd style="background: var(--bg-card); padding: 4px 8px; border-radius: 4px; font-size: 12px;">⌘/Ctrl + Q</kbd>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+                                <span style="color: var(--text-muted);">Jump to bottom</span>
+                                <kbd style="background: var(--bg-card); padding: 4px 8px; border-radius: 4px; font-size: 12px;">⌘/Ctrl + J</kbd>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+                                <span style="color: var(--text-muted);">Voice input (hold)</span>
+                                <kbd style="background: var(--bg-card); padding: 4px 8px; border-radius: 4px; font-size: 12px;">Space</kbd>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+                                <span style="color: var(--text-muted);">Close panels</span>
+                                <kbd style="background: var(--bg-card); padding: 4px 8px; border-radius: 4px; font-size: 12px;">Esc</kbd>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                                <span style="color: var(--text-muted);">Show this help</span>
+                                <kbd style="background: var(--bg-card); padding: 4px 8px; border-radius: 4px; font-size: 12px;">?</kbd>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            modal.onclick = (e) => { if (e.target === modal) closeKeyboardHelp(); };
+            document.body.appendChild(modal);
+        }
+        
+        function closeKeyboardHelp() {
+            const modal = document.getElementById('keyboardHelpModal');
+            if (modal) modal.remove();
+        }
         
         // Init
         init().then(() => {

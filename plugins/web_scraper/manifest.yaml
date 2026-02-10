@@ -1,0 +1,40 @@
+name: web_scraper
+version: 1.0.0
+description: Scrape web pages, extract text, links, and structured data
+author: Otto Examples
+type: tool
+
+entry_point: main
+
+provides_tools:
+  - scrape_page
+  - extract_links
+  - extract_tables
+  - search_page
+
+settings_schema:
+  user_agent:
+    type: string
+    description: Custom User-Agent header
+    default: "Otto Web Scraper/1.0"
+  
+  timeout:
+    type: integer
+    description: Request timeout in seconds
+    default: 30
+  
+  respect_robots:
+    type: boolean
+    description: Respect robots.txt rules
+    default: true
+
+default_settings:
+  user_agent: "Otto Web Scraper/1.0"
+  timeout: 30
+  respect_robots: true
+
+tags:
+  - web
+  - scraping
+  - data-extraction
+  - automation

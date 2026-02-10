@@ -10,7 +10,7 @@ import json
 from contextlib import asynccontextmanager
 from pathlib import Path
 from datetime import datetime
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Depends
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -42,6 +42,10 @@ from .email import router as email_router
 from .tasks import router as tasks_router
 from .webhooks import router as webhooks_router
 from .scheduler_routes import router as scheduler_router, set_scheduler
+from .browser import router as browser_router
+from .intelligence import router as intelligence_router
+from .creative_platform import router as creative_platform_router
+from .plugins import router as plugins_router
 
 # Load environment variables
 load_dotenv()
@@ -49,6 +53,15 @@ load_dotenv()
 # Setup logging
 setup_logging()
 logger = logging.getLogger(__name__)
+
+# Import enhanced Printify router (after logger is defined)
+try:
+    from ..core.printify_enhanced import create_printify_router
+    printify_enhanced_router = create_printify_router()
+    logger.info("✅ Enhanced Printify router loaded")
+except Exception as e:
+    printify_enhanced_router = None
+    logger.warning(f"Enhanced Printify router not available: {e}")
 
 # Global orchestrator instance
 orchestrator: Optional[AgentOrchestrator] = None
@@ -131,6 +144,29 @@ async def lifespan(app: FastAPI):
     logger.info("✨ Autonomous Business Operations: ACTIVE")
     logger.info(f"✨ Skills Available: {len(skills_registry.list_skills())}")
     logger.info(f"✨ Projects: {len(project_manager.list_projects())}")
+    
+    # Initialize Plugin System
+    logger.info("Initializing Plugin System...")
+    try:
+        from ..core.plugin_system import init_plugins
+        plugin_manager = await init_plugins()
+        active_plugins = len(plugin_manager.get_active_plugins())
+        logger.info(f"✨ Plugin System: {active_plugins} plugins active")
+    except Exception as e:
+        logger.warning(f"Plugin system initialization skipped: {e}")
+    
+    # Initialize Creative Platform
+    logger.info("Initializing Creative Platform...")
+    try:
+        from ..core.creative_platform import init_creative_platform
+        creative_platform = init_creative_platform(
+            tool_registry=orchestrator.tool_registry,
+            execution_agent=None  # Will use direct tool calls
+        )
+        logger.info("✨ Creative Platform: ACTIVE")
+    except Exception as e:
+        logger.warning(f"Creative Platform initialization skipped: {e}")
+    
     yield
     
     # Cleanup
@@ -165,6 +201,14 @@ app.include_router(email_router)
 app.include_router(tasks_router)
 app.include_router(webhooks_router)
 app.include_router(scheduler_router)
+app.include_router(browser_router)
+app.include_router(intelligence_router)
+app.include_router(creative_platform_router)
+app.include_router(plugins_router)
+
+# Include enhanced Printify router if available
+if printify_enhanced_router:
+    app.include_router(printify_enhanced_router)
 
 # Add CORS middleware
 app.add_middleware(
@@ -190,6 +234,106 @@ async def upload_file_root(file: UploadFile = File(...)):
     """
     from .files import upload_file
     return await upload_file(file=file)
+
+
+# =====================
+# Task Queue Frontend Compatibility Endpoints
+# =====================
+# The frontend uses /task_queue but the backend API is at /api/tasks.
+# These endpoints bridge the gap so the sidebar queue works.
+
+import json as _json
+from datetime import datetime as _dt
+
+@app.get("/task_queue")
+async def get_task_queue_compat():
+    """Compatibility endpoint: list tasks for sidebar queue."""
+    try:
+        from src.tools.task_queue_engine import get_task_queue_engine
+        queue = get_task_queue_engine()
+        tasks = queue.list_tasks(limit=100)
+        # Convert Task objects to frontend format
+        frontend_tasks = []
+        for t in tasks:
+            td = t.to_dict() if hasattr(t, 'to_dict') else t
+            frontend_tasks.append({
+                "id": td.get("id", ""),
+                "title": (td.get("description") or "")[:80],
+                "instruction": td.get("description", ""),
+                "type": "general",
+                "status": _map_backend_status(td.get("status", "PENDING")),
+                "created": td.get("created_at", ""),
+                "priority": td.get("priority", "NORMAL").lower() if isinstance(td.get("priority"), str) else "normal",
+                "scheduledDate": td.get("scheduled_for"),
+            })
+        return {"tasks": frontend_tasks}
+    except Exception as e:
+        logger.warning(f"Task queue compat GET failed: {e}")
+        return {"tasks": []}
+
+@app.post("/task_queue")
+async def add_task_queue_compat(request: Request):
+    """Compatibility endpoint: add task from sidebar queue."""
+    try:
+        body = await request.json()
+        from src.tools.task_queue_engine import get_task_queue_engine, TaskPriority
+        queue = get_task_queue_engine()
+        
+        description = body.get("instruction") or body.get("title") or body.get("description", "")
+        priority_str = (body.get("priority") or "normal").upper()
+        scheduled_for_str = body.get("scheduledDate") or body.get("scheduled_for")
+        
+        # Convert priority string to enum
+        try:
+            priority = TaskPriority[priority_str]
+        except (KeyError, ValueError):
+            priority = TaskPriority.NORMAL
+        
+        # Convert scheduled_for string to datetime
+        scheduled_for = None
+        if scheduled_for_str:
+            try:
+                from datetime import datetime as _datetime
+                scheduled_for = _datetime.fromisoformat(scheduled_for_str.replace("Z", "+00:00"))
+            except Exception:
+                pass
+        
+        task = queue.create_task(
+            description=description,
+            priority=priority,
+            scheduled_for=scheduled_for,
+        )
+        return {"success": True, "task_id": task.id if hasattr(task, 'id') else str(task)}
+    except Exception as e:
+        logger.warning(f"Task queue compat POST failed: {e}")
+        return {"success": True}  # Don't break frontend
+
+@app.delete("/task_queue/{task_id}")
+async def delete_task_queue_compat(task_id: str):
+    """Compatibility endpoint: delete task from sidebar queue."""
+    try:
+        from src.tools.task_queue_engine import get_task_queue_engine
+        queue = get_task_queue_engine()
+        queue.delete_task(task_id)
+        return {"success": True}
+    except Exception as e:
+        logger.warning(f"Task queue compat DELETE failed: {e}")
+        return {"success": True}
+
+def _map_backend_status(status: str) -> str:
+    """Map backend task status to frontend format."""
+    mapping = {
+        "PENDING": "queued",
+        "SCHEDULED": "scheduled",
+        "PLANNING": "queued",
+        "READY": "queued",
+        "RUNNING": "running",
+        "PAUSED": "queued",
+        "COMPLETED": "completed",
+        "FAILED": "failed",
+        "CANCELLED": "cancelled",
+    }
+    return mapping.get(str(status).upper(), "queued")
 
 
 # Pydantic models
@@ -244,7 +388,7 @@ def is_first_run() -> bool:
 @app.get("/", response_class=HTMLResponse)
 async def root():
     """Serve the web chat interface, or redirect to onboarding if first run."""
-    from fastapi.responses import RedirectResponse
+    from fastapi.responses import RedirectResponse, Response
     
     # Check if first run
     if is_first_run():
@@ -252,7 +396,16 @@ async def root():
     
     web_path = Path(__file__).parent.parent / "web" / "chat.html"
     if web_path.exists():
-        return web_path.read_text()
+        content = web_path.read_text()
+        return Response(
+            content=content,
+            media_type="text/html",
+            headers={
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0"
+            }
+        )
     return """
     <html>
         <body>
@@ -266,9 +419,18 @@ async def root():
 
 def serve_html_page(filename: str) -> str:
     """Generic HTML page server."""
+    from fastapi.responses import Response
     web_path = Path(__file__).parent.parent / "web" / filename
     if web_path.exists():
-        return web_path.read_text()
+        return Response(
+            content=web_path.read_text(),
+            media_type="text/html",
+            headers={
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0"
+            }
+        )
     return f"<html><body><h1>{filename} not found</h1></body></html>"
 
 
