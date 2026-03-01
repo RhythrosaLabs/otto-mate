@@ -5,6 +5,13 @@ Super Planning Agent - Hyper-Intelligent Autonomous Task Parsing & Delegation
 An ultra-intelligent agent that automatically parses complex requests,
 breaks them into optimal subtasks, identifies parallelizable work,
 and delegates to the right tools with zero user intervention.
+
+ENHANCED with Platform Intelligence from research on:
+- n8n, Zapier (workflow automation patterns)
+- Canva, Firefly, Stability AI (creative tool patterns)
+- Quivr, CrewAI (multi-agent patterns)
+- browser-use, Claude Computer Use (browser automation)
+- Replicate (model selection intelligence)
 """
 
 import logging
@@ -15,6 +22,131 @@ from anthropic import Anthropic
 
 logger = logging.getLogger(__name__)
 
+# Import platform intelligence for enhanced planning
+try:
+    from .platform_intelligence import get_platform_intelligence, WORKFLOW_TEMPLATES as PLATFORM_WORKFLOWS
+    PLATFORM_INTEL_AVAILABLE = True
+except ImportError:
+    PLATFORM_INTEL_AVAILABLE = False
+    PLATFORM_WORKFLOWS = {}
+
+
+# ============================================================================
+# WORKFLOW TYPE DETECTION - Based on printify_clean/orchestrator.py
+# ============================================================================
+
+WORKFLOW_TYPES = {
+    "full_campaign_with_video": {
+        "keywords": ["campaign", "video", "commercial", "promo", "advertisement"],
+        "requires_product": True,
+        "steps_template": ["design", "description", "video_script", "video", "social_posts", "summary"]
+    },
+    "product_campaign": {
+        "keywords": ["t-shirt", "tshirt", "hoodie", "mug", "poster", "product", "merch", "merchandise"],
+        "requires_product": True,
+        "steps_template": ["design", "product_copy", "tags", "marketing_copy"]
+    },
+    "video_production": {
+        "keywords": ["video", "commercial", "animation", "clip", "promo video"],
+        "requires_product": False,
+        "steps_template": ["video_script", "thumbnail", "video"]
+    },
+    "content_creation": {
+        "keywords": ["blog", "article", "content", "write", "copy", "post", "email", "newsletter"],
+        "requires_product": False,
+        "steps_template": ["research", "outline", "full_content", "header_image"]
+    },
+    "social_media": {
+        "keywords": ["social", "twitter", "instagram", "facebook", "tiktok", "linkedin", "post"],
+        "requires_product": False,
+        "steps_template": ["social_posts", "hashtags", "schedule"]
+    },
+    "research": {
+        "keywords": ["research", "analyze", "trend", "market", "competitor", "find", "search"],
+        "requires_product": False,
+        "steps_template": ["research", "summarize", "report"]
+    },
+    "image_creation": {
+        "keywords": ["image", "design", "illustration", "logo", "artwork", "generate", "create"],
+        "requires_product": False,
+        "steps_template": ["image_generation"]
+    }
+}
+
+# ============================================================================
+# INTENT PATTERNS - Based on printify_clean/ultra_smart_executor.py
+# ============================================================================
+
+INTENT_PATTERNS = {
+    # Image generation intents
+    r"(generat|creat|mak|produc|render).*(image|picture|photo|art|illustration|design)": "image_generation",
+    r"(text|prompt)\s*to\s*(image|picture)": "image_generation",
+    r"(draw|paint|design|visualize)": "image_generation",
+    
+    # Image editing intents
+    r"(edit|modif|chang|transform|alter|adjust).*(image|photo|picture)": "image_editing",
+    r"(style|filter|effect|enhance)": "image_editing",
+    r"(remove|delete|erase).*(background|object|element)": "background_removal",
+    r"(inpaint|fill|replace).*(area|region|object)": "inpainting",
+    
+    # Upscaling intents
+    r"(upscal|enhanc|improv|increas).*(quality|resolution|size|detail)": "upscaling",
+    r"(super|hyper).*(resolution)": "upscaling",
+    r"(2x|4x|8x)": "upscaling",
+    
+    # Video intents
+    r"(generat|creat|mak|produc).*(video|animation|clip|motion)": "video_generation",
+    r"(animat|move|motion)": "video_generation",
+    r"(text|prompt)\s*to\s*video": "video_generation",
+    
+    # Audio intents
+    r"(generat|creat|mak|produc).*(music|audio|sound|track)": "music_generation",
+    r"(speak|voice|narrat|tts|text.to.speech)": "speech_generation",
+    
+    # Content intents
+    r"(writ|creat|generat).*(blog|article|post|content|email|newsletter)": "content_creation",
+    r"(writ|creat|generat).*(script|copy|description)": "content_creation",
+    
+    # Product intents
+    r"(sell|list|publish).*(product|shirt|mug|hoodie)": "product_creation",
+    r"(creat|mak).*(product|merchandise|merch)": "product_creation",
+    
+    # Social media intents
+    r"(post|share|publish).*(twitter|x\.com|instagram|facebook|linkedin|tiktok)": "social_posting",
+    r"(social|media|marketing)": "social_posting",
+    
+    # Research intents
+    r"(research|find|search|look|discover)": "research",
+    r"(analyz|investigat|stud)": "research",
+}
+
+# ============================================================================
+# MODEL CAPABILITY REGISTRY - Based on printify_clean patterns
+# ============================================================================
+
+MODEL_CAPABILITIES = {
+    # Image Generation Models
+    "flux-schnell": {"capabilities": ["text2img", "fast", "artistic"], "quality": 0.85, "speed": 0.95},
+    "flux-dev": {"capabilities": ["text2img", "high_quality", "artistic"], "quality": 0.95, "speed": 0.6},
+    "flux-pro": {"capabilities": ["text2img", "ultra_quality", "commercial"], "quality": 0.98, "speed": 0.5},
+    "ideogram": {"capabilities": ["text2img", "text_render", "logo"], "quality": 0.92, "speed": 0.7},
+    "sdxl": {"capabilities": ["text2img", "versatile", "controlnet"], "quality": 0.90, "speed": 0.7},
+    
+    # Video Generation Models
+    "kling": {"capabilities": ["text2video", "img2video", "realistic"], "quality": 0.92, "speed": 0.25},
+    "luma": {"capabilities": ["text2video", "img2video", "cinematic"], "quality": 0.88, "speed": 0.4},
+    "minimax": {"capabilities": ["text2video", "img2video", "high_quality"], "quality": 0.90, "speed": 0.3},
+    "ken_burns": {"capabilities": ["img2video", "local", "free"], "quality": 0.80, "speed": 1.0},
+    
+    # Audio/Music Models
+    "musicgen": {"capabilities": ["text2music", "instrumental"], "quality": 0.90, "speed": 0.6},
+    "minimax-speech": {"capabilities": ["tts", "voice_clone"], "quality": 0.92, "speed": 0.75},
+    
+    # Image Editing Models
+    "rembg": {"capabilities": ["background_removal", "fast"], "quality": 0.90, "speed": 0.95},
+    "real-esrgan": {"capabilities": ["upscale", "enhance"], "quality": 0.92, "speed": 0.85},
+}
+
 
 class SuperPlanningAgent:
     """
@@ -24,6 +156,8 @@ class SuperPlanningAgent:
     - Intelligent task delegation (matches tasks to optimal tools)
     - Context-aware defaults (uses previous outputs automatically)
     - Failure recovery with automatic retries and alternatives
+    - Workflow type detection (from printify_clean orchestrator)
+    - Intent pattern matching (from printify_clean ultra_smart_executor)
     """
     
     def __init__(self, anthropic_client: Anthropic):
@@ -118,6 +252,21 @@ Example: "remove the background from this" → edit_image_with_ai with instructi
 - "For each design" = Loop over previous step's array output
 
 🚀 DELEGATION PRIORITY (use FIRST available):
+0. SPECIALIZED AGENTS - For complex/multi-domain tasks, delegate to specialist agents:
+   - delegate_to_specialist with preferred_specialist for domain-specific work
+   - Content Writer → articles, blogs, descriptions, documentation
+   - Copywriter → headlines, ads, marketing copy, CTAs
+   - Social Media Manager → social posts, engagement, content calendars
+   - Image Creator → AI image generation, photo editing
+   - Video Producer → AI video creation, animation
+   - Code Developer → programming, scripts, automation
+   - Data Analyst → analysis, insights, reporting
+   - Market Researcher → research, competitor analysis
+   - E-commerce Expert → product listings, store management
+   - Browser Operator → web scraping, form filling, automation
+   - Project Manager → planning, coordination, timelines
+   - Automation Engineer → workflows, integrations
+   - run_collaborative_task when multiple domains needed
 1. SPECIALIZED TOOLS - Use dedicated tools when they exist
    - generate_image / generate_tshirt_design for images
    - printify_create_* for products
@@ -128,6 +277,14 @@ Example: "remove the background from this" → edit_image_with_ai with instructi
    - search_web / browse_url for research
 2. AI MODELS - Use replicate_smart_generate for specialized AI tasks
 3. CODE - Use execute_python ONLY for computation/data processing
+
+🤖 AGENT DELEGATION RULES:
+- Complex research + create tasks → Use delegate_to_specialist or run_collaborative_task
+- "Write me a detailed article about..." → delegate_to_specialist with content_writer
+- "Create marketing copy for..." → delegate_to_specialist with copywriter
+- "Analyze this data and give insights" → delegate_to_specialist with data_analyst
+- "Build a complete marketing campaign" → run_collaborative_task (uses multiple specialists)
+- Simple single-tool tasks → Use the direct tool (don't over-delegate)
 
 🎬 VIDEO WORKFLOW - For product videos:
 When user asks for "video ad", "promo video", "product video", "marketing video":
@@ -140,6 +297,38 @@ CRITICAL VIDEO CHAIN:
 printify_create_* → printify_get_mockup_urls → create_product_promo_video
 The mockup URL from step 2 MUST be passed as image_url to step 3!
 
+� BROWSER AUTOMATION WORKFLOW:
+When user explicitly asks to use browser tools or mentions browser-related tasks:
+- "Use browser_extract_leads" → browser_extract_leads tool
+- "Use browser_monitor_price" → browser_monitor_price tool
+- "Use browser_analyze_competitor" → browser_analyze_competitor tool
+- "Use browser_find_influencers" → browser_find_influencers tool (ALWAYS include niche param!)
+- "Use browser_fill_form" → browser_fill_form tool
+- "Use browser_scrape" or "browser_extract_data" → browser_extract_data tool
+
+These browser_* tools launch a REAL BROWSER with AI automation to:
+- Extract leads and contacts from any website
+- Monitor prices on e-commerce sites
+- Analyze competitor websites deeply
+- Find influencers on social platforms
+- Fill out forms automatically
+- Scrape structured data from websites
+- Take screenshots of pages
+
+🎯 BROWSER TOOL PRIORITY:
+- When user says "Use browser_*" → Use that EXACT browser tool (not search_web or browse_url)
+- browser_extract_leads = AI browser to collect contact info from a page
+- browser_monitor_price = AI browser to track prices on commerce sites
+- browser_analyze_competitor = AI browser for deep competitor analysis with interactions
+- browser_find_influencers = AI browser to find influencers on social platforms
+- These are DIFFERENT from search_web (just web search) and browse_url (just HTML fetch)
+
+⚠️ BROWSER TOOL REQUIRED PARAMETERS:
+- browser_find_influencers: ALWAYS set niche (e.g., "fitness", "beauty", "tech", "gaming") - default to "lifestyle" if unclear
+- browser_find_influencers: ALWAYS set platform (e.g., "tiktok", "instagram", "youtube") - infer from user request
+- browser_extract_data: ALWAYS set data_description (what to extract from the page)
+- If user doesn't specify a niche for influencer search, ASK them or default to "lifestyle"
+
 🎯 SMART PARAMETER INFERENCE:
 When user is vague, infer optimal parameters:
 - "nice design" → professional, clean, modern aesthetic
@@ -148,6 +337,28 @@ When user is vague, infer optimal parameters:
 - Price not specified → use market-appropriate defaults ($24.99 shirts, $19.99 mugs, $49.99 wall art)
 - Title not specified → generate from design description
 - Multiple items → generate variations, not duplicates
+- "find TikTok influencers" → platform="tiktok", infer niche from context or use "lifestyle"
+- "search Reddit for X" → url="https://reddit.com", data_description="subreddits, posts about X"
+
+📝 CONTENT CREATION WORKFLOWS - ALWAYS INCLUDE IMAGES:
+When user requests blog posts, emails, or articles, ALWAYS generate accompanying images:
+
+"Write a blog post about sustainable fashion"
+→ Steps: 1) Generate 2-3 header/illustration images, 2) Write blog content with image placeholders, 3) Combine into final output
+→ CRITICAL: NEVER write content without also generating relevant images
+
+"Create an email campaign for our new product"
+→ Steps: 1) Generate product banner image, 2) Write email copy, 3) Include image in email template
+→ Images should match brand and content theme
+
+"Write marketing content for XYZ"
+→ Steps: 1) Research topic briefly, 2) Generate header image, 3) Write content, 4) Return content + image
+→ Every piece of marketing content needs visual assets
+
+Image generation prompts for content should be descriptive:
+- Blog header: "Professional blog header illustration about [topic], clean modern design, no text"
+- Email banner: "Marketing email banner for [product/topic], vibrant, commercial style"
+- Social: "Social media post image for [topic], engaging, Instagram-style"
 
 ⚡ PARALLEL EXECUTION DETECTION:
 Identify steps that can run simultaneously:
@@ -183,6 +394,15 @@ Identify steps that can run simultaneously:
 → PARSE: 1 logo + N products + 1 marketing content
 → PLAN: Step 0: generate_image (logo), Steps 1-3: printify products (PARALLEL), Step 4: generate content (can parallel with products)
 
+"Write a blog post about AI in marketing"
+→ PARSE: 2-3 illustration images + 1 blog post
+→ PLAN: Step 0: generate_image (header image), Step 1: generate_image (mid-article illustration), Step 2: delegate_to_specialist (content_writer for blog), Step 3: combine content + images
+→ CRITICAL: Always generate images BEFORE or PARALLEL with writing, then combine
+
+"Create an email about our summer sale"
+→ PARSE: 1 banner image + 1 email copy
+→ PLAN: Step 0: generate_image (colorful summer sale banner), Step 1: generate_email_copy (include image reference)
+
 🚫 ABSOLUTELY FORBIDDEN:
 - NEVER ask permission, confirmation, or "would you like me to...?"
 - NEVER ask "should I proceed?" or present options for user to choose
@@ -193,6 +413,27 @@ Identify steps that can run simultaneously:
 - NEVER say "I can do X, Y, or Z - which would you prefer?"
 - NEVER wait for human input when you can make a smart decision
 - NEVER stop after creating a product if user asked for a video too
+- NEVER create Python files for scheduling/queue/calendar management — use queue_task tool
+
+📋 QUEUE, SCHEDULE & CALENDAR SYSTEM:
+When user says "add to queue", "schedule", "add to my calendar", "queue these up", "add to schedule":
+→ Use the queue_task tool for EACH item to add
+→ queue_task parameters:
+   - description: The task instruction (what Otto should do when it runs)
+   - priority: "low", "normal", "high", or "urgent"
+   - schedule_for: ISO datetime string (e.g. "2026-02-08T09:00:00") for scheduled execution
+   - recurring: true/false for repeating tasks
+   - recurrence_pattern: "daily", "weekly", or "monthly"
+
+QUEUE EXAMPLES:
+"Add these 14 posts to my schedule" → 14x queue_task calls, each with the post content and scheduled date/time
+"Queue up 3 product designs" → 3x queue_task calls with product descriptions
+"Schedule this for tomorrow at 9am" → queue_task with schedule_for="YYYY-MM-DDT09:00:00"
+"Add to my calendar for next Monday" → queue_task with schedule_for set to next Monday
+
+CRITICAL: The queue_task tool adds items to the user's ACTUAL app queue/schedule sidebar.
+Do NOT create Python files, modules, or custom code for task management.
+Do NOT just describe what you would queue — actually CALL queue_task for each item.
 
 ✅ ALWAYS (MANDATORY):
 - Parse the FULL scope of the request and EXECUTE it completely
@@ -234,18 +475,88 @@ Identify steps that can run simultaneously:
     async def create_plan(self, context: Dict[str, Any]) -> Dict[str, Any]:
         """
         Create a hyper-intelligent execution plan with automatic task parsing.
+        ENHANCED with Platform Intelligence for smarter planning.
         """
         message = context["message"]
         available_tools = context.get("available_tools", [])
         memories = context.get("memories", [])
         enhanced_context = context.get("enhanced_context", "")  # From Intelligence System
         task_suggestions = context.get("task_suggestions", [])  # Past learnings
+        request_type = context.get("request_type", {})  # Action detection from orchestrator
+        platform_intelligence = context.get("platform_intelligence", {})  # NEW: Platform context
         
         # Extract recent context for better understanding
         recent_context = self._extract_recent_context(memories)
         
         # Pre-analyze the request for complexity
         complexity_analysis = self._analyze_request_complexity(message)
+        
+        # Detect workflow type and intent patterns
+        workflow_type = self._detect_workflow_type(message)
+        intent_patterns = self._analyze_intent_patterns(message)
+        workflow_template = self._get_workflow_steps_template(workflow_type)
+        
+        # ========================================
+        # PLATFORM INTELLIGENCE ENHANCED CONTEXT
+        # ========================================
+        platform_context = ""
+        if platform_intelligence:
+            pi = platform_intelligence
+            platform_context = "\n=== PLATFORM INTELLIGENCE ===\n"
+            
+            # Primary intent detection
+            if pi.get("primary_intent"):
+                platform_context += f"Primary Intent: {pi['primary_intent']} (confidence: {pi.get('confidence', 0):.0%})\n"
+            
+            # All detected intents
+            all_intents = pi.get("all_intents", [])
+            if all_intents:
+                intent_str = ", ".join([f"{i[0]}({i[1]:.0%})" for i in all_intents[:3]])
+                platform_context += f"All Intents: {intent_str}\n"
+            
+            # Recommended model
+            if pi.get("recommended_model"):
+                platform_context += f"Recommended Model: {pi['recommended_model']} (for {pi.get('model_category', 'unknown')})\n"
+            
+            # Matched workflow template
+            if pi.get("workflow_template"):
+                wf = pi["workflow_template"]
+                platform_context += f"Workflow Template: {wf.get('name', 'unknown')}\n"
+                platform_context += f"  Description: {wf.get('description', '')}\n"
+                steps = wf.get("steps", [])
+                if steps:
+                    step_names = [s.get("action", "step") for s in steps[:5]]
+                    platform_context += f"  Suggested Flow: {' → '.join(step_names)}\n"
+            
+            # Creative tool match
+            if pi.get("creative_tool"):
+                ct = pi["creative_tool"]
+                platform_context += f"Creative Tool Match: {ct.get('name', 'unknown')} → use {ct.get('tool', 'unknown')}\n"
+            
+            # Agent persona suggestion
+            if pi.get("agent_persona"):
+                ap = pi["agent_persona"]
+                platform_context += f"Agent Persona: {ap.get('name', 'Otto')} the {ap.get('role', 'Assistant')}\n"
+            
+            # Multi-step indicator
+            if pi.get("is_multi_step"):
+                platform_context += "Multi-step Workflow: YES - plan multiple sequential steps\n"
+        
+        # Build workflow context for the LLM
+        workflow_context = f"\n=== WORKFLOW ANALYSIS ===\n"
+        workflow_context += f"Detected Workflow Type: {workflow_type}\n"
+        workflow_context += f"Intent Patterns: {', '.join([k for k, v in intent_patterns.items() if v])}\n"
+        if workflow_template:
+            # Handle both dict and string templates
+            steps = []
+            for step in workflow_template:
+                if isinstance(step, dict):
+                    steps.append(f"{step.get('agent', 'agent')}:{step.get('action', 'action')}")
+                else:
+                    steps.append(str(step))
+            workflow_context += f"Suggested Steps Template: {' → '.join(steps)}\n"
+        if request_type:
+            workflow_context += f"Action Type: {request_type.get('action_type', 'general')}\n"
         
         # Check if we have relevant Skills
         skill_context = ""
@@ -277,6 +588,8 @@ User Message: {message}
 
 === PRE-ANALYSIS ===
 {complexity_analysis}
+{workflow_context}
+{platform_context}
 
 === CONTEXT FROM CONVERSATION ===
 {recent_context}
@@ -673,6 +986,9 @@ Return ONLY valid JSON."""
             # Validate and enhance plan
             plan = self._validate_plan(plan, available_tools)
             
+            # Ensure content creation plans always include images (printify_clean pattern)
+            plan = self._ensure_content_has_images(plan, message)
+            
             # Proactively expand plan with helpful additional tasks
             plan = self._expand_plan_proactively(plan, message)
             
@@ -741,6 +1057,134 @@ Return ONLY valid JSON."""
             analysis.append("CONTENT CREATION DETECTED - will generate text content")
         
         return "\n".join(analysis) if analysis else "Simple single-task request"
+    
+    def _detect_workflow_type(self, message: str) -> str:
+        """
+        Detect workflow type from message using keyword matching.
+        Based on printify_clean/modules/orchestrator.py pattern.
+        
+        Returns: workflow type string (e.g., 'product_campaign', 'content_creation')
+        """
+        message_lower = message.lower()
+        
+        # Check for combinations first (more specific)
+        if any(kw in message_lower for kw in ["campaign", "t-shirt", "tshirt", "hoodie", "product"]):
+            if any(kw in message_lower for kw in ["video", "commercial", "promo"]):
+                return "full_campaign_with_video"
+            return "product_campaign"
+        
+        # Video workflow
+        if any(kw in message_lower for kw in ["video", "commercial", "animation", "clip"]):
+            return "video_production"
+        
+        # Content workflow (blog, email, etc.) - ALWAYS with images
+        if any(kw in message_lower for kw in ["blog", "article", "content", "write", "copy", "email", "newsletter"]):
+            return "content_creation"
+        
+        # Social media workflow
+        if any(kw in message_lower for kw in ["social", "post", "twitter", "instagram", "facebook", "tiktok", "linkedin"]):
+            return "social_media"
+        
+        # Research workflow
+        if any(kw in message_lower for kw in ["research", "analyze", "trend", "market", "competitor", "find out"]):
+            return "research"
+        
+        # Image creation workflow
+        if any(kw in message_lower for kw in ["image", "design", "illustration", "logo", "artwork", "generate", "create"]):
+            return "image_creation"
+        
+        return "general"
+    
+    def _analyze_intent_patterns(self, message: str) -> Dict[str, Any]:
+        """
+        Analyze message using intent patterns from printify_clean/ultra_smart_executor.py.
+        
+        Returns: dict with detected intents and their strengths
+        """
+        message_lower = message.lower()
+        detected_intents = {}
+        
+        for pattern, intent_type in INTENT_PATTERNS.items():
+            if re.search(pattern, message_lower, re.IGNORECASE):
+                if intent_type not in detected_intents:
+                    detected_intents[intent_type] = 0
+                detected_intents[intent_type] += 1
+        
+        # Sort by frequency
+        sorted_intents = sorted(detected_intents.items(), key=lambda x: x[1], reverse=True)
+        
+        return {
+            "primary_intent": sorted_intents[0][0] if sorted_intents else "general",
+            "all_intents": [i[0] for i in sorted_intents],
+            "intent_strengths": dict(sorted_intents)
+        }
+    
+    def _get_workflow_steps_template(self, workflow_type: str) -> List[Dict[str, Any]]:
+        """
+        Get the recommended step template for a workflow type.
+        Based on printify_clean/modules/orchestrator.py patterns.
+        """
+        templates = {
+            "full_campaign_with_video": [
+                {"agent": "designer", "action": "generate_design", "critical": True},
+                {"agent": "writer", "action": "product_description", "critical": True},
+                {"agent": "writer", "action": "video_script", "critical": True},
+                {"agent": "video", "action": "generate_promo_video", "critical": True},
+                {"agent": "marketer", "action": "social_posts", "critical": False},
+                {"agent": "analyst", "action": "summarize", "critical": False},
+            ],
+            "product_campaign": [
+                {"agent": "designer", "action": "generate_design", "critical": True},
+                {"agent": "writer", "action": "product_description", "critical": True},
+                {"agent": "writer", "action": "generate_tags", "critical": False},
+                {"agent": "marketer", "action": "marketing_copy", "critical": False},
+            ],
+            "video_production": [
+                {"agent": "writer", "action": "video_script", "critical": True},
+                {"agent": "designer", "action": "thumbnail", "critical": False},
+                {"agent": "video", "action": "generate_video", "critical": True},
+            ],
+            "content_creation": [
+                {"agent": "designer", "action": "header_image", "critical": True},  # ALWAYS generate images for content
+                {"agent": "researcher", "action": "research", "critical": False},
+                {"agent": "writer", "action": "outline", "critical": False},
+                {"agent": "writer", "action": "full_content", "critical": True},
+            ],
+            "social_media": [
+                {"agent": "designer", "action": "social_graphics", "critical": False},
+                {"agent": "marketer", "action": "social_posts", "critical": True},
+                {"agent": "scheduler", "action": "schedule_posts", "critical": False},
+            ],
+            "research": [
+                {"agent": "researcher", "action": "research", "critical": True},
+                {"agent": "analyst", "action": "summarize", "critical": True},
+            ],
+            "image_creation": [
+                {"agent": "designer", "action": "generate_design", "critical": True},
+            ],
+            "general": [
+                {"agent": "assistant", "action": "process_request", "critical": True},
+            ]
+        }
+        return templates.get(workflow_type, templates["general"])
+    
+    def _select_best_model(self, capability_needed: str) -> str:
+        """
+        Select the best model for a capability based on quality/speed tradeoffs.
+        Based on printify_clean/ultra_smart_executor.py MODEL_REGISTRY.
+        """
+        best_model = None
+        best_score = 0
+        
+        for model_name, model_info in MODEL_CAPABILITIES.items():
+            if capability_needed in model_info.get("capabilities", []):
+                # Score = quality * 0.7 + speed * 0.3 (favor quality)
+                score = model_info.get("quality", 0.5) * 0.7 + model_info.get("speed", 0.5) * 0.3
+                if score > best_score:
+                    best_score = score
+                    best_model = model_name
+        
+        return best_model or "flux-schnell"  # Default fallback
     
     async def adapt_plan(
         self,
@@ -1056,6 +1500,97 @@ Return valid JSON with same format as original plan."""
         
         return " | ".join(context_parts) if context_parts else "No specific context."
 
+    def _ensure_content_has_images(self, plan: Dict[str, Any], message: str) -> Dict[str, Any]:
+        """
+        Ensure content creation plans ALWAYS include image generation.
+        Based on printify_clean pattern: blogs/emails/articles always get images.
+        """
+        if not plan.get("steps"):
+            return plan
+        
+        steps = plan.get("steps", [])
+        
+        # Content creation tools that should have images
+        content_tools = ["write_blog", "create_blog", "write_email", "create_email", 
+                         "write_article", "create_article", "write_newsletter",
+                         "generate_blog", "generate_email", "generate_newsletter",
+                         "write_content", "create_content"]
+        
+        # Image generation tools
+        image_tools = ["generate_image", "generate_tshirt_design", "create_image",
+                       "generate_design", "dall_e", "midjourney", "ideogram"]
+        
+        # Check if plan has content creation but no images
+        has_content_creation = any(
+            step.get("tool", "") in content_tools or
+            any(ct in step.get("tool", "").lower() for ct in ["blog", "email", "article", "newsletter", "content"])
+            for step in steps
+        )
+        
+        has_image_generation = any(
+            step.get("tool", "") in image_tools or
+            any(it in step.get("tool", "").lower() for it in ["image", "design", "photo", "picture"])
+            for step in steps
+        )
+        
+        # If creating content without images, inject image generation step
+        if has_content_creation and not has_image_generation:
+            # Extract topic from message or plan intent
+            topic = plan.get("intent", message)[:100]
+            
+            # Find the content creation step to get its step_id
+            content_step_id = None
+            for step in steps:
+                tool = step.get("tool", "").lower()
+                if any(ct in tool for ct in ["blog", "email", "article", "newsletter", "content"]):
+                    content_step_id = step.get("step_id", 0)
+                    break
+            
+            # Create image generation step to go BEFORE content
+            image_step = {
+                "step_id": 0,
+                "tool": "generate_image",
+                "description": "Generate professional header image for content",
+                "parameters": {
+                    "prompt": f"Professional, clean, modern illustration for: {topic}. High quality, suitable for blog header or email banner. No text overlay, vibrant colors, professional design.",
+                    "aspect_ratio": "16:9",
+                    "style": "professional"
+                },
+                "depends_on": [],
+                "can_parallel": True,
+                "auto_injected": True
+            }
+            
+            # Renumber all existing steps
+            for step in steps:
+                step["step_id"] = step.get("step_id", 0) + 1
+                # Update depends_on references
+                if step.get("depends_on"):
+                    step["depends_on"] = [d + 1 for d in step["depends_on"]]
+            
+            # Add image step reference to content steps
+            for step in steps:
+                tool = step.get("tool", "").lower()
+                if any(ct in tool for ct in ["blog", "email", "article", "newsletter", "content"]):
+                    # Add image reference to parameters
+                    if "parameters" not in step:
+                        step["parameters"] = {}
+                    step["parameters"]["header_image"] = "{{step_0_output}}"
+                    step["depends_on"] = [0] + step.get("depends_on", [])
+            
+            # Insert image step at beginning
+            steps.insert(0, image_step)
+            plan["steps"] = steps
+            
+            # Add note about auto-injected images
+            if "proactive_additions" not in plan:
+                plan["proactive_additions"] = []
+            plan["proactive_additions"].append("Auto-generating professional image for your content")
+            
+            logger.info("Auto-injected image generation step for content creation")
+        
+        return plan
+    
     def _expand_plan_proactively(self, plan: Dict[str, Any], message: str) -> Dict[str, Any]:
         """
         Proactively expand the plan with helpful additional tasks.

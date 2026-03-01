@@ -17,46 +17,92 @@ logger = logging.getLogger(__name__)
 class ImageGenerationTools(ToolBase):
     """AI image generation tools using Replicate."""
     
+    # Fallback models in order of preference (updated Feb 2026)
+    FALLBACK_MODELS = [
+        "prunaai/flux-fast",
+        "black-forest-labs/flux-schnell",
+        "stability-ai/sdxl",
+        "ideogram-ai/ideogram-v2",
+        "stability-ai/sd3.5-large",
+        "playgroundai/playground-v2.5-1024px-aesthetic"
+    ]
+    
     def __init__(self, replicate_token: str):
         self.token = replicate_token
         self.base_url = "https://api.replicate.com/v1"
+        # Use identity/gzip encoding to avoid brotli issues
         self.headers = {
             "Authorization": f"Token {replicate_token}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Accept-Encoding": "identity, gzip, deflate"
         }
         
-        # Model versions - all with explicit version hashes for reliability
+        # Model catalog - Updated from printify_clean (Feb 2026)
         self.models = {
-            # Flux models (best quality)
-            "flux_schnell": "black-forest-labs/flux-schnell:c846a69991daf4c0e5d016514849d14ee5b2e6846ce6b9d6f21369e564cfe51e",
-            "flux_pro": "black-forest-labs/flux-1.1-pro",
-            "flux_dev": "black-forest-labs/flux-dev",
-            "flux_pro_ultra": "black-forest-labs/flux-1.1-pro-ultra",
-            # Stable Diffusion models
-            "sdxl": "stability-ai/sdxl:7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc",
+            # ── Flux Family (Top Tier) ──
+            "flux_fast": "prunaai/flux-fast",  # Fastest - 4 steps, default for speed
+            "flux_schnell": "black-forest-labs/flux-schnell",  # Fast - 4 steps
+            "flux_dev": "black-forest-labs/flux-dev",  # Development (slower, high quality)
+            "flux_pro": "black-forest-labs/flux-1.1-pro",  # Premium quality
+            "flux_pro_ultra": "black-forest-labs/flux-1.1-pro-ultra",  # Highest quality
+            "flux_kontext": "black-forest-labs/flux-kontext-pro",  # Face-aware generation
+            "flux_fill": "black-forest-labs/flux-fill-pro",  # Inpainting
+            "flux_canny": "black-forest-labs/flux-canny-pro",  # Edge control
+            "flux_depth": "black-forest-labs/flux-depth-pro",  # Depth control
+            "flux_redux": "black-forest-labs/flux-redux-dev",  # Style transfer
+            
+            # ── Google Imagen ──
+            "imagen4": "google/imagen-4-ultra",  # Google's highest quality
+            
+            # ── Stable Diffusion Family ──
+            "sdxl": "stability-ai/sdxl",
             "sdxl_turbo": "stability-ai/sdxl-turbo",
-            "stable_diffusion_3": "stability-ai/stable-diffusion-3",
-            "sd3_5": "stability-ai/stable-diffusion-3.5-large",
-            "sd3_5_turbo": "stability-ai/stable-diffusion-3.5-large-turbo",
-            # Specialized models
+            "sd3": "stability-ai/sd3.5-large",
+            "sd3_turbo": "stability-ai/sd3.5-large-turbo",
+            "sd3_medium": "stability-ai/sd3.5-medium",
+            
+            # ── Specialized Models ──
             "ideogram": "ideogram-ai/ideogram-v2",
-            "ideogram_v2a": "ideogram-ai/ideogram-v2a",
             "ideogram_v3": "ideogram-ai/ideogram-v3",
-            "recraft": "recraft-ai/recraft-v3:9507e61ddace8b3a238371b17a61be203747c5081ea6070fecd3c40d27318922",
-            "recraft_v3": "recraft-ai/recraft-v3-svg",
-            # Artistic/Creative models
+            "recraft": "recraft-ai/recraft-v3",
+            "recraft_svg": "recraft-ai/recraft-v3-svg",
+            "seedream": "bytedance/seedream-4",  # 4K resolution
+            "bria": "bria/image-3.2",  # Commercial-safe
+            
+            # ── Artistic/Creative ──
             "playground": "playgroundai/playground-v2.5-1024px-aesthetic",
             "kandinsky": "ai-forever/kandinsky-3",
             "kolors": "kwai-kolors/kolors",
-            # Photorealistic models
-            "juggernaut": "rundiffusion/juggernaut-xl-v9",
-            "realistic_vision": "digiplay/realvisxl_v4.0",
+            
+            # ── Photorealistic ──
+            "juggernaut": "lucataco/juggernaut-xl-v9",
+            "dreamshaper": "lucataco/dreamshaper-xl-v2-turbo",
             "photon": "luma/photon",
-            # OpenAI models (via proxy)
-            "dall_e_3": "openai/dall-e-3",
+            
+            # ── Image Editing ──
+            "nano_banana": "google/nano-banana",  # Gemini image editing
+            "flux_edit": "hardikdava/flux-image-editing",
+            "edit_fast": "reve/edit-fast",  # $0.01 per edit
+            "next_scene": "lucataco/next-scene",  # Cinematic sequences
+            "inpaint": "cjwbw/stable-diffusion-v2-inpainting",
+            
+            # ── Marketing/Ads ──
+            "ads_for_products": "pipeline-examples/ads-for-products",
+            "flux_static_ads": "loolau/flux-static-ads",
+            "logo_in_context": "subhash25rawat/logo-in-context",
+            "ad_inpaint": "logerzhu/ad-inpaint",
+            
+            # ── Utility ──
+            "upscale": "nightmareai/real-esrgan",
+            "upscale_creative": "philz1337x/clarity-upscaler",
+            "remove_bg": "cjwbw/rembg",
+            "face_restore": "tencentarc/gfpgan",
         }
         
-        # Style presets with enhanced prompts and optimal models
+        # Default model for fast generation
+        self.default_model = "flux_fast"
+        
+        # Style presets with enhanced prompts and optimal models (updated Feb 2026)
         self.style_presets = {
             "photorealistic": {
                 "model": "flux_pro",
@@ -74,7 +120,7 @@ class ImageGenerationTools(ToolBase):
                 "negative": "photorealistic, photograph, 3d render"
             },
             "digital_art": {
-                "model": "ideogram",
+                "model": "ideogram_v3",
                 "prompt_suffix": "digital art, illustration, concept art, detailed, vibrant",
                 "negative": "photograph, 3d render, ugly, deformed"
             },
@@ -94,7 +140,7 @@ class ImageGenerationTools(ToolBase):
                 "negative": "color, photograph, digital"
             },
             "vector": {
-                "model": "recraft",
+                "model": "recraft_svg",
                 "prompt_suffix": "vector art, clean lines, flat colors, minimalist, graphic design",
                 "negative": "photograph, 3d, gradient, texture"
             },
@@ -134,14 +180,24 @@ class ImageGenerationTools(ToolBase):
                 "negative": "modern, digital, sharp, oversaturated"
             },
             "isometric": {
-                "model": "ideogram",
+                "model": "ideogram_v3",
                 "prompt_suffix": "isometric view, 3D game style, detailed miniature, clean design",
                 "negative": "perspective, realistic, flat"
             },
             "logo": {
-                "model": "recraft",
+                "model": "recraft_svg",
                 "prompt_suffix": "professional logo design, clean, scalable, modern branding",
                 "negative": "complex, photograph, realistic"
+            },
+            "product": {
+                "model": "flux_fast",
+                "prompt_suffix": "professional product photography, studio lighting, clean white background, commercial",
+                "negative": "amateur, dark, blurry, cluttered background"
+            },
+            "marketing": {
+                "model": "flux_static_ads",
+                "prompt_suffix": "marketing advertisement, eye-catching, professional, brand-safe",
+                "negative": "amateur, low quality, inappropriate"
             }
         }
         
@@ -461,10 +517,14 @@ class ImageGenerationTools(ToolBase):
         self,
         model: str,
         input_data: Dict[str, Any],
-        wait: bool = True
+        wait: bool = True,
+        _fallback_attempt: int = 0,
+        _retry_attempt: int = 0
     ) -> Dict[str, Any]:
-        """Run a Replicate model."""
+        """Run a Replicate model with automatic fallback on failure and exponential backoff retry."""
         url = f"{self.base_url}/predictions"
+        base_delay = 12  # printify_clean uses 12s base delay for rate limits
+        max_retries = 3
         
         # For versioned models (e.g., "owner/model:version_hash")
         if ":" in model:
@@ -481,29 +541,64 @@ class ImageGenerationTools(ToolBase):
                 "input": input_data
             }
         
-        async with aiohttp.ClientSession() as session:
-            # Start prediction
-            async with session.post(url, headers=self.headers, json=data) as response:
-                if response.status >= 400:
-                    error = await response.text()
-                    raise Exception(f"Replicate API error: {error}")
-                result = await response.json()
-            
-            if not wait:
+        try:
+            async with aiohttp.ClientSession() as session:
+                # Start prediction with rate limit retry
+                for attempt in range(_retry_attempt, max_retries):
+                    async with session.post(url, headers=self.headers, json=data) as response:
+                        if response.status == 429:
+                            # Rate limited - exponential backoff (12s, 24s, 48s)
+                            delay = base_delay * (2 ** attempt)
+                            logger.warning(f"Rate limited. Waiting {delay}s before retry {attempt + 1}/{max_retries}")
+                            await asyncio.sleep(delay)
+                            continue
+                        if response.status >= 400:
+                            error = await response.text()
+                            raise Exception(f"Replicate API error: {error}")
+                        result = await response.json()
+                        break
+                else:
+                    raise Exception(f"Rate limited after {max_retries} retries")
+                
+                if not wait:
+                    return result
+                
+                # Poll for completion with 15 min timeout for image generation
+                prediction_url = result.get("urls", {}).get("get") or f"{url}/{result['id']}"
+                timeout_seconds = 900  # 15 minutes from printify_clean
+                start_time = asyncio.get_event_loop().time()
+                
+                while result.get("status") in ["starting", "processing"]:
+                    if asyncio.get_event_loop().time() - start_time > timeout_seconds:
+                        raise Exception("Timeout waiting for image generation")
+                    await asyncio.sleep(1)
+                    async with session.get(prediction_url, headers=self.headers) as response:
+                        result = await response.json()
+                
+                if result.get("status") == "failed":
+                    raise Exception(f"Prediction failed: {result.get('error')}")
+                
                 return result
+                
+        except Exception as e:
+            error_msg = str(e)
+            logger.warning(f"Model {model} failed: {error_msg}")
             
-            # Poll for completion
-            prediction_url = result.get("urls", {}).get("get") or f"{url}/{result['id']}"
+            # Try fallback models if available
+            if _fallback_attempt < len(self.FALLBACK_MODELS):
+                # Get next fallback model that's different from current
+                for fallback_model in self.FALLBACK_MODELS[_fallback_attempt:]:
+                    if fallback_model != model and not model.startswith(fallback_model.split('/')[0]):
+                        logger.info(f"Trying fallback model: {fallback_model}")
+                        return await self._run_model(
+                            fallback_model, 
+                            input_data, 
+                            wait, 
+                            _fallback_attempt + 1
+                        )
             
-            while result.get("status") in ["starting", "processing"]:
-                await asyncio.sleep(1)
-                async with session.get(prediction_url, headers=self.headers) as response:
-                    result = await response.json()
-            
-            if result.get("status") == "failed":
-                raise Exception(f"Prediction failed: {result.get('error')}")
-            
-            return result
+            # No more fallbacks, raise the original error
+            raise
     
     @tool(
         name="generate_image",
@@ -1173,4 +1268,191 @@ Supports:
             "original": image_url,
             "instruction": instruction,
             "edit_type": edit_type
+        }
+
+    # ═══════════════════════════════════════════════════════════════════
+    # TEXT OVERLAY FOR ADS (from printify_clean)
+    # ═══════════════════════════════════════════════════════════════════
+    
+    @tool(
+        name="add_text_overlay",
+        description="""Add professional text overlay to an image for ads/marketing.
+        
+Supports:
+- Headlines with glow/shadow effects
+- Call-to-action buttons
+- Price badges
+- Brand logos/names
+- Platform-optimized layouts (Instagram, Facebook, Pinterest, etc.)
+""",
+        category="image_editing"
+    )
+    async def add_text_overlay(
+        self,
+        image_url: str,
+        headline: str,
+        tagline: str = "",
+        cta: str = "",
+        price: str = "",
+        brand_name: str = "",
+        platform: str = "instagram_post",
+        style: str = "bold",
+        primary_color: str = "#ffffff",
+        accent_color: str = "#ff6b35"
+    ) -> Dict[str, Any]:
+        """
+        Add professional text overlay to an image.
+        
+        Args:
+            image_url: URL or path of the base image
+            headline: Main headline text
+            tagline: Secondary tagline (optional)
+            cta: Call-to-action text (optional)
+            price: Price text (optional, e.g., "$24.99")
+            brand_name: Brand name to display (optional)
+            platform: Target platform for layout optimization
+            style: Visual style (bold, minimal, luxury, playful)
+            primary_color: Primary text color (hex)
+            accent_color: Accent color for CTA (hex)
+            
+        Returns:
+            {"success": bool, "image": str, "overlays_added": list}
+        """
+        from PIL import Image, ImageDraw, ImageFont
+        import io
+        
+        # Fetch image
+        async with aiohttp.ClientSession() as session:
+            async with session.get(image_url) as response:
+                if response.status != 200:
+                    return {"success": False, "error": f"Failed to fetch image: HTTP {response.status}"}
+                image_data = await response.read()
+        
+        # Load image
+        img = Image.open(io.BytesIO(image_data)).convert("RGBA")
+        width, height = img.size
+        draw = ImageDraw.Draw(img)
+        
+        overlays_added = []
+        
+        # Calculate text sizes based on image dimensions
+        headline_size = int(min(width, height) * 0.08)
+        tagline_size = int(headline_size * 0.5)
+        cta_size = int(headline_size * 0.6)
+        price_size = int(headline_size * 0.7)
+        brand_size = int(headline_size * 0.4)
+        
+        # Get system font (with fallbacks)
+        def get_font(size: int, bold: bool = False):
+            font_paths = [
+                "/System/Library/Fonts/Helvetica.ttc",
+                "/System/Library/Fonts/Arial.ttf",
+                "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf" if bold else "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            ]
+            for path in font_paths:
+                try:
+                    if os.path.exists(path):
+                        return ImageFont.truetype(path, size)
+                except:
+                    continue
+            return ImageFont.load_default()
+        
+        headline_font = get_font(headline_size, bold=True)
+        tagline_font = get_font(tagline_size)
+        cta_font = get_font(cta_size, bold=True)
+        price_font = get_font(price_size, bold=True)
+        brand_font = get_font(brand_size)
+        
+        # Platform-specific layouts
+        layouts = {
+            "instagram_post": {"headline_y": 0.12, "tagline_y": 0.22, "price_y": 0.75, "cta_y": 0.85, "brand_y": 0.95},
+            "instagram_story": {"headline_y": 0.15, "tagline_y": 0.22, "price_y": 0.78, "cta_y": 0.85, "brand_y": 0.93},
+            "facebook_post": {"headline_y": 0.08, "tagline_y": 0.16, "price_y": 0.80, "cta_y": 0.88, "brand_y": 0.95},
+            "twitter": {"headline_y": 0.10, "tagline_y": 0.20, "price_y": 0.78, "cta_y": 0.88, "brand_y": 0.95},
+            "pinterest": {"headline_y": 0.08, "tagline_y": 0.14, "price_y": 0.85, "cta_y": 0.90, "brand_y": 0.96},
+        }
+        layout = layouts.get(platform, layouts["instagram_post"])
+        
+        def add_shadow_text(x, y, text, font, color, shadow_color="#000000"):
+            """Draw text with shadow effect."""
+            for offset in range(3, 0, -1):
+                draw.text((x + offset, y + offset), text, font=font, fill=shadow_color)
+            draw.text((x, y), text, font=font, fill=color)
+        
+        # Add headline
+        if headline:
+            bbox = draw.textbbox((0, 0), headline, font=headline_font)
+            text_width = bbox[2] - bbox[0]
+            x = (width - text_width) // 2
+            y = int(height * layout["headline_y"])
+            add_shadow_text(x, y, headline, headline_font, primary_color)
+            overlays_added.append("headline")
+        
+        # Add tagline
+        if tagline:
+            bbox = draw.textbbox((0, 0), tagline, font=tagline_font)
+            text_width = bbox[2] - bbox[0]
+            x = (width - text_width) // 2
+            y = int(height * layout["tagline_y"])
+            add_shadow_text(x, y, tagline, tagline_font, primary_color)
+            overlays_added.append("tagline")
+        
+        # Add price badge
+        if price:
+            bbox = draw.textbbox((0, 0), price, font=price_font)
+            text_width = bbox[2] - bbox[0]
+            x = (width - text_width) // 2
+            y = int(height * layout["price_y"])
+            # Draw price with accent background
+            padding = 10
+            draw.rectangle([x - padding, y - padding, x + text_width + padding, y + bbox[3] - bbox[1] + padding], fill=accent_color)
+            draw.text((x, y), price, font=price_font, fill="#ffffff")
+            overlays_added.append("price")
+        
+        # Add CTA
+        if cta:
+            bbox = draw.textbbox((0, 0), cta, font=cta_font)
+            text_width = bbox[2] - bbox[0]
+            text_height = bbox[3] - bbox[1]
+            x = (width - text_width) // 2
+            y = int(height * layout["cta_y"])
+            # Draw CTA button
+            padding = 15
+            draw.rounded_rectangle(
+                [x - padding, y - padding//2, x + text_width + padding, y + text_height + padding],
+                radius=8,
+                fill=accent_color
+            )
+            draw.text((x, y), cta, font=cta_font, fill="#ffffff")
+            overlays_added.append("cta")
+        
+        # Add brand name
+        if brand_name:
+            bbox = draw.textbbox((0, 0), brand_name, font=brand_font)
+            text_width = bbox[2] - bbox[0]
+            x = (width - text_width) // 2
+            y = int(height * layout["brand_y"])
+            draw.text((x, y), brand_name, font=brand_font, fill=primary_color)
+            overlays_added.append("brand")
+        
+        # Save output
+        import uuid
+        from pathlib import Path
+        output_dir = Path("data/files/ads")
+        output_dir.mkdir(parents=True, exist_ok=True)
+        output_filename = f"ad_{uuid.uuid4().hex[:8]}.png"
+        output_path = output_dir / output_filename
+        
+        # Convert back to RGB for saving
+        img_rgb = Image.new("RGB", img.size, (255, 255, 255))
+        img_rgb.paste(img, mask=img.split()[3] if len(img.split()) == 4 else None)
+        img_rgb.save(output_path, "PNG", quality=95)
+        
+        return {
+            "success": True,
+            "image": f"/files/ads/{output_filename}",
+            "original": image_url,
+            "overlays_added": overlays_added,
+            "platform": platform,
+            "style": style
         }

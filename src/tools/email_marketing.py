@@ -535,3 +535,203 @@ def get_email_service() -> EmailMarketingService:
     if _email_service is None:
         _email_service = EmailMarketingService()
     return _email_service
+
+
+# =============================================================================
+# TOOL-DECORATED EMAIL FUNCTIONS FOR CHAT INTERFACE
+# =============================================================================
+
+from .core import tool
+
+
+class EmailTools:
+    """Email tools accessible via chat."""
+    
+    def __init__(self):
+        self.service = get_email_service()
+    
+    @tool(
+        name="send_email",
+        description="Send an HTML-rich email. Compose and send professional emails with formatting, images, and styling. Perfect for marketing emails, newsletters, announcements, or any rich-formatted email.",
+        category="email"
+    )
+    async def send_email(
+        self,
+        to_email: str,
+        subject: str,
+        html_content: str,
+        text_content: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Send an email with HTML content.
+        
+        Args:
+            to_email: Recipient email address
+            subject: Email subject line
+            html_content: HTML-formatted email body
+            text_content: Optional plain text version
+            
+        Returns:
+            Result with success status
+        """
+        if not self.service.is_configured():
+            return {
+                "success": False,
+                "error": "Email not configured. Add SENDGRID_API_KEY or EMAIL_USERNAME/EMAIL_PASSWORD to .env",
+                "hint": "Get free SendGrid API key at https://sendgrid.com (100 emails/day free)"
+            }
+        
+        success = self.service.send_email(to_email, subject, html_content, text_content)
+        
+        if success:
+            return {
+                "success": True,
+                "to": to_email,
+                "subject": subject,
+                "provider": self.service.provider,
+                "timestamp": datetime.now().isoformat()
+            }
+        else:
+            return {
+                "success": False,
+                "error": "Email send failed. Check logs for details."
+            }
+    
+    @tool(
+        name="generate_and_send_email",
+        description="Generate a professional marketing email using AI and send it. Specify the email type, recipient, and key points - the system will create and send a beautifully formatted HTML email.",
+        category="email"
+    )
+    async def generate_and_send_email(
+        self,
+        to_email: str,
+        subject: str,
+        email_type: str = "announcement",
+        product_name: Optional[str] = None,
+        key_points: Optional[List[str]] = None,
+        offer_details: Optional[str] = None,
+        call_to_action: str = "Learn More",
+        cta_url: Optional[str] = None,
+        brand_color: str = "#6366f1"
+    ) -> Dict[str, Any]:
+        """
+        Generate a professional HTML email and send it.
+        
+        Args:
+            to_email: Recipient email address
+            subject: Email subject line
+            email_type: Type of email (product_launch, newsletter, promotion, welcome, announcement)
+            product_name: Optional product/feature name
+            key_points: List of key points to include
+            offer_details: Optional special offer text
+            call_to_action: Button text
+            cta_url: Link for the call-to-action button
+            brand_color: Brand accent color (hex)
+        """
+        if not self.service.is_configured():
+            return {
+                "success": False,
+                "error": "Email not configured. Add SENDGRID_API_KEY to .env",
+                "hint": "Get free SendGrid API key at https://sendgrid.com"
+            }
+        
+        # Build HTML email
+        points_html = ""
+        if key_points:
+            points_html = "\n".join([f'<li style="margin-bottom: 10px;">{point}</li>' for point in key_points])
+            points_html = f'<ul style="padding-left: 20px; color: #444; line-height: 1.8;">{points_html}</ul>'
+        
+        cta_button = ""
+        if cta_url:
+            cta_button = f'''
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="{cta_url}" style="background: {brand_color}; color: white; padding: 14px 28px; 
+                       text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">
+                        {call_to_action}
+                    </a>
+                </div>
+            '''
+        
+        offer_section = ""
+        if offer_details:
+            offer_section = f'''
+                <div style="background: {brand_color}15; padding: 20px; border-radius: 8px; 
+                     margin: 20px 0; border-left: 4px solid {brand_color};">
+                    <p style="margin: 0; font-size: 18px; font-weight: 600; color: {brand_color};">
+                        🎁 Special Offer
+                    </p>
+                    <p style="margin: 10px 0 0 0; font-size: 16px; color: #333;">
+                        {offer_details}
+                    </p>
+                </div>
+            '''
+        
+        product_header = ""
+        if product_name:
+            product_header = f'<h2 style="color: {brand_color}; margin-top: 0;">{product_name}</h2>'
+        
+        html_content = f'''
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: white; border-radius: 12px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+            {product_header}
+            {points_html}
+            {offer_section}
+            {cta_button}
+        </div>
+        <div style="text-align: center; margin-top: 20px; color: #888; font-size: 12px;">
+            <p>Sent with ❤️ by {self.service.from_name}</p>
+        </div>
+    </div>
+</body>
+</html>
+'''
+        
+        success = self.service.send_email(to_email, subject, html_content)
+        
+        if success:
+            return {
+                "success": True,
+                "to": to_email,
+                "subject": subject,
+                "email_type": email_type,
+                "provider": self.service.provider,
+                "html_generated": True,
+                "timestamp": datetime.now().isoformat()
+            }
+        else:
+            return {"success": False, "error": "Failed to send email"}
+    
+    @tool(
+        name="check_email_config",
+        description="Check if email sending is properly configured and which provider is active",
+        category="email"
+    )
+    async def check_email_config(self) -> Dict[str, Any]:
+        """Check email configuration status."""
+        return {
+            "configured": self.service.is_configured(),
+            "provider": self.service.provider or "none",
+            "from_email": self.service.from_email or "not set",
+            "from_name": self.service.from_name,
+            "sendgrid_configured": bool(self.service.sendgrid_api_key),
+            "smtp_configured": bool(self.service.smtp_username and self.service.smtp_password),
+            "hint": "Add SENDGRID_API_KEY to .env for easy setup (free 100 emails/day at sendgrid.com)"
+        }
+
+
+# Create singleton for tools
+_email_tools = None
+
+def get_email_tools() -> EmailTools:
+    """Get the singleton EmailTools instance."""
+    global _email_tools
+    if _email_tools is None:
+        _email_tools = EmailTools()
+    return _email_tools

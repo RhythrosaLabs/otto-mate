@@ -1,0 +1,40 @@
+name: code_formatter
+version: 1.0.0
+description: Format and beautify code in multiple languages - Python, JavaScript, JSON, HTML, CSS, and more
+author: Otto Examples
+type: tool
+icon: 💅
+
+entry_point: main
+
+provides_tools:
+  - format_code
+  - minify_code
+  - lint_code
+  - convert_tabs_spaces
+  - get_supported_formats
+
+settings_schema:
+  python_style:
+    type: string
+    description: Python formatting style (black, autopep8, yapf)
+    default: black
+  
+  indent_size:
+    type: integer
+    description: Default indentation size
+    default: 4
+  
+  use_tabs:
+    type: boolean
+    description: Use tabs instead of spaces
+    default: false
+  
+  line_length:
+    type: integer
+    description: Maximum line length
+    default: 88
+
+dependencies:
+  - black
+  - autopep8

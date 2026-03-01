@@ -1,0 +1,43 @@
+name: social_poster
+version: 1.0.0
+description: Post content to social media platforms - Twitter/X, LinkedIn, Instagram, and more
+author: Otto Examples
+type: tool
+icon: 📱
+
+entry_point: main
+
+provides_tools:
+  - post_to_twitter
+  - post_to_linkedin
+  - schedule_post
+  - get_post_analytics
+  - create_thread
+
+settings_schema:
+  twitter_api_key:
+    type: string
+    description: Twitter/X API key
+    required: false
+    secret: true
+  
+  twitter_api_secret:
+    type: string
+    description: Twitter/X API secret
+    required: false
+    secret: true
+  
+  linkedin_access_token:
+    type: string
+    description: LinkedIn access token
+    required: false
+    secret: true
+  
+  default_hashtags:
+    type: array
+    description: Default hashtags to add to posts
+    default: []
+
+dependencies:
+  - tweepy
+  - requests

@@ -36,14 +36,25 @@ class ReplicateUniversal(ToolBase):
         "luma/ray-flash-2",
         "minimax/video-01",
         "minimax/hailuo-2.3-fast",
+        "openai/sora-2",
+        "google/veo-3",
+        "google/veo-3-fast",
+        "google/veo-3.1-fast",
+        "google/veo-2",
+        "pixverse/pixverse-v5",
+        "pixverse/pixverse-v4.5",
+        "leonardoai/motion-2.0",
+        "bytedance/seedance-1-pro-fast",
     ]
     
     def __init__(self, api_token: str):
         self.token = api_token
         self.base_url = "https://api.replicate.com/v1"
+        # Use identity/gzip encoding to avoid brotli decoding issues
         self.headers = {
             "Authorization": f"Token {api_token}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Accept-Encoding": "identity, gzip, deflate"
         }
         
         # Cache for model schemas (avoid repeated lookups)
@@ -52,40 +63,64 @@ class ReplicateUniversal(ToolBase):
         # Comprehensive model shortcuts for ALL AI tasks
         self.model_shortcuts = {
             # ═══════════════════════════════════════════════════════════════
-            # IMAGE GENERATION - Multiple quality tiers
+            # IMAGE GENERATION - Multiple quality tiers (Updated Feb 2026)
             # ═══════════════════════════════════════════════════════════════
-            "image": "black-forest-labs/flux-schnell",
-            "image_fast": "black-forest-labs/flux-schnell",
+            "image": "prunaai/flux-fast",  # Fastest - 4 steps
+            "image_fast": "prunaai/flux-fast",
             "image_pro": "black-forest-labs/flux-1.1-pro",
             "image_quality": "black-forest-labs/flux-1.1-pro",
+            "image_4k": "bytedance/seedream-4",
+            "image_safe": "bria/image-3.2",  # Commercial-safe
             "flux": "black-forest-labs/flux-schnell",
+            "flux_fast": "prunaai/flux-fast",
             "flux_pro": "black-forest-labs/flux-1.1-pro",
+            "flux_kontext": "black-forest-labs/flux-kontext-pro",  # Face-aware
             "sdxl": "stability-ai/sdxl",
-            "sd3": "stability-ai/stable-diffusion-3",
+            "sd3": "stability-ai/sd3.5-large",
             "ideogram": "ideogram-ai/ideogram-v2",
-            "ideogram_text": "ideogram-ai/ideogram-v2",  # Best for text in images
+            "ideogram_v3": "ideogram-ai/ideogram-v3",
+            "ideogram_text": "ideogram-ai/ideogram-v3",  # Best for text in images
             "recraft": "recraft-ai/recraft-v3",
-            "recraft_vector": "recraft-ai/recraft-v3",  # Best for vector/illustration
-            "midjourney": "tstramer/midjourney-diffusion",
-            "realistic": "adirik/realvisxl-v4.0",
-            "photorealistic": "adirik/realvisxl-v4.0",
-            "anime": "cagliostrolab/animagine-xl-3.1",
+            "recraft_svg": "recraft-ai/recraft-v3-svg",
+            "recraft_vector": "recraft-ai/recraft-v3-svg",
+            "seedream": "bytedance/seedream-4",
+            "imagen4": "google/imagen-4-ultra",
+            "realistic": "lucataco/juggernaut-xl-v9",
+            "photorealistic": "lucataco/juggernaut-xl-v9",
+            "anime": "stability-ai/sdxl",
             "artistic": "stability-ai/sdxl",
             
             # ═══════════════════════════════════════════════════════════════
-            # IMAGE EDITING & ENHANCEMENT
+            # MARKETING / ADS - From printify_clean
+            # ═══════════════════════════════════════════════════════════════
+            "ads": "pipeline-examples/ads-for-products",
+            "product_ad": "pipeline-examples/ads-for-products",
+            "ads_for_products": "pipeline-examples/ads-for-products",
+            "static_ad": "loolau/flux-static-ads",
+            "flux_ads": "loolau/flux-static-ads",
+            "logo_context": "subhash25rawat/logo-in-context",
+            "ad_inpaint": "logerzhu/ad-inpaint",
+            
+            # ═══════════════════════════════════════════════════════════════
+            # IMAGE EDITING & ENHANCEMENT (Updated Feb 2026)
             # ═══════════════════════════════════════════════════════════════
             "remove_bg": "cjwbw/rembg",
             "background_remove": "cjwbw/rembg",
             "upscale": "nightmareai/real-esrgan",
             "upscale_4x": "nightmareai/real-esrgan",
+            "upscale_creative": "philz1337x/clarity-upscaler",
             "upscale_face": "tencentarc/gfpgan",
             "restore_face": "tencentarc/gfpgan",
             "face_restore": "tencentarc/gfpgan",
-            "inpaint": "stability-ai/stable-diffusion-inpainting",
-            "edit_image": "timothybrooks/instruct-pix2pix",
+            "inpaint": "cjwbw/stable-diffusion-v2-inpainting",
+            "edit_image": "hardikdava/flux-image-editing",
+            "flux_edit": "hardikdava/flux-image-editing",
+            "edit_fast": "reve/edit-fast",
+            "gemini_edit": "google/nano-banana",
+            "nano_banana": "google/nano-banana",
+            "next_scene": "lucataco/next-scene",
             "img2img": "stability-ai/sdxl",
-            "colorize": "arielreplicate/deoldify_image",
+            "colorize": "arielreplicate/deoldify",
             "outpaint": "stability-ai/stable-diffusion-inpainting",
             "style_transfer": "lucataco/neural-style-tf",
             "sketch_to_image": "jagilley/controlnet-scribble",
@@ -227,31 +262,45 @@ class ReplicateUniversal(ToolBase):
             "object_detect": "adirik/grounding-dino",
             
             # ═══════════════════════════════════════════════════════════════
-            # 3D GENERATION - Updated with working models (Feb 2026)
+            # 3D GENERATION - Updated from printify_clean (Feb 2026)
             # ═══════════════════════════════════════════════════════════════
-            # Image-to-3D models (best quality)
-            "3d": "firtoz/trellis",  # RECOMMENDED - fastest and best quality
-            "3d_gen": "firtoz/trellis",
-            "trellis": "firtoz/trellis",  # Can create 3D from single image in <1 min
-            "image_to_3d": "firtoz/trellis",
+            # Fast 3D (recommended)
+            "3d": "stabilityai/stable-fast-3d",  # FASTEST - <1 second
+            "3d_fast": "stabilityai/stable-fast-3d",
+            "stable_fast_3d": "stabilityai/stable-fast-3d",
             
-            # Hunyuan3D variants (working versions)
-            "hunyuan3d": "prunaai/hunyuan3d-2",  # Optimized version
-            "hunyuan3d_mv": "tencent/hunyuan3d-2mv",  # Multiview support
+            # Premium quality 3D
+            "3d_pro": "tencent/hunyuan3d-2",
+            "hunyuan3d": "tencent/hunyuan3d-2",
+            "hunyuan3d_21": "ndreca/hunyuan3d-2.1",  # Quality mode
+            
+            # Image-to-3D models
+            "3d_gen": "firtoz/trellis",
+            "trellis": "firtoz/trellis",
+            "image_to_3d": "cjwbw/instant-mesh",
+            "instant_mesh": "cjwbw/instant-mesh",
             
             # Text-to-3D models
-            "text_to_3d": "adirik/mvdream",  # Best for text-to-3D
+            "text_to_3d": "jd7h/luciddreamer",
+            "luciddreamer": "jd7h/luciddreamer",
             "mvdream": "adirik/mvdream",
-            "shap_e": "cjwbw/shap-e",  # OpenAI's 3D model
+            "shap_e": "cjwbw/shap-e",
             
-            # Image-to-3D alternatives
-            "wonder3d": "adirik/wonder3d",  # Good mesh generation
-            "mesh": "adirik/wonder3d",
-            "rodin": "hyper3d/rodin",  # Complex 3D from images (official)
-            "imagedream": "adirik/imagedream",  # Multi-view diffusion
+            # Mesh generation
+            "mesh": "cjwbw/instant-mesh",
+            "wonder3d": "camenduru/wonder3d",
+            "tripo": "lucataco/tripo3d",
+            "triposr": "tripo/tripo-sr-v2",
+            "craftsman": "adirik/craftsman",
+            
+            # Other 3D tools
+            "rodin": "hyper3d/rodin",
+            "lgm": "ashawkey/lgm",  # Gaussian splatting
+            "morphix3d": "subhash25rawat/morphix3d",
+            "vggt": "vufinder/vggt-1b",  # Scene generation
             
             # Multiview generation
-            "multiview": "jd7h/zero123plusplus",  # Turn image into multiple views
+            "multiview": "jd7h/zero123plusplus",
             "zero123": "jd7h/zero123plusplus",
             
             # Texturing
@@ -259,16 +308,16 @@ class ReplicateUniversal(ToolBase):
             "text2tex": "adirik/text2tex",
             
             # ═══════════════════════════════════════════════════════════════
-            # AD & MARKETING SPECIFIC
+            # AD & MARKETING SPECIFIC (Updated Feb 2026)
             # ═══════════════════════════════════════════════════════════════
-            "ad_image": "black-forest-labs/flux-1.1-pro",
-            "ad_banner": "ideogram-ai/ideogram-v2",  # Good for text overlays
-            "product_shot": "black-forest-labs/flux-1.1-pro",
+            "ad_image": "loolau/flux-static-ads",
+            "ad_banner": "ideogram-ai/ideogram-v3",  # Good for text overlays
+            "product_shot": "prunaai/flux-fast",
             "product_mockup": "fofr/product-mockup",
             "lifestyle_shot": "black-forest-labs/flux-1.1-pro",
-            "ad_video": "kwaivgi/kling-v2.5-turbo-pro",
-            "promo_video": "kwaivgi/kling-v1.6-pro",
-            "social_content": "black-forest-labs/flux-schnell",
+            "ad_video": "openai/sora-2",
+            "promo_video": "kwaivgi/kling-v2.5-turbo-pro",
+            "social_content": "prunaai/flux-fast",
             
             # ═══════════════════════════════════════════════════════════════
             # T-SHIRT & PRINT-ON-DEMAND SPECIFIC
@@ -431,9 +480,15 @@ class ReplicateUniversal(ToolBase):
         inputs: Dict[str, Any] = None,
         input: Dict[str, Any] = None,  # Alias for inputs
         wait: bool = True,
-        timeout: int = 300
+        timeout: int = 300,
+        max_retries: int = 3
     ) -> Dict[str, Any]:
-        """Run a prediction on a model."""
+        """
+        Run a prediction on a model with automatic retry on rate limits.
+        
+        Implements exponential backoff for 429 rate limit errors.
+        Will retry up to max_retries times before returning error.
+        """
         url = f"{self.base_url}/predictions"
         
         data = {
@@ -441,50 +496,117 @@ class ReplicateUniversal(ToolBase):
             "input": inputs
         }
         
-        async with aiohttp.ClientSession() as session:
-            # Start prediction
-            async with session.post(url, headers=self.headers, json=data) as response:
-                if response.status >= 400:
-                    error = await response.text()
-                    raise Exception(f"Prediction failed: {error}")
-                result = await response.json()
-            
-            if not wait:
-                return {
-                    "status": "started",
-                    "prediction_id": result.get("id"),
-                    "urls": result.get("urls", {})
-                }
-            
-            # Poll for completion
-            prediction_url = result.get("urls", {}).get("get") or f"{url}/{result['id']}"
-            start_time = asyncio.get_event_loop().time()
-            
-            while result.get("status") in ["starting", "processing"]:
-                if asyncio.get_event_loop().time() - start_time > timeout:
+        retry_count = 0
+        last_error = None
+        
+        while retry_count <= max_retries:
+            try:
+                async with aiohttp.ClientSession() as session:
+                    # Start prediction
+                    async with session.post(url, headers=self.headers, json=data) as response:
+                        # Handle rate limiting with retry
+                        if response.status == 429:
+                            retry_count += 1
+                            if retry_count > max_retries:
+                                return {
+                                    "success": False,
+                                    "error": "Rate limit exceeded after retries. Please wait a moment and try again.",
+                                    "rate_limited": True,
+                                    "retries": retry_count - 1
+                                }
+                            # Exponential backoff: 2s, 4s, 8s
+                            wait_time = 2 ** retry_count
+                            logger.warning(f"Rate limited (429). Retrying in {wait_time}s... (attempt {retry_count}/{max_retries})")
+                            await asyncio.sleep(wait_time)
+                            continue
+                        
+                        if response.status >= 500:
+                            # Server error - retry
+                            retry_count += 1
+                            if retry_count > max_retries:
+                                error = await response.text()
+                                return {
+                                    "success": False,
+                                    "error": f"Server error after retries: {error}",
+                                    "retries": retry_count - 1
+                                }
+                            wait_time = 2 ** retry_count
+                            logger.warning(f"Server error ({response.status}). Retrying in {wait_time}s...")
+                            await asyncio.sleep(wait_time)
+                            continue
+                            
+                        if response.status >= 400:
+                            error = await response.text()
+                            raise Exception(f"Prediction failed: {error}")
+                        result = await response.json()
+                    
+                    if not wait:
+                        return {
+                            "status": "started",
+                            "prediction_id": result.get("id"),
+                            "urls": result.get("urls", {})
+                        }
+                    
+                    # Poll for completion
+                    prediction_url = result.get("urls", {}).get("get") or f"{url}/{result['id']}"
+                    start_time = asyncio.get_event_loop().time()
+                    
+                    while result.get("status") in ["starting", "processing"]:
+                        if asyncio.get_event_loop().time() - start_time > timeout:
+                            return {
+                                "status": "timeout",
+                                "prediction_id": result.get("id"),
+                                "message": f"Prediction still running after {timeout}s. Check status with prediction ID."
+                            }
+                        
+                        await asyncio.sleep(2)
+                        async with session.get(prediction_url, headers=self.headers) as response:
+                            if response.status == 429:
+                                # Rate limited during polling - wait and retry
+                                await asyncio.sleep(5)
+                                continue
+                            result = await response.json()
+                    
+                    if result.get("status") == "failed":
+                        error_msg = result.get("error", "Unknown error")
+                        # Check if it's a rate limit in the error message
+                        if "rate" in error_msg.lower() or "limit" in error_msg.lower():
+                            retry_count += 1
+                            if retry_count <= max_retries:
+                                wait_time = 2 ** retry_count
+                                logger.warning(f"Rate limit in response. Retrying in {wait_time}s...")
+                                await asyncio.sleep(wait_time)
+                                continue
+                        return {
+                            "success": False,
+                            "error": error_msg,
+                            "logs": result.get("logs", "")
+                        }
+                    
                     return {
-                        "status": "timeout",
+                        "success": True,
+                        "output": result.get("output"),
                         "prediction_id": result.get("id"),
-                        "message": f"Prediction still running after {timeout}s. Check status with prediction ID."
+                        "metrics": result.get("metrics", {})
                     }
-                
-                await asyncio.sleep(2)
-                async with session.get(prediction_url, headers=self.headers) as response:
-                    result = await response.json()
-            
-            if result.get("status") == "failed":
-                return {
-                    "success": False,
-                    "error": result.get("error", "Unknown error"),
-                    "logs": result.get("logs", "")
-                }
-            
-            return {
-                "success": True,
-                "output": result.get("output"),
-                "prediction_id": result.get("id"),
-                "metrics": result.get("metrics", {})
-            }
+                    
+            except Exception as e:
+                last_error = str(e)
+                # Check if error is rate-limit related
+                if "429" in last_error or "rate" in last_error.lower():
+                    retry_count += 1
+                    if retry_count <= max_retries:
+                        wait_time = 2 ** retry_count
+                        logger.warning(f"Rate limit exception. Retrying in {wait_time}s...")
+                        await asyncio.sleep(wait_time)
+                        continue
+                raise
+        
+        return {
+            "success": False,
+            "error": last_error or "Max retries exceeded",
+            "retries": max_retries
+        }
     
     @tool(
         name="replicate_search_models",
@@ -861,7 +983,14 @@ class ReplicateUniversal(ToolBase):
             return ("image_edit", "tencentarc/gfpgan", {})
         if any(kw in desc_lower for kw in ["colorize", "add color", "black and white to color"]):
             return ("image_edit", "arielreplicate/deoldify_image", {})
-        if any(kw in desc_lower for kw in ["style transfer", "apply style", "in the style of"]):
+        # Style transfer for images - but exclude music/song style requests
+        if any(kw in desc_lower for kw in ["style transfer", "apply style"]):
+            return ("image_edit", "lucataco/neural-style-tf", {})
+        # Only match "in the style of" for images, not for music
+        music_exclusion = ["music", "song", "audio", "beat", "melody", "pop", "rock", "hip hop", "hip-hop",
+                          "jazz", "rap", "instrumental", "track", "tune", "compose", "edm", "electronic",
+                          "r&b", "rnb", "country", "classical", "lo-fi", "lofi", "reggae", "metal"]
+        if "in the style of" in desc_lower and not any(kw in desc_lower for kw in music_exclusion):
             return ("image_edit", "lucataco/neural-style-tf", {})
         if any(kw in desc_lower for kw in ["inpaint", "fill in", "remove object", "edit part"]):
             return ("image_edit", "stability-ai/stable-diffusion-inpainting", {})
@@ -926,7 +1055,14 @@ class ReplicateUniversal(ToolBase):
             return ("audio", "cjwbw/bark", {})
         if any(kw in desc_lower for kw in ["sound effect", "sfx", "ambience", "ambient sound"]):
             return ("audio", "haoheliu/audio-ldm-2", {})
-        audio_keywords = ["music", "song", "audio", "sound", "melody", "beat", "instrumental"]
+        # Expanded music detection including genres and style references
+        audio_keywords = [
+            "music", "song", "audio", "sound", "melody", "beat", "instrumental", "track", "tune",
+            "compose", "composition", "soundtrack", "jingle", "hip hop", "hip-hop", "rap", "pop",
+            "rock", "jazz", "electronic", "edm", "country", "r&b", "rnb", "classical", "ambient",
+            "lo-fi", "lofi", "trap", "dubstep", "techno", "house", "disco", "funk", "soul",
+            "reggae", "metal", "punk", "indie", "folk", "blues", "gospel"
+        ]
         if any(kw in desc_lower for kw in audio_keywords):
             return ("audio", "meta/musicgen", {})
         

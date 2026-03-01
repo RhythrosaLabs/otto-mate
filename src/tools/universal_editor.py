@@ -37,6 +37,8 @@ class MediaType(Enum):
     VIDEO = "video"
     AUDIO = "audio"
     TEXT = "text"
+    CODE = "code"
+    SPREADSHEET = "spreadsheet"
     THREE_D = "3d"
     UNKNOWN = "unknown"
 
@@ -191,6 +193,38 @@ REPLICATE_MODELS = {
             "model": "suno-ai/bark:b76242b40d67c76ab6742e987628a2a9ac019e11d56ab96c4e91ce03b79b2787",
             "description": "Generate and add AI voiceover to video",
             "input_key": "prompt"
+        },
+        
+        # Video editing with AI
+        "video_trim": {
+            "model": "USE_INTERNAL",
+            "description": "Trim video to specific duration",
+            "input_key": "video",
+            "use_ffmpeg": True
+        },
+        "video_merge": {
+            "model": "USE_INTERNAL",
+            "description": "Merge multiple videos together",
+            "input_key": "videos",
+            "use_ffmpeg": True
+        },
+        "extract_frames": {
+            "model": "USE_INTERNAL",
+            "description": "Extract frames from video as images",
+            "input_key": "video",
+            "use_ffmpeg": True
+        },
+        "gif_to_video": {
+            "model": "USE_INTERNAL",
+            "description": "Convert GIF to video",
+            "input_key": "image",
+            "use_ffmpeg": True
+        },
+        "video_to_gif": {
+            "model": "USE_INTERNAL",
+            "description": "Convert video to GIF",
+            "input_key": "video",
+            "use_ffmpeg": True
         }
     },
     
@@ -269,6 +303,32 @@ REPLICATE_MODELS = {
             "model": "audio-effects/tempo-change:b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0",
             "description": "Change audio speed/tempo",
             "input_key": "audio"
+        },
+        
+        # Audio editing with FFmpeg
+        "audio_trim": {
+            "model": "USE_INTERNAL",
+            "description": "Trim audio to specific duration",
+            "input_key": "audio",
+            "use_ffmpeg": True
+        },
+        "audio_merge": {
+            "model": "USE_INTERNAL",
+            "description": "Merge multiple audio files",
+            "input_key": "audio",
+            "use_ffmpeg": True
+        },
+        "audio_convert": {
+            "model": "USE_INTERNAL",
+            "description": "Convert audio to different format (mp3, wav, ogg)",
+            "input_key": "audio",
+            "use_ffmpeg": True
+        },
+        "normalize": {
+            "model": "USE_INTERNAL",
+            "description": "Normalize audio volume levels",
+            "input_key": "audio",
+            "use_ffmpeg": True
         }
     },
     
@@ -295,6 +355,21 @@ REPLICATE_MODELS = {
             "model": "cjwbw/shap-e:5957069d5c509126a73c7cb68abcddbb985aeefa4d318e7c63ec1352ce6da68c",
             "description": "Generate textures for 3D model",
             "input_key": "prompt"
+        },
+        "point_cloud_to_mesh": {
+            "model": "cjwbw/shap-e:5957069d5c509126a73c7cb68abcddbb985aeefa4d318e7c63ec1352ce6da68c",
+            "description": "Convert point cloud to mesh",
+            "input_key": "prompt"
+        },
+        "simplify_mesh": {
+            "model": "USE_INTERNAL",
+            "description": "Reduce polygon count of 3D mesh",
+            "input_key": "mesh"
+        },
+        "export_format": {
+            "model": "USE_INTERNAL",
+            "description": "Convert 3D model to different format (GLB, OBJ, FBX, STL)",
+            "input_key": "mesh"
         }
     },
     
@@ -337,6 +412,20 @@ REPLICATE_MODELS = {
             "use_llm": True,
             "system_prompt": "Format and structure the following text professionally. Use appropriate headings, bullet points, and organization."
         },
+        "grammar": {
+            "model": "USE_OPENAI",
+            "description": "Fix grammar and spelling",
+            "input_key": "prompt",
+            "use_llm": True,
+            "system_prompt": "Fix all grammar, spelling, and punctuation errors in the following text. Keep the original meaning and style."
+        },
+        "tone": {
+            "model": "USE_OPENAI",
+            "description": "Change tone of text",
+            "input_key": "prompt",
+            "use_llm": True,
+            "system_prompt": "Rewrite the following text with the requested tone (professional, casual, formal, friendly, etc.). Preserve the meaning while changing the style."
+        },
         "code_explain": {
             "model": "USE_OPENAI",
             "description": "Explain code in plain language",
@@ -351,10 +440,216 @@ REPLICATE_MODELS = {
             "use_llm": True,
             "system_prompt": "Refactor the following code to improve readability, performance, and maintainability. Explain the changes made."
         },
+        "code_debug": {
+            "model": "USE_OPENAI",
+            "description": "Find and fix bugs in code",
+            "input_key": "prompt",
+            "use_llm": True,
+            "system_prompt": "Analyze the following code for bugs, errors, and potential issues. Identify problems and provide corrected code with explanations."
+        },
+        "code_complete": {
+            "model": "USE_OPENAI",
+            "description": "Complete partial code",
+            "input_key": "prompt",
+            "use_llm": True,
+            "system_prompt": "Complete the following partial code. Add missing parts, implement TODOs, and ensure the code is functional and well-structured."
+        },
+        "code_convert": {
+            "model": "USE_OPENAI",
+            "description": "Convert code between languages",
+            "input_key": "prompt",
+            "use_llm": True,
+            "system_prompt": "Convert the following code to the target language. Maintain functionality and use idiomatic patterns for the target language."
+        },
+        "code_test": {
+            "model": "USE_OPENAI",
+            "description": "Generate unit tests for code",
+            "input_key": "prompt",
+            "use_llm": True,
+            "system_prompt": "Generate comprehensive unit tests for the following code. Cover edge cases, normal cases, and error handling. Use appropriate testing frameworks."
+        },
+        "code_document": {
+            "model": "USE_OPENAI",
+            "description": "Add documentation to code",
+            "input_key": "prompt",
+            "use_llm": True,
+            "system_prompt": "Add comprehensive documentation to the following code. Include docstrings, comments, type hints, and usage examples."
+        },
+        "code_run": {
+            "model": "USE_INTERNAL",
+            "description": "Execute code and return output",
+            "input_key": "code",
+            "use_executor": True
+        },
         "ocr": {
             "model": "abiruyt/text-extract-ocr:a524caeaa23495bc9edc805ab08ab5fe943afd3febed884a4f3747aa32e9cd61",
             "description": "Extract text from image",
             "input_key": "image"
+        }
+    },
+    
+    # ─────────────────────────────────────────────────────────────
+    # SPREADSHEET PROCESSING
+    # ─────────────────────────────────────────────────────────────
+    "spreadsheet": {
+        "analyze": {
+            "model": "USE_OPENAI",
+            "description": "Analyze spreadsheet data and provide insights",
+            "input_key": "prompt",
+            "use_llm": True,
+            "system_prompt": "Analyze the following spreadsheet data. Identify patterns, trends, anomalies, and provide data-driven insights and recommendations."
+        },
+        "generate_formula": {
+            "model": "USE_OPENAI",
+            "description": "Generate spreadsheet formulas",
+            "input_key": "prompt",
+            "use_llm": True,
+            "system_prompt": "Create the appropriate spreadsheet formula for the described task. Support Excel and Google Sheets syntax. Explain how the formula works."
+        },
+        "clean_data": {
+            "model": "USE_OPENAI",
+            "description": "Clean and normalize data",
+            "input_key": "prompt",
+            "use_llm": True,
+            "system_prompt": "Analyze the data and suggest cleaning operations: remove duplicates, fix formatting, standardize values, handle missing data. Provide the cleaned data."
+        },
+        "transform": {
+            "model": "USE_OPENAI",
+            "description": "Transform data structure",
+            "input_key": "prompt",
+            "use_llm": True,
+            "system_prompt": "Transform the data as requested: pivot, unpivot, merge, split columns, reshape, aggregate, or restructure the data."
+        },
+        "chart_suggest": {
+            "model": "USE_OPENAI",
+            "description": "Suggest visualizations for data",
+            "input_key": "prompt",
+            "use_llm": True,
+            "system_prompt": "Analyze the data and recommend the best chart types for visualization. Explain why each chart type would be effective."
+        },
+        "sql_query": {
+            "model": "USE_OPENAI",
+            "description": "Generate SQL queries for data",
+            "input_key": "prompt",
+            "use_llm": True,
+            "system_prompt": "Generate SQL queries to work with the described data. Support SELECT, INSERT, UPDATE, JOINs, aggregations, and complex queries."
+        }
+    },
+    
+    # ─────────────────────────────────────────────────────────────
+    # CODE EDITING
+    # ─────────────────────────────────────────────────────────────
+    "code": {
+        "explain": {
+            "model": "USE_OPENAI",
+            "description": "Explain code in plain language",
+            "input_key": "prompt",
+            "use_llm": True,
+            "system_prompt": "Explain the following code in clear, simple language. Describe what it does, how it works, and any important concepts."
+        },
+        "refactor": {
+            "model": "USE_OPENAI",
+            "description": "Refactor and improve code quality",
+            "input_key": "prompt",
+            "use_llm": True,
+            "system_prompt": "Refactor the following code to improve readability, performance, and maintainability. Explain the changes made."
+        },
+        "debug": {
+            "model": "USE_OPENAI",
+            "description": "Find and fix bugs in code",
+            "input_key": "prompt",
+            "use_llm": True,
+            "system_prompt": "Analyze the following code for bugs, errors, and potential issues. Identify problems and provide corrected code with explanations."
+        },
+        "complete": {
+            "model": "USE_OPENAI",
+            "description": "Complete partial code",
+            "input_key": "prompt",
+            "use_llm": True,
+            "system_prompt": "Complete the following partial code. Add missing parts, implement TODOs, and ensure the code is functional and well-structured."
+        },
+        "convert": {
+            "model": "USE_OPENAI",
+            "description": "Convert code between programming languages",
+            "input_key": "prompt",
+            "use_llm": True,
+            "system_prompt": "Convert the following code to the target language. Maintain functionality and use idiomatic patterns for the target language."
+        },
+        "test": {
+            "model": "USE_OPENAI",
+            "description": "Generate unit tests for code",
+            "input_key": "prompt",
+            "use_llm": True,
+            "system_prompt": "Generate comprehensive unit tests for the following code. Cover edge cases, normal cases, and error handling. Use appropriate testing frameworks."
+        },
+        "document": {
+            "model": "USE_OPENAI",
+            "description": "Add documentation and comments to code",
+            "input_key": "prompt",
+            "use_llm": True,
+            "system_prompt": "Add comprehensive documentation to the following code. Include docstrings, comments, type hints, and usage examples."
+        },
+        "run": {
+            "model": "USE_INTERNAL",
+            "description": "Execute code and return output",
+            "input_key": "code",
+            "use_executor": True
+        },
+        # Aliased versions with code_ prefix for frontend compatibility
+        "code_explain": {
+            "model": "USE_OPENAI",
+            "description": "Explain code in plain language",
+            "input_key": "prompt",
+            "use_llm": True,
+            "system_prompt": "Explain the following code in clear, simple language. Describe what it does, how it works, and any important concepts."
+        },
+        "code_refactor": {
+            "model": "USE_OPENAI",
+            "description": "Refactor and improve code quality",
+            "input_key": "prompt",
+            "use_llm": True,
+            "system_prompt": "Refactor the following code to improve readability, performance, and maintainability. Explain the changes made."
+        },
+        "code_debug": {
+            "model": "USE_OPENAI",
+            "description": "Find and fix bugs in code",
+            "input_key": "prompt",
+            "use_llm": True,
+            "system_prompt": "Analyze the following code for bugs, errors, and potential issues. Identify problems and provide corrected code with explanations."
+        },
+        "code_complete": {
+            "model": "USE_OPENAI",
+            "description": "Complete partial code",
+            "input_key": "prompt",
+            "use_llm": True,
+            "system_prompt": "Complete the following partial code. Add missing parts, implement TODOs, and ensure the code is functional and well-structured."
+        },
+        "code_convert": {
+            "model": "USE_OPENAI",
+            "description": "Convert code between programming languages",
+            "input_key": "prompt",
+            "use_llm": True,
+            "system_prompt": "Convert the following code to the target language. Maintain functionality and use idiomatic patterns for the target language."
+        },
+        "code_test": {
+            "model": "USE_OPENAI",
+            "description": "Generate unit tests for code",
+            "input_key": "prompt",
+            "use_llm": True,
+            "system_prompt": "Generate comprehensive unit tests for the following code. Cover edge cases, normal cases, and error handling. Use appropriate testing frameworks."
+        },
+        "code_document": {
+            "model": "USE_OPENAI",
+            "description": "Add documentation and comments to code",
+            "input_key": "prompt",
+            "use_llm": True,
+            "system_prompt": "Add comprehensive documentation to the following code. Include docstrings, comments, type hints, and usage examples."
+        },
+        "code_run": {
+            "model": "USE_INTERNAL",
+            "description": "Execute code and return output",
+            "input_key": "code",
+            "use_executor": True
         }
     }
 }
@@ -513,10 +808,25 @@ TASK_KEYWORDS = {
     "ocr": ("text", "ocr"),
     "extract text": ("text", "ocr"),
     "read text": ("text", "ocr"),
-    "explain code": ("text", "code_explain"),
-    "code explanation": ("text", "code_explain"),
-    "refactor code": ("text", "code_refactor"),
-    "improve code": ("text", "code_refactor"),
+    
+    # Code tasks
+    "explain code": ("code", "explain"),
+    "code explanation": ("code", "explain"),
+    "refactor code": ("code", "refactor"),
+    "improve code": ("code", "refactor"),
+    "debug code": ("code", "debug"),
+    "fix bugs": ("code", "debug"),
+    "find bugs": ("code", "debug"),
+    "complete code": ("code", "complete"),
+    "finish code": ("code", "complete"),
+    "convert code": ("code", "convert"),
+    "translate code": ("code", "convert"),
+    "generate tests": ("code", "test"),
+    "unit tests": ("code", "test"),
+    "document code": ("code", "document"),
+    "add comments": ("code", "document"),
+    "run code": ("code", "run"),
+    "execute code": ("code", "run"),
 }
 
 
@@ -548,13 +858,36 @@ class UniversalEditor:
                 logger.error(f"Status callback error: {e}")
     
     def detect_media_type(self, file_path: str) -> MediaType:
-        """Detect media type from file extension."""
+        """Detect media type from file extension or inline content prefix."""
+        # Handle inline content (inline:type:content)
+        if file_path.startswith("inline:"):
+            parts = file_path.split(":", 2)
+            if len(parts) >= 2:
+                type_hint = parts[1].lower()
+                if type_hint in ("code", "python", "javascript", "typescript", "java", "cpp", "rust", "go"):
+                    return MediaType.CODE
+                elif type_hint in ("text", "txt", "md", "markdown"):
+                    return MediaType.TEXT
+                elif type_hint in ("spreadsheet", "csv", "tsv", "json", "data"):
+                    return MediaType.SPREADSHEET
+                elif type_hint in ("image", "img"):
+                    return MediaType.IMAGE
+                elif type_hint in ("video", "vid"):
+                    return MediaType.VIDEO
+                elif type_hint in ("audio", "sound"):
+                    return MediaType.AUDIO
+                elif type_hint in ("3d", "model"):
+                    return MediaType.THREE_D
+        
         ext = Path(file_path).suffix.lower()
         
         image_exts = {'.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.tiff', '.svg'}
         video_exts = {'.mp4', '.mov', '.avi', '.mkv', '.webm', '.flv', '.wmv'}
         audio_exts = {'.mp3', '.wav', '.flac', '.aac', '.ogg', '.m4a', '.wma'}
         text_exts = {'.txt', '.md', '.doc', '.docx', '.pdf', '.rtf', '.html'}
+        code_exts = {'.py', '.js', '.ts', '.jsx', '.tsx', '.java', '.cpp', '.c', '.h', '.hpp', 
+                     '.rs', '.go', '.rb', '.php', '.swift', '.kt', '.scala', '.cs', '.sh', '.bash'}
+        spreadsheet_exts = {'.csv', '.tsv', '.xlsx', '.xls', '.json', '.parquet'}
         three_d_exts = {'.obj', '.glb', '.gltf', '.fbx', '.stl', '.ply', '.3ds'}
         
         if ext in image_exts:
@@ -563,6 +896,10 @@ class UniversalEditor:
             return MediaType.VIDEO
         elif ext in audio_exts:
             return MediaType.AUDIO
+        elif ext in code_exts:
+            return MediaType.CODE
+        elif ext in spreadsheet_exts:
+            return MediaType.SPREADSHEET
         elif ext in text_exts:
             return MediaType.TEXT
         elif ext in three_d_exts:
@@ -932,6 +1269,27 @@ class UniversalEditor:
         
         logger.info(f"Selected task: {task_name}, model: {model_info.get('model', 'unknown')}")
         self._update_status("preparing", 0.1, f"🎯 Task: {task_name.replace('_', ' ').title()}")
+        
+        # Check if this is a code execution task
+        if model_info.get("use_executor"):
+            self._update_status("executing", 0.15, "⚡ Executing code...")
+            try:
+                from .code_execution import CodeExecutionTools
+                executor = CodeExecutionTools()
+                result = await executor.execute_python(file_path)
+                
+                return {
+                    "success": result.get("success", False),
+                    "media_type": "text",
+                    "task": task_name,
+                    "output_text": result.get("stdout", "") + ("\nError: " + result.get("stderr", "") if result.get("stderr") else ""),
+                    "output_url": None,
+                    "instruction": instruction,
+                    "output_type": "code_output"
+                }
+            except Exception as e:
+                logger.error(f"Code execution failed: {e}")
+                return {"success": False, "error": str(e), "task": task_name}
         
         # Check if this is an LLM-based text task
         if model_info.get("use_llm"):

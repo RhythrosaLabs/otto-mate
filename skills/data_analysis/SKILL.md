@@ -29,18 +29,13 @@ Comprehensive data analysis capabilities for business intelligence, including e-
 ```yaml
 name: Analyze Store Performance
 steps:
-  1. Fetch Shopify analytics data
-  2. Fetch order history
-  3. Calculate key metrics:
-     - Total revenue
-     - Average order value
-     - Conversion rate
-     - Customer acquisition cost
-     - Lifetime value
-  4. Identify trends (daily, weekly, monthly)
-  5. Compare to previous periods
-  6. Generate insights and recommendations
-  7. Create visual reports
+  - Fetch Shopify analytics data
+  - Fetch order history
+  - "Calculate key metrics: Total revenue, Average order value, Conversion rate, Customer acquisition cost, Lifetime value"
+  - Identify trends (daily, weekly, monthly)
+  - Compare to previous periods
+  - Generate insights and recommendations
+  - Create visual reports
 
 success_criteria:
   - All key metrics calculated
@@ -53,18 +48,13 @@ success_criteria:
 ```yaml
 name: Segment Customer Base
 steps:
-  1. Collect customer order data
-  2. Calculate RFM metrics (Recency, Frequency, Monetary)
-  3. Apply clustering algorithm
-  4. Identify segments:
-     - VIP customers
-     - Loyal customers
-     - At-risk customers
-     - New customers
-     - Lost customers
-  5. Profile each segment
-  6. Generate targeted recommendations
-  7. Create segment-specific campaigns
+  - Collect customer order data
+  - Calculate RFM metrics (Recency, Frequency, Monetary)
+  - Apply clustering algorithm
+  - "Identify segments: VIP customers, Loyal customers, At-risk customers, New customers, Lost customers"
+  - Profile each segment
+  - Generate targeted recommendations
+  - Create segment-specific campaigns
 
 success_criteria:
   - Clear customer segments defined
@@ -76,19 +66,14 @@ success_criteria:
 ```yaml
 name: Analyze Product Sales
 steps:
-  1. Fetch all product data
-  2. Calculate metrics per product:
-     - Units sold
-     - Revenue generated
-     - Profit margin
-     - Return rate
-     - Customer satisfaction
-  3. Rank products by performance
-  4. Identify top performers
-  5. Flag underperformers
-  6. Analyze seasonality
-  7. Forecast future performance
-  8. Generate product strategy report
+  - Fetch all product data
+  - "Calculate metrics per product: Units sold, Revenue generated, Profit margin, Return rate, Customer satisfaction"
+  - Rank products by performance
+  - Identify top performers
+  - Flag underperformers
+  - Analyze seasonality
+  - Forecast future performance
+  - Generate product strategy report
 
 success_criteria:
   - Complete product performance matrix
@@ -100,12 +85,12 @@ success_criteria:
 ```yaml
 name: Analyze Market Trends
 steps:
-  1. Research industry trends
-  2. Analyze competitor performance
-  3. Identify emerging opportunities
-  4. Correlate with internal data
-  5. Forecast market direction
-  6. Generate opportunity report
+  - Research industry trends
+  - Analyze competitor performance
+  - Identify emerging opportunities
+  - Correlate with internal data
+  - Forecast market direction
+  - Generate opportunity report
 
 success_criteria:
   - Trend analysis complete

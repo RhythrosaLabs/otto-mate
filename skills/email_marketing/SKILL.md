@@ -26,35 +26,23 @@ name: New Customer Welcome Series
 triggers:
   - First purchase completed
 steps:
-  1. Send immediate welcome email (within 5 minutes)
-  2. Wait 2 days
-  3. Send product tips email
-  4. Wait 3 days
-  5. Send social media follow request
-  6. Wait 5 days
-  7. Send discount for next purchase
+  - Send immediate welcome email (within 5 minutes)
+  - Wait 2 days
+  - Send product tips email
+  - Wait 3 days
+  - Send social media follow request
+  - Wait 5 days
+  - Send discount for next purchase
 
 emails:
-  1. Welcome:
-     - Thank you message
-     - Order confirmation
-     - Brand story
-     - Social links
-  
-  2. Tips:
-     - How to use product
-     - Care instructions
-     - Style ideas
-  
-  3. Community:
-     - Join Instagram
-     - Share user photos
-     - Hashtag campaign
-  
-  4. Incentive:
-     - 15% off next order
-     - Expires in 7 days
-     - Product recommendations
+  - name: Welcome
+    content: "Thank you message, Order confirmation, Brand story, Social links"
+  - name: Tips
+    content: "How to use product, Care instructions, Style ideas"
+  - name: Community
+    content: "Join Instagram, Share user photos, Hashtag campaign"
+  - name: Incentive
+    content: "15% off next order, Expires in 7 days, Product recommendations"
 
 success_criteria:
   - 40%+ open rate
@@ -69,31 +57,23 @@ trigger:
   - Cart created but not purchased (1 hour)
 
 steps:
-  1. Wait 1 hour after abandonment
-  2. Send first reminder (friendly)
-  3. Wait 24 hours
-  4. Send second email (with discount)
-  5. Wait 48 hours
-  6. Send final email (urgency + discount)
+  - Wait 1 hour after abandonment
+  - Send first reminder (friendly)
+  - Wait 24 hours
+  - Send second email (with discount)
+  - Wait 48 hours
+  - Send final email (urgency + discount)
 
 emails:
-  1. Reminder (1 hour):
-     - Subject: "You forgot something! 👀"
-     - Show cart items
-     - One-click checkout link
-     - Free shipping reminder
-  
-  2. Incentive (24 hours):
-     - Subject: "Come back! Here's 10% off 🎁"
-     - 10% discount code
-     - Cart items with discount shown
-     - Customer reviews
-  
-  3. Last Chance (72 hours):
-     - Subject: "Last chance: 15% off expires tonight! ⏰"
-     - 15% discount code
-     - Urgency messaging
-     - Limited time offer
+  - name: "Reminder (1 hour)"
+    subject: "You forgot something!"
+    content: "Show cart items, One-click checkout link, Free shipping reminder"
+  - name: "Incentive (24 hours)"
+    subject: "Come back! Here's 10% off"
+    content: "10% discount code, Cart items with discount shown, Customer reviews"
+  - name: "Last Chance (72 hours)"
+    subject: "Last chance - 15% off expires tonight!"
+    content: "15% discount code, Urgency messaging, Limited time offer"
 
 success_criteria:
   - 25%+ open rate
@@ -105,17 +85,13 @@ success_criteria:
 ```yaml
 name: New Product Launch Email
 steps:
-  1. Segment customer list:
-     - VIP customers (first access)
-     - Past purchasers (early access)
-     - General list (main launch)
-  
-  2. Create teaser campaign (1 week before)
-  3. Send VIP exclusive (3 days before)
-  4. Send early access (1 day before)
-  5. Send main launch email
-  6. Send reminder (3 days after)
-  7. Send final call (7 days after)
+  - "Segment customer list: VIP customers (first access), Past purchasers (early access), General list (main launch)"
+  - Create teaser campaign (1 week before)
+  - Send VIP exclusive (3 days before)
+  - Send early access (1 day before)
+  - Send main launch email
+  - Send reminder (3 days after)
+  - Send final call (7 days after)
 
 success_criteria:
   - 35%+ open rate

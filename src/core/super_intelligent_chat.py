@@ -417,6 +417,10 @@ Be helpful, accurate, and autonomous. When you need to do something, do it - don
                 tool_name = tool_call["name"]
                 tool_input = tool_call["input"]
                 
+                # Pre-filter known meta-parameters that should never be passed to tools
+                meta_params_to_remove = {'task_description', 'task_type', 'task_id', 'step_id', 'execution_context'}
+                tool_input = {k: v for k, v in tool_input.items() if k not in meta_params_to_remove}
+                
                 # Check if this should be delegated to an agent
                 if self._should_delegate(tool_name):
                     result = await self._delegate_to_agent(tool_name, tool_input, session)

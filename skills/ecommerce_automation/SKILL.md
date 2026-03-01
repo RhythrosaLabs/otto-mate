@@ -30,13 +30,13 @@ Complete e-commerce automation from product creation to publishing and order man
 ```yaml
 name: Create and Publish Product
 steps:
-  1. Generate or receive product design image
-  2. Upload image to Printify
-  3. Create product in Printify with proper variants
-  4. Publish Printify product to Shopify
-  5. Verify product appears in Shopify
-  6. Add to appropriate collection
-  7. Set SEO metadata
+  - Generate or receive product design image
+  - Upload image to Printify
+  - Create product in Printify with proper variants
+  - Publish Printify product to Shopify
+  - Verify product appears in Shopify
+  - Add to appropriate collection
+  - Set SEO metadata
 
 success_criteria:
   - Product visible in both Printify and Shopify
@@ -49,14 +49,10 @@ success_criteria:
 ```yaml
 name: Launch Product Line
 steps:
-  1. Create multiple designs (use image_generation skill)
-  2. For each design:
-     - Upload to Printify
-     - Create product with variants
-     - Publish to Shopify
-     - Add to collection
-  3. Create bundle/collection page
-  4. Generate marketing content
+  - Create multiple designs (use image_generation skill)
+  - "For each design: Upload to Printify, Create product with variants, Publish to Shopify, Add to collection"
+  - Create bundle/collection page
+  - Generate marketing content
 
 success_criteria:
   - All products published
@@ -68,11 +64,11 @@ success_criteria:
 ```yaml
 name: Synchronize Inventory
 steps:
-  1. Get Printify product list
-  2. Get Shopify product list
-  3. Compare inventory levels
-  4. Update mismatches
-  5. Flag out-of-stock items
+  - Get Printify product list
+  - Get Shopify product list
+  - Compare inventory levels
+  - Update mismatches
+  - Flag out-of-stock items
 
 success_criteria:
   - Inventory matches across platforms

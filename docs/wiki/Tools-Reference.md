@@ -1,840 +1,435 @@
 # Tools Reference
 
-Complete documentation of all 100+ tools available in Otto Chat.
-
----
-
-## Tool Categories
-
-| Category | Count | Description |
-|----------|-------|-------------|
-| [Image Generation](#image-generation) | 15+ | AI image creation and editing |
-| [Video Generation](#video-generation) | 10+ | AI video creation |
-| [Audio Generation](#audio-generation) | 8 | Music, voice, sound effects |
-| [Printify](#printify) | 15+ | Print-on-demand |
-| [Shopify](#shopify) | 12 | E-commerce |
-| [Research](#research) | 8 | Web search and scraping |
-| [Browser](#browser) | 8 | Browser automation |
-| [Content](#content) | 7 | Text generation |
-| [File Storage](#file-storage) | 7 | File management |
-| [Plugin Tools](#plugin-tools) | 10+ | From installed plugins |
+Complete reference for all tools available in Otto Chat. Tools are organized by category and registered dynamically via the Tool Registry.
 
 ---
 
 ## Image Generation
 
-### generate_image_flux_pro
+### `generate_image`
+Generate an AI image using the best available model.
 
-Generate high-quality images using Flux Pro 1.1.
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `prompt` | string | — | Image description |
+| `model` | string | `flux-pro` | Model to use |
+| `aspect_ratio` | string | `1:1` | Aspect ratio (1:1, 2:3, 3:2, 16:9, 9:16) |
+| `style` | string | — | Style preset (photorealistic, artistic, cinematic) |
+| `width` | int | — | Custom width in pixels |
+| `height` | int | — | Custom height in pixels |
 
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `prompt` | string | Yes | - | Image generation prompt |
-| `aspect_ratio` | string | No | "1:1" | Aspect ratio |
-| `num_outputs` | int | No | 1 | Number of images (1-4) |
-| `guidance` | float | No | 3.5 | Guidance scale (1-10) |
-| `output_format` | string | No | "png" | png, jpg, webp |
+**Available Models:**
 
-**Aspect Ratios:**
-- `1:1` (1024×1024) - Square
-- `16:9` (1344×768) - Widescreen
-- `9:16` (768×1344) - Portrait/Phone
-- `4:3` (1152×896) - Standard
-- `3:4` (896×1152) - Portrait
-- `2:3` (832×1216) - Tall Portrait
-- `3:2` (1216×832) - Landscape
+| Model Key | Model ID | Best For |
+|-----------|----------|----------|
+| `flux-pro` | `black-forest-labs/flux-1.1-pro` | Highest quality, photorealistic |
+| `flux-dev` | `black-forest-labs/flux-dev` | Fast iteration |
+| `sdxl` | `stability-ai/sdxl` | Versatile, wide style range |
+| `recraft` | `recraft-ai/recraft-v3` | Logos, icons, vector art |
+| `ideogram` | `ideogram-ai/ideogram-v2` | Text in images |
 
-**Example:**
-```json
-{
-  "prompt": "A majestic mountain landscape at golden hour, photorealistic",
-  "aspect_ratio": "16:9",
-  "guidance": 4.0
-}
-```
+### `generate_tshirt_design`
+Generate a design optimized for t-shirt printing (square, high-contrast).
 
----
+### `generate_product_mockup`
+Generate a product mockup image.
 
-### generate_image_flux_dev
+### `generate_lifestyle_scene`
+Generate a lifestyle/environmental scene.
 
-Fast image generation for prototyping with Flux Dev.
+### `remove_background`
+Remove the background from an image.
 
-| Parameter | Type | Required | Default |
-|-----------|------|----------|---------|
-| `prompt` | string | Yes | - |
-| `aspect_ratio` | string | No | "1:1" |
-| `num_inference_steps` | int | No | 28 |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `image_url` | string | URL of the image |
 
----
+### `upscale_image`
+Upscale an image using AI super-resolution.
 
-### generate_image_sdxl
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `image_url` | string | URL of the image |
+| `scale` | int | Scale factor (2, 4) |
 
-Generate images using Stable Diffusion XL.
+### `add_text_overlay`
+Add text overlay to an image.
 
-| Parameter | Type | Required | Default |
-|-----------|------|----------|---------|
-| `prompt` | string | Yes | - |
-| `negative_prompt` | string | No | "" |
-| `width` | int | No | 1024 |
-| `height` | int | No | 1024 |
-| `num_inference_steps` | int | No | 30 |
-| `guidance_scale` | float | No | 7.5 |
-| `seed` | int | No | random |
+### `adjust_image`
+Apply adjustments (brightness, contrast, saturation, etc.).
 
----
-
-### generate_image_recraft
-
-Generate logos, icons, and vector-style images with Recraft V3.
-
-| Parameter | Type | Required | Default |
-|-----------|------|----------|---------|
-| `prompt` | string | Yes | - |
-| `style` | string | No | "any" |
-| `size` | string | No | "1024x1024" |
-
-**Styles:** `any`, `realistic`, `digital_illustration`, `vector_illustration`, `icon`
-
-**Best for:** Logos, icons, brand assets, clean illustrations
-
----
-
-### generate_image_ideogram
-
-Generate images with text using Ideogram V2.
-
-| Parameter | Type | Required | Default |
-|-----------|------|----------|---------|
-| `prompt` | string | Yes | - |
-| `aspect_ratio` | string | No | "1:1" |
-| `style` | string | No | "auto" |
-
-**Best for:** Images containing readable text, signs, banners
-
----
-
-### generate_logo
-
-Create professional logos.
-
-| Parameter | Type | Required | Default |
-|-----------|------|----------|---------|
-| `company_name` | string | Yes | - |
-| `style` | string | No | "modern" |
-| `colors` | array | No | auto |
-| `industry` | string | No | "" |
-
-**Styles:** `modern`, `minimal`, `vintage`, `playful`, `corporate`, `luxury`
-
----
-
-### upscale_image
-
-Upscale image resolution by 4x.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `image_url` | string | Yes |
-| `scale` | int | No (default: 4) |
-
----
-
-### remove_background
-
-Remove background from an image.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `image_url` | string | Yes |
-
-**Returns:** PNG with transparent background
-
----
-
-### enhance_image
-
-Enhance image quality and details.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `image_url` | string | Yes |
-| `enhancement_type` | string | No |
-
-**Enhancement Types:** `auto`, `face`, `cartoon`, `general`
-
----
-
-### colorize_image
-
-Add color to black and white images.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `image_url` | string | Yes |
-
----
-
-### inpaint_image
-
-Edit parts of an image.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `image_url` | string | Yes |
-| `mask_url` | string | Yes |
-| `prompt` | string | Yes |
-
----
-
-### style_transfer
-
-Apply artistic style to an image.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `content_image` | string | Yes |
-| `style` | string | Yes |
-
-**Styles:** `van_gogh`, `monet`, `picasso`, `anime`, `sketch`, `watercolor`
+### `edit_image_with_ai`
+Edit an existing image with AI-powered instructions.
 
 ---
 
 ## Video Generation
 
-### generate_ai_video
+### `generate_ai_video`
+Generate a video using the best available model.
 
-Generate video from text or image.
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `prompt` | string | — | Video description |
+| `model` | string | auto-select | Video model |
+| `duration` | int | 5 | Duration in seconds |
+| `style` | string | — | Style preset |
 
-| Parameter | Type | Required | Default |
-|-----------|------|----------|---------|
-| `prompt` | string | Yes* | - |
-| `image_url` | string | Yes* | - |
-| `model` | string | No | "runway" |
-| `duration` | int | No | 5 |
+**Style Presets:**
+- `cinematic` — Cinematic film look with dramatic lighting
+- `commercial` — Clean, professional product video
+- `luxury` — Premium, elegant aesthetic
+- `dynamic` — Fast-paced, energetic
+- `ambient` — Slow, atmospheric, mood-setting
 
-*One of `prompt` or `image_url` required
+### `create_promo_video`
+Create a commercial-quality promotional video with script generation.
 
-**Models:** `runway`, `luma`, `minimax`, `kling`
-
----
-
-### generate_video_runway
-
-Generate video with Runway Gen-3 Alpha.
-
-| Parameter | Type | Required | Default |
-|-----------|------|----------|---------|
-| `prompt` | string | Yes | - |
-| `image_url` | string | No | - |
-| `duration` | int | No | 5 |
-| `aspect_ratio` | string | No | "16:9" |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `product_name` | string | Product/brand name |
+| `style` | string | Cinematic style preset |
+| `scenes` | int | Number of scenes |
 
 ---
 
-### generate_video_luma
+## Audio
 
-Generate video with Luma Dream Machine.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `prompt` | string | Yes |
-| `image_url` | string | No |
-
----
-
-### create_promo_video
-
-Create a professional promotional video.
-
-| Parameter | Type | Required | Default |
-|-----------|------|----------|---------|
-| `product_name` | string | Yes | - |
-| `description` | string | Yes | - |
-| `style` | string | No | "cinematic" |
-| `duration` | int | No | 30 |
-
-**Styles:** `cinematic`, `commercial`, `luxury`, `dynamic`, `ambient`
-
----
-
-### assemble_video_with_audio
-
-Combine video with audio/music.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `video_url` | string | Yes |
-| `audio_url` | string | Yes |
-| `volume` | float | No (0-1) |
-
----
-
-### create_full_commercial
-
-End-to-end commercial production.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `brand_name` | string | Yes |
-| `product` | string | Yes |
-| `message` | string | Yes |
-| `style` | string | No |
-| `include_music` | bool | No |
-
----
-
-## Audio Generation
-
-### generate_music
-
+### `generate_music`
 Generate AI music.
 
-| Parameter | Type | Required | Default |
-|-----------|------|----------|---------|
-| `prompt` | string | Yes | - |
-| `duration` | int | No | 30 |
-| `genre` | string | No | "auto" |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `prompt` | string | Music description |
+| `duration` | int | Duration in seconds |
+| `genre` | string | Music genre |
 
-**Genres:** `ambient`, `electronic`, `cinematic`, `corporate`, `jazz`, `classical`, `lo-fi`, `hip-hop`
+### `generate_ambient`
+Generate ambient/atmospheric audio.
 
----
-
-### generate_ambient
-
-Generate ambient soundscapes.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `description` | string | Yes |
-| `duration` | int | No |
-
----
-
-### text_to_speech
-
+### `text_to_speech`
 Convert text to speech.
 
-| Parameter | Type | Required | Default |
-|-----------|------|----------|---------|
-| `text` | string | Yes | - |
-| `voice` | string | No | "alloy" |
-| `speed` | float | No | 1.0 |
-
-**Voices:** `alloy`, `echo`, `fable`, `onyx`, `nova`, `shimmer`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `text` | string | Text to speak |
+| `voice` | string | Voice ID |
 
 ---
 
-### generate_voiceover
+## E-Commerce — Printify
 
-Create professional voiceover narration.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `script` | string | Yes |
-| `voice_style` | string | No |
-| `emotion` | string | No |
-
----
-
-## Printify
-
-### get_printify_shops
-
+### `get_printify_shops`
 List all connected Printify shops.
 
-| Parameter | Type | Required |
-|-----------|------|----------|
-| (none) | - | - |
+### `get_printify_products`
+List products from a shop.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `shop_id` | string | Shop ID (optional, uses default) |
+| `page` | int | Page number |
+
+### `create_printify_product`
+Create a new product on Printify.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `title` | string | Product title |
+| `description` | string | Product description |
+| `blueprint_id` | int | Product template ID |
+| `image_url` | string | Design image URL |
+| `variants` | array | Variant configuration |
+
+### `upload_printify_image`
+Upload a design image to Printify.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `image_url` | string | Image URL to upload |
+| `filename` | string | Filename |
+
+### `publish_printify_product`
+Publish a product to sales channels.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `product_id` | string | Printify product ID |
+
+### `get_blueprints`
+Browse available product blueprints (templates).
+
+**Common Blueprints:** T-shirts, hoodies, mugs, posters, framed prints, phone cases, tote bags, canvas prints, pillows, blankets, stickers.
 
 ---
 
-### get_printify_products
+## E-Commerce — Shopify
 
-Get products from a shop.
-
-| Parameter | Type | Required | Default |
-|-----------|------|----------|---------|
-| `shop_id` | string | No | default shop |
-| `page` | int | No | 1 |
-| `limit` | int | No | 20 |
-
----
-
-### get_blueprints
-
-Get available product templates.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `category` | string | No |
-
-**Categories:** `apparel`, `drinkware`, `wall_art`, `accessories`, `home`
-
----
-
-### upload_printify_image
-
-Upload design image to Printify.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `image_url` | string | Yes |
-| `filename` | string | No |
-
----
-
-### create_printify_product
-
-Create a new product.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `title` | string | Yes |
-| `description` | string | Yes |
-| `blueprint_id` | int | Yes |
-| `image_id` | string | Yes |
-| `variants` | array | No |
-
----
-
-### publish_printify_product
-
-Publish product to sales channels.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `product_id` | string | Yes |
-| `title` | bool | No |
-| `description` | bool | No |
-| `images` | bool | No |
-
----
-
-### smart_create_product
-
-AI-powered product creation.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `product_type` | string | Yes |
-| `design_prompt` | string | Yes |
-| `title` | string | No |
-
-**Product Types:** `t-shirt`, `hoodie`, `mug`, `poster`, `canvas`, `framed_art`, `phone_case`, `tote_bag`
-
----
-
-## Shopify
-
-### get_shopify_products
-
+### `get_shopify_products`
 List store products.
 
-| Parameter | Type | Required | Default |
-|-----------|------|----------|---------|
-| `limit` | int | No | 50 |
-| `status` | string | No | "active" |
+### `create_shopify_product`
+Create a new Shopify product.
 
----
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `title` | string | Product title |
+| `description` | string | HTML description |
+| `price` | string | Price |
+| `images` | array | Image URLs |
+| `variants` | array | Variant options |
 
-### create_shopify_product
+### `get_shopify_orders`
+View orders.
 
-Create a new product.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `title` | string | Yes |
-| `body_html` | string | Yes |
-| `vendor` | string | No |
-| `product_type` | string | No |
-| `variants` | array | Yes |
-
----
-
-### update_shopify_product
-
-Update existing product.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `product_id` | string | Yes |
-| `updates` | object | Yes |
-
----
-
-### get_shopify_orders
-
-Get store orders.
-
-| Parameter | Type | Required | Default |
-|-----------|------|----------|---------|
-| `status` | string | No | "any" |
-| `limit` | int | No | 50 |
-
----
-
-### get_shopify_customers
-
+### `get_shopify_customers`
 List customers.
 
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `limit` | int | No |
-| `email` | string | No |
-
----
-
-### update_shopify_inventory
-
-Update inventory levels.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `inventory_item_id` | string | Yes |
-| `available` | int | Yes |
+### `update_shopify_inventory`
+Adjust inventory levels.
 
 ---
 
 ## Research
 
-### web_search
+### `search_web`
+Google search via Serper API.
 
-Search the web via Google.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `query` | string | Search query |
+| `num_results` | int | Number of results (default: 10) |
 
-| Parameter | Type | Required | Default |
-|-----------|------|----------|---------|
-| `query` | string | Yes | - |
-| `num_results` | int | No | 10 |
+### `research_topic`
+Deep multi-source research on a topic.
 
----
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `topic` | string | Research topic |
+| `depth` | string | Research depth (quick, standard, deep) |
 
-### search_news
+### `browse_url`
+Navigate to a URL and extract content.
 
-Search news articles.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `url` | string | URL to browse |
+| `extract` | string | What to extract (text, links, images) |
 
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `query` | string | Yes |
-| `time_range` | string | No |
+### `analyze_competitor`
+Analyze a competitor's online presence.
 
-**Time Ranges:** `hour`, `day`, `week`, `month`, `year`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `url` | string | Competitor URL |
 
----
+### `get_trending_topics`
+Get currently trending topics.
 
-### search_images
-
-Search for images.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `query` | string | Yes |
-| `num_results` | int | No |
-
----
-
-### scrape_webpage
-
-Extract content from a webpage.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `url` | string | Yes |
-| `selector` | string | No |
+### `search_images`
+Search for images online.
 
 ---
 
-### scrape_structured
+## Browser Automation
 
-Extract structured data (JSON-LD, microdata).
+### `browser_navigate`
+Open a URL in the headless browser.
 
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `url` | string | Yes |
+### `browser_screenshot`
+Capture a screenshot of the current page.
 
----
+### `browser_click`
+Click an element on the page.
 
-### get_page_links
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `selector` | string | CSS selector |
 
-Extract all links from a page.
+### `browser_type`
+Type text into a form field.
 
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `url` | string | Yes |
-| `internal_only` | bool | No |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `selector` | string | CSS selector |
+| `text` | string | Text to type |
 
----
-
-### summarize_url
-
-Summarize webpage content.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `url` | string | Yes |
-| `max_length` | int | No |
-
----
-
-## Browser
-
-### browser_navigate
-
-Open a URL in browser.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `url` | string | Yes |
-| `wait_for` | string | No |
-
----
-
-### browser_screenshot
-
-Capture page screenshot.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `full_page` | bool | No |
-
----
-
-### browser_click
-
-Click an element.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `selector` | string | Yes |
-
----
-
-### browser_type
-
-Enter text in a field.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `selector` | string | Yes |
-| `text` | string | Yes |
-
----
-
-### browser_scroll
-
+### `browser_scroll`
 Scroll the page.
 
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `direction` | string | Yes |
-| `amount` | int | No |
+### `browser_extract`
+Extract structured data from the page.
+
+### `browser_execute_script`
+Run JavaScript on the page.
+
+### `browser_wait`
+Wait for an element to appear.
+
+### `browser_close`
+Close the browser.
 
 ---
 
-### browser_extract
+## Content Generation
 
-Extract data from page.
+### `generate_blog_post`
+Generate an AI-written blog post.
 
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `selector` | string | Yes |
-| `attribute` | string | No |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `topic` | string | Blog topic |
+| `tone` | string | Writing tone |
+| `length` | string | Short, medium, long |
+| `keywords` | array | SEO keywords |
 
----
+### `generate_product_description`
+Generate e-commerce product copy.
 
-## Content
+### `generate_social_media_posts`
+Generate social media content for multiple platforms.
 
-### generate_blog_post
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `topic` | string | Post topic |
+| `platforms` | array | Target platforms |
+| `tone` | string | Brand voice |
 
-Generate a blog article.
+### `generate_email_campaign`
+Generate email marketing content.
 
-| Parameter | Type | Required | Default |
-|-----------|------|----------|---------|
-| `topic` | string | Yes | - |
-| `length` | string | No | "medium" |
-| `tone` | string | No | "professional" |
-| `keywords` | array | No | [] |
+### `generate_seo_content`
+Generate SEO-optimized content.
 
-**Lengths:** `short` (300 words), `medium` (800 words), `long` (1500+ words)
+### `generate_ad_copy`
+Generate advertising copy.
 
----
-
-### generate_product_description
-
-Create e-commerce product copy.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `product_name` | string | Yes |
-| `features` | array | Yes |
-| `target_audience` | string | No |
+### `improve_text`
+Enhance existing text content.
 
 ---
 
-### generate_social_post
+## Code & File Operations
 
-Create social media content.
+### `ai_file_editor`
+AI-powered file editing operations.
 
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `topic` | string | Yes |
-| `platform` | string | No |
-| `include_hashtags` | bool | No |
+**Operations:** `edit`, `review`, `refactor`, `fix`, `explain`
 
----
+### `code_execution`
+Execute code in a sandboxed environment.
 
-### generate_email
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `code` | string | Code to execute |
+| `language` | string | Programming language |
 
-Draft an email.
+### `codebase_awareness`
+Analyze and understand codebase structure.
 
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `purpose` | string | Yes |
-| `recipient_type` | string | No |
-| `tone` | string | No |
-
----
-
-### summarize_text
-
-Summarize long text.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `text` | string | Yes |
-| `max_length` | int | No |
-| `style` | string | No |
-
----
-
-### rewrite_text
-
-Rewrite content in different style.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `text` | string | Yes |
-| `target_style` | string | Yes |
-
----
-
-### generate_ideas
-
-Brainstorm ideas.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `topic` | string | Yes |
-| `num_ideas` | int | No |
-| `constraints` | array | No |
-
----
-
-## File Storage
-
-### save_file
-
+### `save_file`
 Store a file with metadata.
 
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `content` | string/bytes | Yes |
-| `filename` | string | Yes |
-| `category` | string | No |
-| `metadata` | object | No |
+### `get_file`
+Retrieve a file by ID.
+
+### `list_files`
+Browse files by category.
+
+### `save_image_from_url`
+Download and save an image from a URL.
 
 ---
 
-### save_image_from_url
+## Task & Scheduling
 
-Download and save an image.
+### `task_queue` (multiple operations)
+Manage the persistent task queue.
 
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `url` | string | Yes |
-| `filename` | string | No |
+**Operations:** `create`, `list`, `get`, `cancel`, `update_priority`
 
----
+### `scheduler`
+APScheduler-based task scheduling.
 
-### save_generated_image
-
-Save AI-generated image.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `url` | string | Yes |
-| `prompt` | string | No |
-| `model` | string | No |
+**Operations:** `add_job`, `remove_job`, `list_jobs`, `pause_job`, `resume_job`
 
 ---
 
-### get_file
+## Social Media
 
-Retrieve file by ID.
+### `social_poster`
+Post content to social media platforms.
 
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `file_id` | string | Yes |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `content` | string | Post content |
+| `platform` | string | Target platform |
+| `images` | array | Attached images |
 
----
-
-### list_files
-
-Browse files.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `category` | string | No |
-| `limit` | int | No |
+### `social_media_ads`
+Create social media advertisements.
 
 ---
 
-### delete_file
+## Email
 
-Remove a file.
+### `email_marketing`
+Send marketing emails.
 
-| Parameter | Type | Required |
-|-----------|------|----------|
-| `file_id` | string | Yes |
-
----
-
-### get_storage_stats
-
-Get storage statistics.
-
-| Parameter | Type | Required |
-|-----------|------|----------|
-| (none) | - | - |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `to` | string/array | Recipient(s) |
+| `subject` | string | Email subject |
+| `body` | string | Email body (HTML) |
+| `provider` | string | sendgrid or smtp |
 
 ---
 
-## Plugin Tools
+## Advanced
 
-Tools provided by installed plugins. See [[Plugin Development]] for creating custom tools.
+### `model_chaining`
+Chain multiple AI models in a pipeline.
 
-### web_scraper Plugin
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `pipeline` | array | Ordered list of model operations |
 
-| Tool | Description |
-|------|-------------|
-| `scrape_page` | Advanced web scraping |
-| `extract_links` | Get all page links |
-| `extract_tables` | Extract tables as JSON |
-| `search_page` | Search within page content |
+### `agent_delegation`
+Delegate a task to a specialized agent.
 
-### notification_sender Plugin
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `task` | string | Task description |
+| `agent_type` | string | Target agent role |
 
-| Tool | Description |
-|------|-------------|
-| `send_email` | Send email notifications |
-| `send_slack` | Post to Slack |
-| `send_discord` | Post to Discord |
-| `send_webhook` | Generic webhook POST |
+### `replicate_universal`
+Run any model on Replicate.
 
-### database_connector Plugin
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `model` | string | Replicate model ID |
+| `input` | object | Model inputs |
 
-| Tool | Description |
-|------|-------------|
-| `query_database` | Execute SQL queries |
-| `list_tables` | List database tables |
-| `describe_table` | Get table schema |
-| `insert_data` | Insert records |
+### `universal_editor`
+Edit any media type (image, video, audio, 3D).
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `file_url` | string | Input file URL |
+| `operation` | string | Edit operation |
+| `params` | object | Operation parameters |
+
+---
+
+## Listing Available Tools at Runtime
+
+```bash
+# Via API
+curl http://localhost:8000/tools
+
+# Via chat
+"What tools do you have available?"
+
+# Via slash command
+/help
+```

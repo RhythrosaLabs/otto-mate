@@ -460,3 +460,165 @@ def sanitize_for_logging(data: Any, max_length: int = 500) -> Any:
         return [sanitize_for_logging(item, max_length) for item in data[:10]]
     
     return data
+
+
+# ============================================================================
+# Text Utilities (from printify_clean patterns)
+# ============================================================================
+
+def sanitize_for_api(text: str) -> str:
+    """
+    Sanitize text for API calls by removing non-ASCII characters.
+    Prevents UnicodeEncodeError in API calls.
+    
+    Based on printify_clean/videomaker.py pattern.
+    """
+    if isinstance(text, str):
+        return text.encode("ascii", "ignore").decode("ascii")
+    return str(text).encode("ascii", "ignore").decode("ascii")
+
+
+def sanitize_filename(filename: str, max_length: int = 255) -> str:
+    """
+    Sanitize filename by removing/replacing invalid characters.
+    Based on printify_clean/file_utils.py pattern.
+    
+    Args:
+        filename: The original filename
+        max_length: Maximum filename length
+        
+    Returns:
+        Sanitized filename safe for all filesystems
+    """
+    import re
+    
+    # Replace invalid characters with underscore
+    invalid_chars = r'[<>:"/\\|?*\x00-\x1f]'
+    safe_name = re.sub(invalid_chars, '_', filename)
+    
+    # Remove leading/trailing spaces and dots
+    safe_name = safe_name.strip(' .')
+    
+    # Collapse multiple underscores
+    safe_name = re.sub(r'_+', '_', safe_name)
+    
+    # Truncate if too long (preserve extension)
+    if len(safe_name) > max_length:
+        name, ext = safe_name.rsplit('.', 1) if '.' in safe_name else (safe_name, '')
+        available = max_length - len(ext) - 1 if ext else max_length
+        safe_name = f"{name[:available]}.{ext}" if ext else name[:max_length]
+    
+    return safe_name or "untitled"
+
+
+def enhance_prompt(prompt: str, style: str = "professional") -> str:
+    """
+    Enhance a prompt with quality boosters.
+    Based on printify_clean/ultra_smart_executor.py pattern.
+    
+    Args:
+        prompt: Original prompt
+        style: Style hint for enhancement
+        
+    Returns:
+        Enhanced prompt with quality boosters
+    """
+    # Quality boosters based on style
+    boosters = {
+        "professional": "high quality, professional, detailed, crisp",
+        "artistic": "artistic, creative, visually stunning, unique style",
+        "photorealistic": "ultra realistic, photorealistic, 8k, detailed",
+        "minimal": "clean, minimal, modern, elegant",
+        "vibrant": "vibrant colors, dynamic, eye-catching, bold"
+    }
+    
+    booster = boosters.get(style, boosters["professional"])
+    
+    # Don't add if prompt already has quality terms
+    if any(term in prompt.lower() for term in ["quality", "detailed", "professional", "8k"]):
+        return prompt
+    
+    return f"{prompt}, {booster}"
+
+
+def truncate_text(text: str, max_length: int = 100, suffix: str = "...") -> str:
+    """Truncate text to max length with suffix."""
+    if len(text) <= max_length:
+        return text
+    return text[:max_length - len(suffix)] + suffix
+
+
+# ============================================================================
+# Progress Tracking (from printify_clean patterns)
+# ============================================================================
+
+@dataclass
+class ProgressUpdate:
+    """A progress update for multi-step operations."""
+    step: int
+    total: int
+    name: str
+    status: str  # "running", "completed", "failed"
+    message: str = ""
+    result: Optional[Dict[str, Any]] = None
+    
+    @property
+    def progress_pct(self) -> float:
+        """Get progress as percentage."""
+        return (self.step / self.total * 100) if self.total > 0 else 0
+
+
+class ProgressTracker:
+    """
+    Track progress of multi-step operations.
+    Based on printify_clean/performance_utils.py pattern.
+    """
+    
+    def __init__(self, total_steps: int, callback: Optional[Callable[[ProgressUpdate], None]] = None):
+        self.total_steps = total_steps
+        self.current_step = 0
+        self.callback = callback
+        self.updates: List[ProgressUpdate] = []
+    
+    def update(self, name: str, status: str = "running", message: str = "", result: Dict = None):
+        """Update progress with current step info."""
+        self.current_step += 1 if status == "completed" else 0
+        
+        update = ProgressUpdate(
+            step=self.current_step if status == "completed" else self.current_step + 1,
+            total=self.total_steps,
+            name=name,
+            status=status,
+            message=message,
+            result=result
+        )
+        self.updates.append(update)
+        
+        if self.callback:
+            self.callback(update)
+        
+        return update
+    
+    def complete(self, name: str = "Complete", message: str = "All steps finished"):
+        """Mark as complete."""
+        return self.update(name, "completed", message)
+    
+    @property
+    def is_complete(self) -> bool:
+        """Check if all steps are complete."""
+        return self.current_step >= self.total_steps
+    
+    @property
+    def summary(self) -> Dict[str, Any]:
+        """Get summary of progress."""
+        completed = sum(1 for u in self.updates if u.status == "completed")
+        failed = sum(1 for u in self.updates if u.status == "failed")
+        
+        return {
+            "total_steps": self.total_steps,
+            "completed": completed,
+            "failed": failed,
+            "in_progress": self.total_steps - completed - failed,
+            "progress_pct": (completed / self.total_steps * 100) if self.total_steps > 0 else 0
+        }
+

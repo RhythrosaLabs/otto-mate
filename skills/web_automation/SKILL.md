@@ -30,15 +30,12 @@ Advanced browser automation for web scraping, testing, data extraction, form fil
 ```yaml
 name: Scrape Website Data
 steps:
-  1. Navigate to target URL
-  2. Wait for page load
-  3. Extract desired elements:
-     - CSS selectors
-     - XPath queries
-     - Text content
-  4. Handle pagination if needed
-  5. Store extracted data
-  6. Process and format results
+  - Navigate to target URL
+  - Wait for page load
+  - "Extract desired elements: CSS selectors, XPath queries, Text content"
+  - Handle pagination if needed
+  - Store extracted data
+  - Process and format results
 
 success_criteria:
   - All target data extracted
@@ -51,17 +48,13 @@ success_criteria:
 ```yaml
 name: Automate Form Submission
 steps:
-  1. Navigate to form page
-  2. Fill form fields:
-     - Text inputs
-     - Dropdowns
-     - Checkboxes
-     - Radio buttons
-  3. Upload files if needed
-  4. Solve CAPTCHA if present (manual intervention)
-  5. Submit form
-  6. Wait for confirmation
-  7. Capture confirmation data
+  - Navigate to form page
+  - "Fill form fields: Text inputs, Dropdowns, Checkboxes, Radio buttons"
+  - Upload files if needed
+  - Solve CAPTCHA if present (manual intervention)
+  - Submit form
+  - Wait for confirmation
+  - Capture confirmation data
 
 success_criteria:
   - Form submitted successfully
@@ -73,15 +66,15 @@ success_criteria:
 ```yaml
 name: Post to Social Media
 steps:
-  1. Navigate to platform
-  2. Login if needed (use stored credentials)
-  3. Navigate to post creation
-  4. Fill post content
-  5. Upload media if needed
-  6. Set posting options
-  7. Publish post
-  8. Capture post URL
-  9. Verify post is live
+  - Navigate to platform
+  - Login if needed (use stored credentials)
+  - Navigate to post creation
+  - Fill post content
+  - Upload media if needed
+  - Set posting options
+  - Publish post
+  - Capture post URL
+  - Verify post is live
 
 success_criteria:
   - Post published successfully
@@ -93,14 +86,14 @@ success_criteria:
 ```yaml
 name: Monitor Competitor Prices
 steps:
-  1. Navigate to competitor product pages
-  2. Extract product prices
-  3. Extract availability status
-  4. Capture product details
-  5. Store in database
-  6. Compare to our prices
-  7. Alert if price changes
-  8. Schedule next check
+  - Navigate to competitor product pages
+  - Extract product prices
+  - Extract availability status
+  - Capture product details
+  - Store in database
+  - Compare to our prices
+  - Alert if price changes
+  - Schedule next check
 
 success_criteria:
   - All prices extracted
@@ -275,13 +268,13 @@ Share Article:
 ```yaml
 name: Test User Flow
 steps:
-  1. Navigate to starting page
-  2. Perform action (click, type, etc.)
-  3. Assert expected result
-  4. Capture screenshot
-  5. Continue flow
-  6. Verify final state
-  7. Report results
+  - Navigate to starting page
+  - Perform action (click, type, etc.)
+  - Assert expected result
+  - Capture screenshot
+  - Continue flow
+  - Verify final state
+  - Report results
 
 assertions:
   - Element exists
@@ -295,14 +288,10 @@ assertions:
 ```yaml
 name: Run Regression Suite
 steps:
-  1. Load test scenarios
-  2. For each scenario:
-     - Execute steps
-     - Capture actual results
-     - Compare to expected
-     - Screenshot on failure
-  3. Generate test report
-  4. Alert on failures
+  - Load test scenarios
+  - "For each scenario: Execute steps, Capture actual results, Compare to expected, Screenshot on failure"
+  - Generate test report
+  - Alert on failures
 
 success_criteria:
   - All tests pass

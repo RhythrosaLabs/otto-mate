@@ -1029,6 +1029,26 @@ class ShopifyTools(ToolBase):
                 reverse=True
             )[:limit]
             
+            # FALLBACK: If no sales data, get random products instead
+            if not sorted_products:
+                logger.info("No sales data found - falling back to listing products")
+                products_result = await self.list_products(limit=limit)
+                products = products_result.get("products", [])
+                
+                if products:
+                    sorted_products = [
+                        {
+                            "product_id": p.get("id"),
+                            "title": p.get("title", "Unknown"),
+                            "units_sold": 0,
+                            "total_revenue": 0,
+                            "order_count": 0,
+                            "image": p.get("images", [{}])[0].get("src") if p.get("images") else None,
+                            "note": "No sales data - showing available products"
+                        }
+                        for p in products[:limit]
+                    ]
+            
             # Calculate additional metrics
             for product in sorted_products:
                 product["average_order_value"] = (
@@ -1233,6 +1253,7 @@ class ShopifyTools(ToolBase):
         cta_type: str = "product",
         brand_voice: str = "professional yet approachable",
         featured_image_url: Optional[str] = None,
+        generate_featured_image: bool = True,  # Auto-generate if no featured_image_url
         seo_focused: bool = True  # Alias parameter
     ) -> Dict[str, Any]:
         """
@@ -1381,6 +1402,28 @@ Start directly with the content HTML."""
             # Auto-generate tags from keywords if not provided
             if not tags and keywords:
                 tags = keywords[:5]
+            
+            # Generate featured image if not provided and generate_featured_image is True
+            if not featured_image_url and generate_featured_image:
+                try:
+                    from ..tools.replicate_universal import ReplicateUniversalTools
+                    replicate_tools = ReplicateUniversalTools()
+                    
+                    image_prompt = f"Professional blog header image for article about {extracted_title}. Modern, clean, eye-catching design suitable for a professional blog. Abstract conceptual art with vibrant colors."
+                    
+                    logger.info(f"Generating featured image for blog: {extracted_title}")
+                    image_result = await replicate_tools.generate_image(
+                        prompt=image_prompt,
+                        model="flux-1.1-pro",
+                        width=1200,
+                        height=628  # Standard blog header aspect ratio
+                    )
+                    
+                    if image_result.get("success") and image_result.get("image_url"):
+                        featured_image_url = image_result["image_url"]
+                        logger.info(f"Featured image generated: {featured_image_url}")
+                except Exception as img_err:
+                    logger.warning(f"Failed to generate featured image: {img_err}")
             
             # Publish to Shopify
             result = await self.create_blog_post(

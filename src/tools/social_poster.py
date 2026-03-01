@@ -65,6 +65,122 @@ class BrowserPerformanceConfig:
 PERF_CONFIG = BrowserPerformanceConfig()
 
 
+# ============================================================================
+# PLATFORM CREDENTIALS CONFIGURATION
+# ============================================================================
+PLATFORM_CREDENTIALS = {
+    "twitter": {
+        "username_env": "TWITTER_USERNAME",
+        "password_env": "TWITTER_PASSWORD",
+        "login_url": "https://twitter.com/i/flow/login",
+        "username_field": "username, email, or phone",
+        "password_field": "password",
+    },
+    "instagram": {
+        "username_env": "INSTAGRAM_USERNAME",
+        "password_env": "INSTAGRAM_PASSWORD",
+        "login_url": "https://www.instagram.com/accounts/login/",
+        "username_field": "username",
+        "password_field": "password",
+    },
+    "tiktok": {
+        "username_env": "TIKTOK_USERNAME",
+        "password_env": "TIKTOK_PASSWORD",
+        "login_url": "https://www.tiktok.com/login/phone-or-email/email",
+        "username_field": "email or username",
+        "password_field": "password",
+    },
+    "facebook": {
+        "username_env": "FACEBOOK_EMAIL",
+        "password_env": "FACEBOOK_PASSWORD",
+        "login_url": "https://www.facebook.com/login/",
+        "username_field": "email",
+        "password_field": "password",
+    },
+    "pinterest": {
+        "username_env": "PINTEREST_EMAIL",
+        "password_env": "PINTEREST_PASSWORD",
+        "login_url": "https://www.pinterest.com/login/",
+        "username_field": "email",
+        "password_field": "password",
+    },
+    "reddit": {
+        "username_env": "REDDIT_USERNAME",
+        "password_env": "REDDIT_PASSWORD",
+        "login_url": "https://www.reddit.com/login/",
+        "username_field": "username",
+        "password_field": "password",
+    },
+    "linkedin": {
+        "username_env": "LINKEDIN_EMAIL",
+        "password_env": "LINKEDIN_PASSWORD",
+        "login_url": "https://www.linkedin.com/login",
+        "username_field": "email",
+        "password_field": "password",
+    },
+    "threads": {
+        "username_env": "THREADS_USERNAME",
+        "password_env": "THREADS_PASSWORD",
+        "login_url": "https://www.threads.net/login",
+        "username_field": "username",
+        "password_field": "password",
+    },
+    "youtube": {
+        "username_env": "YOUTUBE_EMAIL",
+        "password_env": "YOUTUBE_PASSWORD",
+        "login_url": "https://accounts.google.com/signin",
+        "username_field": "email",
+        "password_field": "password",
+    },
+    "bandcamp": {
+        "username_env": "BANDCAMP_EMAIL",
+        "password_env": "BANDCAMP_PASSWORD",
+        "login_url": "https://bandcamp.com/login",
+        "username_field": "email",
+        "password_field": "password",
+    },
+}
+
+
+def get_platform_credentials(platform: str) -> Optional[Dict[str, str]]:
+    """
+    Get login credentials for a platform from environment variables.
+    
+    Returns:
+        Dict with 'username' and 'password' keys, or None if not configured.
+    """
+    platform = platform.lower()
+    cred_config = PLATFORM_CREDENTIALS.get(platform)
+    
+    if not cred_config:
+        return None
+    
+    username = os.getenv(cred_config["username_env"], "")
+    password = os.getenv(cred_config["password_env"], "")
+    
+    # Check if credentials are configured (not placeholder values)
+    if username and password and not username.startswith("your_") and not password.startswith("your_"):
+        return {
+            "username": username,
+            "password": password,
+            "login_url": cred_config["login_url"],
+            "username_field": cred_config["username_field"],
+            "password_field": cred_config["password_field"],
+        }
+    
+    return None
+
+
+def has_credentials(platform: str) -> bool:
+    """Check if credentials are configured for a platform."""
+    return get_platform_credentials(platform) is not None
+
+
+def get_all_configured_platforms() -> List[str]:
+    """Get list of platforms that have credentials configured."""
+    return [p for p in PLATFORM_CREDENTIALS.keys() if has_credentials(p)]
+
+
 # Platform configurations
 PLATFORM_CONFIG = {
     "twitter": {
@@ -128,6 +244,13 @@ PLATFORM_CONFIG = {
         "compose_url": "https://studio.youtube.com/channel/UC/videos/upload",
         "name": "YouTube",
         "icon": "📺",
+        "priority": 5,
+    },
+    "bandcamp": {
+        "url": "https://bandcamp.com",
+        "compose_url": "https://bandcamp.com/artist/edit",
+        "name": "Bandcamp",
+        "icon": "🎸",
         "priority": 5,
     },
 }
@@ -223,6 +346,18 @@ TASK: Upload to YouTube
 7. Set visibility (public/unlisted)
 8. Click Publish
 """,
+    "bandcamp": """
+TASK: Upload to Bandcamp
+1. Go to {compose_url}
+2. {login_instructions}
+3. Click "Add track" or "Add album"
+4. Upload audio file: "{abs_image_path}"
+5. Fill track/album title: "{title}"
+6. Add description: "{description}"
+7. Set pricing (free/paid)
+8. Upload cover art if available
+9. Click Publish
+""",
 }
 
 
@@ -288,11 +423,48 @@ class MultiPlatformPoster:
             try:
                 from browser_use import Agent
                 self._browser_agent = Agent
-                logger.info("Browser-Use agent loaded")
+                logger.info("Browser-Use agent loaded (0.11.x)")
             except ImportError:
                 logger.warning("browser-use not installed. Install with: pip install browser-use")
                 return None
         return self._browser_agent
+
+    def _get_llm(self):
+        """Get LLM for browser agent."""
+        try:
+            from langchain_anthropic import ChatAnthropic
+            llm = ChatAnthropic(model="claude-sonnet-4-20250514", timeout=120, stop=None)
+            # browser-use expects a .provider attribute
+            llm.provider = "anthropic"
+            return llm
+        except ImportError:
+            try:
+                from langchain_openai import ChatOpenAI
+                llm = ChatOpenAI(model="gpt-4o", timeout=120)
+                llm.provider = "openai"
+                return llm
+            except ImportError:
+                raise RuntimeError("No LLM provider installed. Need langchain-anthropic or langchain-openai")
+
+    def _get_browser_profile(self, platform: str = None):
+        """Get stealth browser profile for social media posting."""
+        try:
+            from .browser_stealth import create_social_media_profile, create_stealth_profile
+            if platform:
+                return create_social_media_profile(platform=platform)
+            return create_stealth_profile(mode="social")
+        except ImportError:
+            # Fallback: basic profile
+            try:
+                from browser_use import BrowserProfile
+                return BrowserProfile(
+                    headless=False,
+                    enable_default_extensions=True,
+                    minimum_wait_page_load_time=1.0,
+                    wait_between_actions=0.5,
+                )
+            except ImportError:
+                return None
 
     def get_platform_config(self, platform: str) -> Optional[Dict]:
         """Get configuration for a platform."""
@@ -347,11 +519,19 @@ class MultiPlatformPoster:
             abs_media_path = ""
 
         # Login instructions
-        login_instructions = (
-            "You should already be logged in. If not, wait for user to log in manually."
-            if already_logged_in
-            else "Log in with credentials if prompted."
-        )
+        credentials = get_platform_credentials(platform)
+        if already_logged_in:
+            login_instructions = "You should already be logged in. If not, wait for user to log in manually."
+        elif credentials:
+            # Auto-login with stored credentials
+            login_instructions = f"""If prompted to log in:
+   - Go to {credentials['login_url']}
+   - Enter {credentials['username_field']}: {credentials['username']}
+   - Enter {credentials['password_field']}: {credentials['password']}
+   - Complete any 2FA if prompted (wait for user)
+   - Continue after successful login"""
+        else:
+            login_instructions = "Log in manually if prompted (no credentials configured in .env)."
 
         # Format the template
         task = template.format(
@@ -408,27 +588,54 @@ class MultiPlatformPoster:
             if not Agent:
                 raise ImportError("Browser automation not available")
 
+            # Get LLM and browser profile for stealth
+            llm = self._get_llm()
+            profile = self._get_browser_profile(platform=platform)
+
             # Execute with retries
             for attempt in range(self.config.max_retries):
                 try:
                     logger.info(f"Posting to {platform} (attempt {attempt + 1})")
 
-                    # Create and run agent
-                    agent = Agent(
-                        task=task,
-                        max_steps=self.config.max_steps,
-                    )
+                    # Create agent with stealth browser config
+                    agent_kwargs = {
+                        "task": task,
+                        "llm": llm,
+                        "max_actions_per_step": self.config.max_actions_per_step,
+                        "use_vision": True,
+                    }
 
+                    # Add browser profile if available (0.11.x)
+                    if profile:
+                        try:
+                            from browser_use import Browser
+                            agent_kwargs["browser"] = Browser(browser_profile=profile)
+                        except (ImportError, TypeError):
+                            pass  # Fallback: agent creates its own browser
+
+                    agent = Agent(**agent_kwargs)
                     result = await agent.run()
 
-                    # Check for success
-                    if result and not result.get("error"):
+                    # Extract result from history
+                    result_text = ""
+                    if hasattr(result, 'final_result'):
+                        fr = result.final_result
+                        if callable(fr):
+                            fr = fr()
+                        result_text = str(fr) if fr else ""
+                    
+                    if result_text and "error" not in result_text.lower():
                         metrics.complete(
                             success=True,
-                            steps=result.get("steps", 0),
-                            post_url=result.get("url")
+                            steps=self.config.max_steps,
+                            post_url=None
                         )
-                        logger.info(f"✅ Successfully posted to {platform}")
+                        logger.info(f"Successfully posted to {platform}")
+                        break
+                    elif not result_text:
+                        # No explicit error, consider success
+                        metrics.complete(success=True, steps=self.config.max_steps)
+                        logger.info(f"Posted to {platform} (no error reported)")
                         break
 
                 except Exception as e:

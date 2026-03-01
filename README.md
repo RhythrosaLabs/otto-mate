@@ -1,157 +1,170 @@
-# 🤖 Otto Chat
-
-> **Universal AI Business Platform** — Automate everything through conversation
-
-Otto Chat is a sophisticated autonomous AI platform that combines Claude's intelligence with 100+ integrated tools. Generate stunning images and videos, create print-on-demand products, produce commercial content, manage e-commerce stores, and automate your entire creative business — all through natural conversation.
-
-![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green?logo=fastapi)
-![Claude](https://img.shields.io/badge/Claude-Opus%204-purple?logo=anthropic)
-![License](https://img.shields.io/badge/License-Private-red)
+<h1 align="center">
+  🤖 Otto Chat
+</h1>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Tools-100+-orange" alt="100+ Tools">
-  <img src="https://img.shields.io/badge/AI%20Models-15+-blue" alt="15+ AI Models">
-  <img src="https://img.shields.io/badge/Themes-14-pink" alt="14 Themes">
-  <img src="https://img.shields.io/badge/Plugins-Extensible-green" alt="Extensible">
-  <img src="https://img.shields.io/badge/Status-Active-success" alt="Active">
+  <strong>Universal AI Business Platform — Automate everything through conversation</strong>
 </p>
+
+<p align="center">
+  Otto Chat is a full-stack autonomous AI platform that combines Claude's intelligence with 100+ integrated tools, multi-agent orchestration, and a beautiful web UI. Generate images and videos, manage e-commerce, automate research, build creative campaigns, and run your entire business — all through natural conversation.
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.11+-blue?logo=python" alt="Python">
+  <img src="https://img.shields.io/badge/FastAPI-0.109+-green?logo=fastapi" alt="FastAPI">
+  <img src="https://img.shields.io/badge/Claude-Opus%204-purple?logo=anthropic" alt="Claude">
+  <img src="https://img.shields.io/badge/Tools-100+-orange" alt="Tools">
+  <img src="https://img.shields.io/badge/AI%20Models-15+-blue" alt="Models">
+  <img src="https://img.shields.io/badge/Themes-14-pink" alt="Themes">
+  <img src="https://img.shields.io/badge/Plugins-Extensible-green" alt="Plugins">
+  <img src="https://img.shields.io/badge/License-Private-red" alt="License">
+</p>
+
+---
+
+## Table of Contents
+
+- [Screenshots](#-screenshots)
+- [Features](#-features)
+- [Quick Start](#-quick-start)
+- [Configuration](#-configuration)
+- [Usage Examples](#-usage-examples)
+- [Architecture](#-architecture)
+- [Tools Reference](#-tools-reference)
+- [Skills & Plugins](#-skills--plugins)
+- [API Reference](#-api-reference)
+- [Docker Deployment](#-docker-deployment)
+- [Multi-Channel Support](#-multi-channel-support)
+- [Security](#-security)
+- [Troubleshooting](#-troubleshooting)
+- [Roadmap](#-roadmap)
+- [Documentation](#-documentation)
+- [License](#-license)
 
 ---
 
 ## 📸 Screenshots
 
 <p align="center">
-  <img src="docs/screenshots/main-chat.png" alt="Otto Chat - Main Interface" width="100%">
-  <br>
-  <em>Modern chat interface with gradient sidebars and real-time progress tracking</em>
+  <img src="docs/screenshots/main-chat.png" alt="Otto Chat — Main Interface" width="100%">
+  <br><em>Modern chat interface with gradient sidebars and real-time progress tracking</em>
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/conversation.png" alt="Otto Chat - AI Conversation" width="100%">
-  <br>
-  <em>Intelligent AI responses powered by Claude Opus 4</em>
+  <img src="docs/screenshots/conversation.png" alt="Otto Chat — AI Conversation" width="100%">
+  <br><em>Intelligent AI responses powered by Claude Opus 4</em>
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/files-tab.png" alt="Otto Chat - Files Panel" width="100%">
-  <br>
-  <em>File management with colorful filter chips and premium styling</em>
+  <img src="docs/screenshots/files-tab.png" alt="Otto Chat — Files Panel" width="100%">
+  <br><em>File management with colorful filter chips and premium styling</em>
 </p>
 
 ---
 
 ## ✨ Features
 
-### 🧠 Super Intelligent Planning Agent
-- **Claude Opus 4 Integration** — Powered by Anthropic's most capable model for complex reasoning
-- **Multi-Step Autonomous Execution** — Breaks down complex tasks into parallel and sequential steps
-- **Context Preservation** — Remembers your preferences (aspect ratios, styles, models) across conversations
-- **Smart Dependency Resolution** — Automatically chains outputs between steps (e.g., generated images → products)
-- **Batch Operations** — Create multiple products with different designs in a single request
-- **Specialized Agent Delegation** — Automatically routes tasks to domain-specific agents (content, image, video, research, analytics)
+### 🧠 Multi-Agent Intelligence
 
-### 🔌 Third-Party Plugin System
-- **Easy Extensibility** — Drop plugins into `/plugins` directory for instant integration
-- **Plugin Types** — Tool plugins (new AI tools), Integration plugins (external services)
-- **JSON Settings Schema** — Declarative configuration with validation
-- **Hot Reloading** — Discover and reload plugins without restart
-- **Example Plugins Included** — Web scraper, notification sender, database connector
-- **Plugin Management UI** — Enable/disable plugins from Settings sidebar
-- **REST API** — Full API for plugin management (`/api/plugins`)
+| Capability | Description |
+|------------|-------------|
+| **Super Planning Agent** | Claude Opus 4 breaks complex tasks into parallel and sequential execution plans |
+| **Agent Delegation** | Automatic routing to domain-specific agents — content, image, video, research, analytics |
+| **Unified Agent System** | Multi-agent framework with Orchestrator, Planner, Executor, Researcher, Verifier roles |
+| **Execution Modes** | Autonomous, Interactive, Collaborative, and Supervised operation |
+| **Self-Improvement** | Learns from every interaction to improve future responses |
+| **Context Preservation** | Remembers preferences (aspect ratios, styles, models) across conversations |
+| **Smart Dependency Resolution** | Chains outputs between steps (e.g., generated images → products) |
+| **Advanced Reasoning** | Multi-strategy reasoning engine for complex queries |
+| **Proactive Intelligence** | Anticipates user needs and suggests actions |
 
-### 📋 Task Queue & Calendar Integration
-- **Visual Task Queue** — See all pending, running, and completed tasks
+### 🎨 Creative Generation
+
+| Category | Models & Capabilities |
+|----------|----------------------|
+| **Image** (15+ models) | Flux Pro 1.1, Flux Dev, SDXL, Recraft V3, Ideogram V2 — portraits, landscapes, logos, icons, background removal, upscaling |
+| **Video** (5+ models) | Runway Gen-3 Alpha, Luma Dream Machine, Minimax, Kling — cinematic, commercial, luxury, dynamic, ambient presets |
+| **Audio** | AI music composition, ambient soundscapes, voice synthesis, professional voiceovers |
+| **Commercial** | Apple/Nike/Tesla-quality promo scripts, multi-scene production, automatic enhancement |
+| **Universal Editor** | AI-powered editing for images, video, audio, and 3D assets |
+
+### 🛍️ E-Commerce
+
+| Platform | Features |
+|----------|----------|
+| **Printify** | Full print-on-demand — design → upload → product → publish. 30+ product types (t-shirts, mugs, posters, framed art, hoodies). Multi-product batching |
+| **Shopify** | Product CRUD, order management, inventory, customer management, analytics |
+
+### 🔍 Research & Browser Automation
+
+- **Web Search** — Google via Serper API with smart result parsing
+- **Browser Automation** — Playwright-based headless browsing with stealth mode
+- **Web Scraping** — Structured content extraction from any webpage
+- **Competitive Intelligence** — Market trends, competitor analysis, opportunity reports
+- **Deep Research** — Multi-source research with citations and summarization
+- **News Aggregation** — Real-time monitoring and digest creation
+
+### 🔌 Extensibility
+
+- **Plugin System** — Drop plugins into `/plugins/` for instant integration. Types: Tool, Integration, Agent, Processor, UI, Workflow. Hot-reload supported
+- **Skill Packages** — Modular skills in `/skills/` covering 17 business domains
+- **Slash Commands** — Quick-access syntax (`/image`, `/video`, `/music`, `/help`, and more)
+- **Tool Registry** — Decorator-based dynamic tool registration with category filtering
+
+### 📋 Task Management
+
+- **Visual Task Queue** — Pending, running, and completed tasks with real-time progress
 - **Calendar View** — Schedule tasks for specific dates and times
-- **Progress Tracking** — Real-time progress indicators with percentage and step info
-- **Priority System** — Set task priorities (low, normal, high, urgent)
-- **Recurring Tasks** — Schedule tasks to repeat daily, weekly, or monthly
-- **Task Dependencies** — Chain tasks that depend on each other
+- **Priority System** — Low, normal, high, urgent
+- **Recurring Tasks** — Daily, weekly, monthly schedules
+- **Task Dependencies** — Chained execution with dependency resolution
+- **Business Workflows** — Pre-built templates for product launches, marketing campaigns, content pipelines, sales funnels
 
-### 🎨 Advanced Image Generation
-- **15+ AI Models** — Flux Pro 1.1, Flux Dev, SDXL, Recraft V3, Ideogram V2, and more
-- **Smart Aspect Ratios** — Portrait, landscape, square with automatic prompt mapping
-- **Style Presets** — Photorealistic, artistic, cinematic, product photography, and more
-- **Logo & Icon Generation** — Professional vector-style logos with Recraft V3
-- **Background Removal** — AI-powered background removal for product images
+### 🎨 Modern UI
 
-### 🎬 Video Generation & Commercial Production
-- **AI Video Generation** — Multiple models including Runway, Luma, Minimax, Kling
-- **Cinematic Styles** — 5 premium presets: cinematic, commercial, luxury, dynamic, ambient
-- **Promo Video Creation** — Apple/Nike/Tesla-quality commercial scripts and production
-- **Automatic Enhancement** — AI prompts enhanced for professional film look
-- **Multi-Scene Support** — Complex video projects with multiple scenes and transitions
-
-### 🎵 Audio Generation
-- **AI Music Creation** — Generate custom music, ambient sounds, and soundscapes
-- **Voice Synthesis** — Text-to-speech with multiple voices and styles
-- **Audio Processing** — Mix, edit, and enhance audio content
-- **Commercial Audio** — Create jingles, background music, and voiceovers
-
-### 🛍️ E-Commerce Integration
-- **Printify** — Full print-on-demand workflow: design → product → publish
-- **Smart Product Mapping** — Automatic mapping to 30+ product types (t-shirts, mugs, posters, framed art)
-- **Framed Art Products** — Support for premium framed prints with multiple frame options
-- **Multi-Product Batching** — Create multiple products with different designs simultaneously
-- **Shopify** — Manage products, orders, customers, and inventory
-
-### 🔍 Research & Intelligence
-- **Web Search** — Google search via Serper API with smart result parsing
-- **Competitive Intelligence** — Analyze competitors, market trends, and opportunities
-- **Web Scraping** — Extract structured content from any webpage
-- **News Aggregation** — Real-time news monitoring and summarization
-- **Deep Research** — Comprehensive multi-source research with citations
-
-### 📁 File Management
-- **Smart Storage** — Organize files by category with automatic metadata
-- **Cloud Ready** — Architecture supports S3, Google Cloud Storage
-- **Asset Library** — Browse, search, and manage all generated content
-- **Version Tracking** — Full file history with tags and descriptions
-
-### 🎨 Modern UI/UX
-- **Sleek Interface** — Modern, colorful design inspired by Canva and Gemini
-- **14 Visual Themes** — Classic, Midnight, Sunset, Ocean, Forest, Cherry, Retro, Copper, Nordic, Matrix, Lavender, Neon, Monochrome, Sakura
-- **Gradient Sidebars** — Beautiful purple/pink/teal color scheme with subtle animations
-- **Real-Time Updates** — Live progress tracking for multi-step operations
-- **Responsive Design** — Works seamlessly on desktop and tablet
-- **A/B Editor Preview** — Side-by-side Original vs Result comparison for image editing
+- **14 Visual Themes** — Aurora (default), Light, Dark, Midnight, Sunset, Ocean, Forest, Cherry, Retro, Copper, Nordic, Matrix, Lavender, Neon, Monochrome, Sakura
+- **Gradient Sidebars** — Purple/pink/teal with subtle animations
+- **A/B Editor Preview** — Side-by-side Original vs Result comparison
 - **Keyboard Shortcuts** — ⌘+Enter (send), ⌘+, (settings), ⌘+Q (queue), ⌘+J (jobs), ? (help)
-- **Scroll-to-Bottom Button** — Quick navigation in long conversations
-- **Progress Indicators** — Visual progress bars for running tasks
-- **Light/Dark Theme Support** — All themes optimized for readability in light mode
+- **Real-Time Progress** — Live tracking for multi-step operations
+- **Responsive** — Desktop and tablet optimized
+
+### 📡 Multi-Channel
+
+Otto is accessible through multiple channels simultaneously:
+
+| Channel | Status |
+|---------|--------|
+| **Web UI** | Built-in chat interface |
+| **Telegram** | Bot integration |
+| **Discord** | Bot integration |
+| **Slack** | App integration |
+| **WhatsApp** | Business API |
+| **WebSocket Gateway** | Unified control plane for custom clients |
+| **REST API** | Full programmatic access |
+
+### 🎙️ Voice
+
+- **Speech-to-Text** — OpenAI Whisper
+- **Text-to-Speech** — Natural voice responses with ElevenLabs
+- **Voice Pipeline** — Full duplex: Speech → Text → AI → Text → Speech
+- **Wake Word Detection** — Hands-free activation
 
 ### 📧 Email Marketing
-- **HTML Email Sending** — Send rich formatted emails via chat commands
-- **Multiple Providers** — Support for SendGrid and SMTP
-- **Template Generation** — AI-powered email template creation
 
-### 📁 Enhanced File Management
-- **Download All as ZIP** — Export all files in a single archive organized by category
-- **Direct Downloads** — Improved download buttons that properly download files
-- **Smart Organization** — Automatic categorization by file type
-
-### 🎙️ Voice Capabilities
-- **Speech-to-Text** — OpenAI Whisper integration
-- **Text-to-Speech** — Natural voice responses
-- **Voice Commands** — Control Otto hands-free
-
-### 🔄 Reliability & Performance
-- **Smart Retry Logic** — Automatic retry with exponential backoff for rate-limited APIs
-- **Improved Error Recovery** — Graceful handling of API failures and timeouts
-- **Connection Resilience** — Automatic reconnection for long-running operations
-
-### ⚙️ Easy Setup
-- **Onboarding Wizard** — Step-by-step setup for first-time users
-- **Settings Page** — Configure all integrations in one place
-- **Connection Testing** — Verify API keys work before saving
+- **Rich HTML Emails** — AI-generated templates via SendGrid or SMTP
+- **Campaign Management** — Create and schedule email campaigns
+- **Contact Import** — CSV/Excel contact importing
 
 ---
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.11+
-- [Anthropic API Key](https://console.anthropic.com/settings/keys) (required)
+
+- **Python 3.11+**
+- **Anthropic API Key** ([get one here](https://console.anthropic.com/settings/keys))
 
 ### Installation
 
@@ -162,54 +175,82 @@ cd otto-chat
 
 # Create virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate  # macOS/Linux
+# venv\Scripts\activate   # Windows
 
 # Install dependencies
 pip install -r requirements.txt
 
 # Copy environment template
-cp .env.example .env
-```
-
-### Configuration
-
-Edit `.env` with your API keys:
-
-```env
-# Required - Core AI
-ANTHROPIC_API_KEY=sk-ant-...
-
-# Optional - Voice Features
-OPENAI_API_KEY=sk-...
-
-# Optional - Image Generation
-REPLICATE_API_TOKEN=r8_...
-
-# Optional - Print-on-Demand
-PRINTIFY_API_TOKEN=...
-PRINTIFY_SHOP_ID=...
-
-# Optional - E-commerce
-SHOPIFY_SHOP_NAME=your-store
-SHOPIFY_ACCESS_TOKEN=shpat_...
-
-# Optional - Web Search
-SERPER_API_KEY=...
+cp config/.env.example .env
 ```
 
 ### Run
 
 ```bash
-# Start the server
-python -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000
+# Standard launch
+python run.py
 
 # Or with auto-reload for development
-python -m uvicorn src.api.main:app --reload
+python -m uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Visit **http://localhost:8000** to start chatting!
+Visit **http://localhost:8000** — first-time users are automatically redirected to the onboarding wizard.
 
-> 💡 First-time users are automatically redirected to the onboarding wizard
+---
+
+## ⚙️ Configuration
+
+Edit `.env` with your API keys. Only `ANTHROPIC_API_KEY` is required:
+
+```env
+# ═══════════════════ REQUIRED ═══════════════════
+ANTHROPIC_API_KEY=sk-ant-...
+
+# ═══════════════════ AI PROVIDERS (Optional) ═══════════════════
+OPENAI_API_KEY=sk-...                    # Voice features, fallback models
+REPLICATE_API_TOKEN=r8_...               # Image/video generation
+ELEVENLABS_API_KEY=...                   # Text-to-speech
+
+# ═══════════════════ E-COMMERCE (Optional) ═══════════════════
+PRINTIFY_API_TOKEN=...                   # Print-on-demand
+PRINTIFY_SHOP_ID=...
+SHOPIFY_SHOP_NAME=your-store             # Shopify integration
+SHOPIFY_ACCESS_TOKEN=shpat_...
+
+# ═══════════════════ RESEARCH (Optional) ═══════════════════
+SERPER_API_KEY=...                       # Google search API
+
+# ═══════════════════ MESSAGING (Optional) ═══════════════════
+TELEGRAM_BOT_TOKEN=...                   # Telegram bot
+DISCORD_BOT_TOKEN=...                    # Discord bot
+WHATSAPP_PHONE_ID=...                    # WhatsApp Business
+WHATSAPP_ACCESS_TOKEN=...
+
+# ═══════════════════ EMAIL (Optional) ═══════════════════
+SENDGRID_API_KEY=...                     # Email campaigns
+SMTP_HOST=smtp.gmail.com                 # Or SMTP provider
+SMTP_PORT=587
+SMTP_USER=...
+SMTP_PASSWORD=...
+
+# ═══════════════════ DATABASE (Optional) ═══════════════════
+DATABASE_URL=sqlite:///./data/otto.db    # Default SQLite
+# DATABASE_URL=postgresql://user:pass@localhost/otto  # PostgreSQL
+
+# ═══════════════════ ADVANCED (Optional) ═══════════════════
+DEFAULT_AI_MODEL=claude-sonnet-4-20250514
+FALLBACK_AI_MODEL=gpt-4-turbo
+MAX_TOKENS=8192
+PORT=8000
+DEBUG_MODE=false
+LOG_LEVEL=INFO
+JWT_SECRET_KEY=your-secret-key
+REDIS_URL=redis://localhost:6379
+CHROMA_PERSIST_DIRECTORY=./data/chroma
+```
+
+See [config/.env.example](config/.env.example) for all 109 configuration variables.
 
 ---
 
@@ -218,67 +259,449 @@ Visit **http://localhost:8000** to start chatting!
 ### Natural Language Commands
 
 ```
-💬 "Create a tall portrait image of a mountain landscape using Flux Pro, 
+💬 "Create a tall portrait image of a mountain landscape using Flux Pro,
     then make it into a framed art print"
-   → Generates portrait image, maps to framed art product, publishes to Printify
+   → Generates portrait image → maps to framed art → publishes to Printify
 
 💬 "Create 3 different t-shirt designs for a sunset beach theme"
-   → Generates 3 unique images in parallel, creates 3 separate products
+   → Generates 3 images in parallel → creates 3 products
 
 💬 "Make me a cinematic promo video for my new coffee brand"
-   → Creates premium commercial script, generates video with luxury styling
+   → Creates premium commercial script → generates video with luxury styling
 
-💬 "Research the top AI startups of 2025 and create a detailed report"
-   → Multi-source research, competitive analysis, formatted report
+💬 "Research the top AI startups of 2025 and write a blog post about it"
+   → Multi-source research → competitive analysis → formatted blog post
 
 💬 "Generate a logo for 'Stellar Coffee' in a modern minimalist style"
    → Creates professional vector-style logo with Recraft V3
 
-💬 "Create ambient background music for a meditation app"
-   → Generates custom AI music with appropriate mood and duration
+💬 "Send a promo email to hello@example.com about our new product launch"
+   → Generates professional HTML email → sends via configured provider
 
-💬 "Send a promotional email to hello@example.com about our new product launch"
-   → Generates professional HTML email and sends via configured email provider
-
-💬 "Create wall art featuring a sunset over mountains"
-   → Automatically selects correct Printify wall art blueprint (not tote bag!)
-
-💬 "Make me another image like that last one but in landscape"
-   → Remembers your previous style and model preferences
+💬 "Schedule a daily social media post at 9am about productivity tips"
+   → Creates recurring task → generates fresh content daily
 ```
 
 ### Multi-Step Autonomous Workflows
 
-Otto excels at complex, multi-step tasks that chain together:
-
 ```
-1. User: "Launch a new product line of nature-themed wall art"
+User: "Launch a new product line of nature-themed wall art"
 
-2. Otto automatically:
-   ├── Generates 5 unique nature images (forest, ocean, mountain, desert, aurora)
-   ├── Creates framed art products for each design
-   ├── Writes compelling product descriptions
-   ├── Sets appropriate pricing
-   └── Publishes all to your Printify store
+Otto automatically:
+├── Generates 5 unique nature images (forest, ocean, mountain, desert, aurora)
+├── Creates framed art products for each design
+├── Writes compelling product descriptions
+├── Sets appropriate pricing
+└── Publishes all to your Printify store
 ```
 
-### API Endpoints
+### Slash Commands
+
+```
+/image sunset over mountains, oil painting style
+/video cinematic drone shot of a coastline
+/music lo-fi chill beat for a coffee shop
+/research AI trends in e-commerce 2026
+/help
+```
+
+---
+
+## 🏗 Architecture
+
+```
+otto-chat/
+├── run.py                        # Main entry point
+│
+├── src/
+│   ├── api/                      # 34 REST/WebSocket route modules
+│   │   ├── main.py               # FastAPI app (1500+ lines) with 30+ routers
+│   │   ├── agents.py             # Agent management
+│   │   ├── auth.py               # JWT authentication
+│   │   ├── browser.py            # Browser automation endpoints
+│   │   ├── business.py           # Autonomous business operations
+│   │   ├── connections.py        # Service connection management
+│   │   ├── conversations.py      # Conversation management
+│   │   ├── creative_platform.py  # Creative project endpoints
+│   │   ├── discord.py            # Discord bot API
+│   │   ├── email.py              # Email endpoints
+│   │   ├── extensions.py         # Extension management
+│   │   ├── files.py              # File management & uploads
+│   │   ├── gateway_ws.py         # WebSocket gateway
+│   │   ├── intelligence.py       # Intelligence analytics
+│   │   ├── integrations.py       # Third-party integrations
+│   │   ├── models.py             # AI model listing & selection
+│   │   ├── ollama.py             # Local model management
+│   │   ├── plugins.py            # Plugin management
+│   │   ├── profile.py            # User profile
+│   │   ├── projects.py           # Project management
+│   │   ├── scheduler_routes.py   # Task scheduling
+│   │   ├── settings.py           # App configuration
+│   │   ├── skills.py             # Skill registry
+│   │   ├── social.py             # Social media management
+│   │   ├── tasks.py              # Task queue management
+│   │   ├── telegram.py           # Telegram bot API
+│   │   ├── webhooks.py           # Webhook management
+│   │   ├── whatsapp.py           # WhatsApp Business API
+│   │   └── workflows.py          # Workflow creation & execution
+│   │
+│   ├── core/                     # 65 business logic modules
+│   │   ├── agent_orchestrator.py        # Central brain (1825 lines)
+│   │   ├── super_planning_agent.py      # Autonomous planning
+│   │   ├── execution_agent.py           # Step execution
+│   │   ├── super_intelligent_chat.py    # Conversational interface
+│   │   ├── enhanced_intelligence.py     # Advanced reasoning layer
+│   │   ├── unified_agent_system.py      # Multi-agent framework
+│   │   ├── autonomous_orchestrator.py   # Fully autonomous operations
+│   │   ├── business_workflows.py        # Pre-built workflow templates
+│   │   ├── creative_platform.py         # Creative project management
+│   │   ├── modality_system.py           # Modality-first model selection
+│   │   ├── memory_agent.py              # ChromaDB vector memory
+│   │   ├── plugin_system.py             # Plugin loading & lifecycle
+│   │   ├── skills.py                    # Skill ecosystem
+│   │   ├── tool_registry.py             # Dynamic tool discovery
+│   │   ├── slash_commands.py            # /command syntax
+│   │   ├── gateway.py                   # WebSocket control plane
+│   │   ├── channel_manager.py           # Multi-channel management
+│   │   ├── voice.py                     # Voice capabilities
+│   │   ├── streaming_support.py         # SSE streaming
+│   │   ├── session_manager.py           # Session lifecycle
+│   │   ├── project_manager.py           # Project management
+│   │   ├── context_manager.py           # Conversation context
+│   │   ├── advanced_reasoning.py        # Multi-strategy reasoning
+│   │   ├── proactive_intelligence.py    # Anticipatory suggestions
+│   │   ├── smart_tool_router.py         # Intelligent tool selection
+│   │   ├── self_improvement_loop.py     # Learning from outcomes
+│   │   ├── intelligent_retry_system.py  # Smart retry with analysis
+│   │   ├── error_recovery.py            # Graceful error handling
+│   │   ├── agent_health_monitor.py      # Agent health monitoring
+│   │   ├── agent_analytics.py           # Performance analytics
+│   │   ├── agent_communication.py       # Inter-agent message bus
+│   │   └── ollama_client.py             # Local model support
+│   │
+│   ├── tools/                    # 40 tool implementation modules
+│   │   ├── image_generation.py   # 15+ AI image models
+│   │   ├── video_generation.py   # Multi-model video
+│   │   ├── promo_video.py        # Commercial production
+│   │   ├── audio_processing.py   # Music & voice synthesis
+│   │   ├── printify.py           # Print-on-demand
+│   │   ├── shopify.py            # E-commerce
+│   │   ├── research.py           # Web search & scraping
+│   │   ├── browser.py            # Browser automation
+│   │   ├── content.py            # Content generation
+│   │   ├── email_marketing.py    # Email campaigns
+│   │   ├── social_poster.py      # Social media posting
+│   │   ├── universal_editor.py   # Universal media editor
+│   │   ├── ai_file_editor.py     # AI code editing
+│   │   ├── code_execution.py     # Code sandbox
+│   │   ├── task_queue.py         # Task queue management
+│   │   ├── replicate_universal.py # Replicate model hub
+│   │   ├── model_chaining.py     # AI model pipelines
+│   │   └── ...                   # 22 more modules
+│   │
+│   ├── web/                      # Built-in web UI
+│   │   ├── chat.html             # Main interface (19K+ lines)
+│   │   ├── settings.html         # Settings page
+│   │   ├── files.html            # File browser
+│   │   ├── agents.html           # Agent management
+│   │   ├── workflows.html        # Workflow builder
+│   │   ├── onboarding.html       # First-run setup wizard
+│   │   └── static/               # CSS themes, JS modules
+│   │
+│   ├── channels/                 # Multi-channel messaging
+│   │   ├── telegram.py
+│   │   ├── discord.py
+│   │   └── slack.py
+│   │
+│   ├── database/                 # SQLAlchemy ORM + Alembic
+│   ├── voice/                    # Voice I/O pipeline
+│   ├── storage/                  # File storage backend
+│   └── utils/                    # Config & logging
+│
+├── plugins/                      # 8 built-in plugins
+│   ├── web_scraper/
+│   ├── notification_sender/
+│   ├── database_connector/
+│   ├── code_formatter/
+│   ├── image_processor/
+│   ├── social_poster/
+│   ├── translator/
+│   └── weather_fetcher/
+│
+├── skills/                       # 17 skill packages
+│   ├── business_operations/
+│   ├── content_creation/
+│   ├── data_analysis/
+│   ├── ecommerce_automation/
+│   ├── email_marketing/
+│   ├── seo_optimization/
+│   ├── social_media_marketing/
+│   ├── video_production/
+│   ├── web_automation/
+│   └── ...
+│
+├── scripts/                      # CLI & setup scripts
+│   ├── setup.sh
+│   ├── otto_cli.py
+│   └── gateway_cli.py
+│
+├── data/                         # Runtime data (gitignored)
+│   ├── chroma/                   # Vector store
+│   ├── files/                    # Generated content
+│   ├── conversations/            # Chat history
+│   ├── projects/                 # Projects
+│   └── ...
+│
+├── frontends/                    # Alternative frontends
+│   └── vanilla-js/               # Standalone JS frontend
+│
+├── config/
+│   └── .env.example              # Environment template (109 vars)
+│
+├── docker-compose.yml            # 5-service stack
+├── Dockerfile
+├── pyproject.toml
+└── requirements.txt
+```
+
+### Core Architecture Patterns
+
+| Pattern | Description |
+|---------|-------------|
+| **Modality-First Selection** | Determines output type (text, image, video, audio, code) before selecting the optimal AI model |
+| **Smart Model Prioritization** | Local models → remote APIs → Replicate (cost optimization) |
+| **Multi-Agent Collaboration** | Orchestrator → Planner → Executor → Verifier pipeline |
+| **Self-Improvement Loop** | Analyzes outcomes to improve future responses |
+| **Gateway Architecture** | Unified WebSocket control plane for all clients |
+| **Channel Abstraction** | Same AI accessible through web, Telegram, Discord, Slack, WhatsApp |
+| **Plugin/Skill Ecosystem** | Drop-in extensibility via `/plugins/` and `/skills/` |
+| **Creative State Machine** | Project management with audit trails and stuck detection |
+
+---
+
+## 🔧 Tools Reference
+
+### Image Generation (15+ models)
+
+| Tool | Model | Best For |
+|------|-------|----------|
+| `generate_image` | Auto-select | General purpose |
+| Flux Pro 1.1 | `black-forest-labs/flux-1.1-pro` | Highest quality |
+| Flux Dev | `black-forest-labs/flux-dev` | Fast iteration |
+| SDXL | `stability-ai/sdxl` | Versatile |
+| Recraft V3 | `recraft-ai/recraft-v3` | Logos, icons, vector |
+| Ideogram V2 | `ideogram-ai/ideogram-v2` | Text in images |
+| `remove_background` | — | Background removal |
+| `upscale_image` | — | AI upscaling |
+| `add_text_overlay` | — | Text overlays |
+
+### Video Generation (5+ models)
+
+| Tool | Model | Style Presets |
+|------|-------|---------------|
+| `generate_ai_video` | Auto-select | Cinematic, Commercial, Luxury, Dynamic, Ambient |
+| Runway Gen-3 Alpha | — | High quality |
+| Luma Dream Machine | — | Creative |
+| Minimax | — | Fast |
+| Kling | — | Detailed |
+
+### E-Commerce Tools
+
+| Tool | Description |
+|------|-------------|
+| `create_printify_product` | Create print-on-demand products |
+| `upload_printify_image` | Upload designs to Printify |
+| `publish_printify_product` | Publish to sales channels |
+| `get_blueprints` | Browse 30+ product templates |
+| `create_shopify_product` | Create Shopify products |
+| `get_shopify_orders` | View and manage orders |
+| `update_shopify_inventory` | Inventory management |
+
+### Research & Browser
+
+| Tool | Description |
+|------|-------------|
+| `search_web` | Google search via Serper |
+| `research_topic` | Deep multi-source research |
+| `browse_url` | Navigate and extract web content |
+| `analyze_competitor` | Competitive intelligence |
+| `get_trending_topics` | Trend monitoring |
+| `browser_navigate` | Headless browser automation |
+| `browser_screenshot` | Page screenshots |
+| `browser_click` / `browser_type` | Interaction automation |
+
+### Content & Marketing
+
+| Tool | Description |
+|------|-------------|
+| `generate_blog_post` | AI blog writing |
+| `generate_product_description` | E-commerce copy |
+| `generate_social_media_posts` | Multi-platform content |
+| `generate_email_campaign` | Email marketing |
+| `generate_seo_content` | SEO-optimized content |
+| `generate_ad_copy` | Advertising copy |
+| `improve_text` | Content enhancement |
+
+### Code & Files
+
+| Tool | Description |
+|------|-------------|
+| `ai_file_editor` | AI-powered edit, review, refactor, fix, explain |
+| `code_execution` | Sandboxed code execution |
+| `codebase_awareness` | Codebase understanding |
+| `save_file` / `get_file` | File management |
+| `save_image_from_url` | Download & save images |
+
+### Task & Workflow
+
+| Tool | Description |
+|------|-------------|
+| `task_queue` | Persistent task management |
+| `scheduler` | APScheduler cron-like scheduling |
+| `agent_delegation` | Inter-agent task delegation |
+| `model_chaining` | AI model pipeline composition |
+
+---
+
+## 🧩 Skills & Plugins
+
+### Skills (17 packages)
+
+Skills are modular capability packages in `/skills/`:
+
+| Skill | Domain |
+|-------|--------|
+| `business_operations` | Business management & analytics |
+| `competitive_intelligence` | Market & competitor analysis |
+| `content_creation` | Blog, social, marketing content |
+| `customer_service` | Support & engagement |
+| `data_analysis` | Data processing & visualization |
+| `ecommerce_automation` | Store management |
+| `email_marketing` | Email campaigns |
+| `model_chaining` | AI model pipelines |
+| `product_design` | Product design workflows |
+| `research_analysis` | In-depth research |
+| `seo_optimization` | Search engine optimization |
+| `social_media_marketing` | Social campaigns |
+| `task_queue` | Task management |
+| `video_production` | Video workflows |
+| `weather` | Weather data |
+| `web_automation` | Browser automation |
+| `workflow_automation` | Custom workflows |
+
+### Plugins (8 built-in)
+
+Plugins live in `/plugins/` and extend Otto with new capabilities:
+
+| Plugin | Description |
+|--------|-------------|
+| `web_scraper` | Page scraping, link/table extraction, content search |
+| `notification_sender` | Email, Slack, Discord, webhook notifications |
+| `database_connector` | SQLite, PostgreSQL, MySQL queries |
+| `code_formatter` | Code formatting & beautification |
+| `image_processor` | Image manipulation & processing |
+| `social_poster` | Social media posting |
+| `translator` | Multi-language translation |
+| `weather_fetcher` | Weather data retrieval |
+
+### Creating a Plugin
+
+```
+plugins/my_plugin/
+├── plugin.json        # Metadata and settings schema
+├── main.py            # Plugin entry point
+└── requirements.txt   # Dependencies (optional)
+```
+
+```json
+{
+  "name": "my_plugin",
+  "version": "1.0.0",
+  "description": "My custom plugin",
+  "type": "tool",
+  "entry_point": "main.py",
+  "settings": {
+    "api_key": { "type": "string", "required": true }
+  }
+}
+```
+
+---
+
+## 📡 API Reference
+
+### Core Endpoints
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/` | GET | Web chat interface |
-| `/onboarding` | GET | Setup wizard for new users |
-| `/settings-page` | GET | Settings management |
-| `/files-page` | GET | File browser |
+| `/onboarding` | GET | First-run setup wizard |
 | `/chat` | POST | Send chat message |
-| `/voice` | POST | Voice input (audio) |
-| `/tools` | GET | List all available tools |
-| `/health` | GET | Health check |
-| `/api/settings` | GET/PUT | Settings API |
-| `/api/files/*` | * | File management API |
-| `/api/connections/*` | * | Service connections API |
+| `/chat/stream` | POST | SSE streaming chat |
+| `/voice` | POST | Full voice pipeline (Speech→Text→AI→Text→Speech) |
+| `/transcribe` | POST | Speech-to-text only |
+| `/tools` | GET | List available tools |
+| `/capabilities` | GET | Otto's capabilities |
+| `/health` | GET | Health check with uptime and service status |
+| `/health/detailed` | GET | Comprehensive component health |
+| `/ws` | WebSocket | Real-time chat & voice |
 
-### REST API Example
+### Resource APIs
+
+| Prefix | Description |
+|--------|-------------|
+| `/api/settings` | App configuration |
+| `/api/files` | File management, upload, download, tree |
+| `/api/connections` | Service connections & status |
+| `/api/agents` | Agent management |
+| `/api/models` | AI model listing & selection |
+| `/api/workflows` | Workflow CRUD & execution |
+| `/api/business` | Autonomous business operations |
+| `/api/projects` | Project management |
+| `/api/skills` | Skill registry |
+| `/api/plugins` | Plugin management |
+| `/api/extensions` | Extension management |
+| `/api/conversations` | Conversation management |
+| `/api/tasks` | Task queue |
+| `/api/scheduler` | Scheduled tasks |
+| `/api/browser` | Browser automation |
+| `/api/intelligence` | Intelligence analytics |
+| `/api/creative` | Creative platform |
+| `/api/integrations` | Third-party integrations |
+| `/api/sessions` | Session management |
+| `/api/auth` | JWT authentication |
+| `/api/setup` | First-run setup |
+| `/api/ollama` | Local Ollama models |
+| `/api/model-manager` | Model lifecycle |
+| `/api/brand` | Brand intelligence |
+| `/api/social` | Social media |
+| `/api/email` | Email sending |
+| `/api/webhooks` | Webhook management |
+| `/api/profile` | User profile |
+
+### Messaging Channel APIs
+
+| Prefix | Description |
+|--------|-------------|
+| `/api/whatsapp` | WhatsApp Business |
+| `/api/telegram` | Telegram Bot |
+| `/api/discord` | Discord Bot |
+| `/api/email-webhook` | Inbound email |
+| `/gateway` | WebSocket gateway |
+
+### AI Editing Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/ai/edit` | POST | AI file editing |
+| `/api/ai/review` | POST | AI code review |
+| `/api/ai/explain` | POST | AI code explanation |
+| `/api/ai/refactor` | POST | AI refactoring |
+| `/api/ai/fix` | POST | AI bug fixing |
+| `/api/media/edit` | POST | Universal media editing |
+| `/api/media/capabilities` | GET | Media editing capabilities |
+
+### Example Requests
 
 ```bash
 # Send a chat message
@@ -286,271 +709,90 @@ curl -X POST http://localhost:8000/chat \
   -H "Content-Type: application/json" \
   -d '{"message": "Generate a sunset beach image"}'
 
-# Check available tools
-curl http://localhost:8000/tools
+# Stream a response
+curl -X POST http://localhost:8000/chat/stream \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Write a blog post about AI trends"}'
 
-# Get connection status
-curl http://localhost:8000/api/connections/status
+# List available tools
+curl http://localhost:8000/tools
 
 # Upload a file
 curl -X POST http://localhost:8000/api/files/upload \
   -F "file=@image.png" \
   -F "category=images"
+
+# Health check
+curl http://localhost:8000/health
 ```
 
----
+### Health Response
 
-## 🛠️ Architecture
-
+```json
+{
+  "status": "healthy",
+  "timestamp": "2026-03-01T12:00:00",
+  "version": "1.0.0",
+  "uptime": "2h 15m",
+  "services": {
+    "anthropic": true,
+    "replicate": true,
+    "printify": true,
+    "chromadb": true
+  }
+}
 ```
-otto-chat/
-├── src/
-│   ├── api/
-│   │   ├── main.py              # FastAPI application & routes
-│   │   ├── plugins.py           # Plugin management API
-│   │   ├── settings.py          # Settings API endpoints
-│   │   ├── files.py             # File management API
-│   │   └── connections.py       # Service connections API
-│   │
-│   ├── core/
-│   │   ├── super_planning_agent.py      # Autonomous planning & context preservation
-│   │   ├── execution_agent.py           # Step execution & dependency resolution
-│   │   ├── agent_orchestrator.py        # AI orchestration & tool dispatch
-│   │   ├── enhanced_agent_delegation.py # Specialized agent routing
-│   │   └── plugin_system.py             # Plugin loading and lifecycle
-│   │
-│   ├── tools/
-│   │   ├── __init__.py          # Tool registry (100+ tools)
-│   │   ├── printify.py          # Printify integration
-│   │   ├── shopify.py           # Shopify integration
-│   │   ├── image_generation.py  # AI image generation (15+ models)
-│   │   ├── video_generation.py  # AI video generation (multiple models)
-│   │   ├── promo_video.py       # Commercial production
-│   │   ├── audio_generation.py  # AI audio & music generation
-│   │   ├── research.py          # Web search & scraping
-│   │   ├── browser.py           # Browser automation
-│   │   ├── content.py           # Content generation
-│   │   └── file_storage.py      # File management
-│   │
-│   ├── storage/
-│   │   └── file_storage.py      # File storage backend
-│   │
-│   ├── utils/
-│   │   ├── config.py            # Pydantic settings
-│   │   └── logger.py            # Logging configuration
-│   │
-│   └── web/
-│       ├── chat.html            # Main chat interface (modern UI)
-│       ├── settings.html        # Settings page
-│       ├── files.html           # File browser
-│       └── onboarding.html      # Setup wizard
-│
-├── plugins/                     # Third-party plugins directory
-│   ├── README.md               # Plugin development guide
-│   ├── web_scraper/            # Example: Web scraping tools
-│   ├── notification_sender/    # Example: Email/Slack/Discord integration
-│   └── database_connector/     # Example: Database queries
-│
-├── skills/                      # Modular skill packages
-│   ├── business_operations/
-│   ├── content_creation/
-│   ├── competitive_intelligence/
-│   └── ...
-│
-├── data/
-│   ├── files/                   # Generated content storage
-│   ├── brand_brain/             # Brand intelligence data
-│   ├── agents/                  # Agent configurations
-│   ├── task_queue/              # Task queue storage
-│   └── workflows/               # Saved workflows
-│
-├── docs/                        # Documentation
-│   └── wiki/                    # GitHub Wiki source
-│
-├── requirements.txt
-├── Dockerfile
-├── docker-compose.yml
-└── .env
-```
-
----
-
-## 🔧 Available Tools (80+ Total)
-
-### 🎨 Image Generation Tools (15+)
-| Tool | Description |
-|------|-------------|
-| `generate_image_flux_pro` | Flux Pro 1.1 (highest quality) |
-| `generate_image_flux_dev` | Flux Dev (fast iteration) |
-| `generate_image_sdxl` | Stable Diffusion XL |
-| `generate_image_recraft` | Recraft V3 (logos, icons) |
-| `generate_image_ideogram` | Ideogram V2 (text in images) |
-| `generate_logo` | Professional logo creation |
-| `generate_icon` | App/web icons |
-| `upscale_image` | AI image upscaling |
-| `remove_background` | Background removal |
-| Multiple aspect ratios | Portrait (2:3), Landscape (3:2), Square (1:1), Custom |
-
-### 🎬 Video Generation Tools (10+)
-| Tool | Description |
-|------|-------------|
-| `generate_ai_video` | Multi-model video generation |
-| `create_promo_video` | Commercial production |
-| `generate_video_runway` | Runway Gen-3 Alpha |
-| `generate_video_luma` | Luma Dream Machine |
-| `generate_video_minimax` | Minimax video model |
-| `generate_video_kling` | Kling AI video |
-| Style presets | Cinematic, Commercial, Luxury, Dynamic, Ambient |
-
-### 🎵 Audio Generation Tools
-| Tool | Description |
-|------|-------------|
-| `generate_music` | AI music composition |
-| `generate_ambient` | Ambient soundscapes |
-| `text_to_speech` | Voice synthesis |
-| `generate_voiceover` | Professional narration |
-
-### 🖨️ Printify Tools (15+)
-| Tool | Description |
-|------|-------------|
-| `get_printify_shops` | List all connected shops |
-| `get_printify_products` | Get products from a shop |
-| `create_printify_product` | Create new product |
-| `upload_printify_image` | Upload design image |
-| `publish_printify_product` | Publish to sales channel |
-| `get_blueprints` | Get product templates |
-| Product mapping | T-shirts, mugs, posters, framed art, hoodies, etc. |
-
-### 🛒 Shopify Tools (12)
-| Tool | Description |
-|------|-------------|
-| `get_shopify_products` | List store products |
-| `create_shopify_product` | Create new product |
-| `get_shopify_orders` | View orders |
-| `get_shopify_customers` | List customers |
-| `update_shopify_inventory` | Adjust inventory |
-
-### 🔍 Research Tools (8)
-| Tool | Description |
-|------|-------------|
-| `web_search` | Google search via Serper |
-| `search_news` | News article search |
-| `search_images` | Image search |
-| `search_videos` | Video search |
-| `scrape_webpage` | Extract page content |
-| `scrape_structured` | Extract structured data |
-| `get_page_links` | Extract all links |
-| `summarize_url` | Summarize webpage |
-
-### 🌐 Browser Tools (8)
-| Tool | Description |
-|------|-------------|
-| `browser_navigate` | Open URL in browser |
-| `browser_screenshot` | Capture page screenshot |
-| `browser_click` | Click elements |
-| `browser_type` | Enter text in fields |
-| `browser_scroll` | Scroll page |
-| `browser_extract` | Extract data from page |
-| `browser_wait` | Wait for element |
-| `browser_close` | Close browser |
-
-### 📁 File Storage Tools (7)
-| Tool | Description |
-|------|-------------|
-| `save_file` | Store file with metadata |
-| `save_image_from_url` | Download and save image |
-| `save_generated_image` | Save AI-generated image |
-| `get_file` | Retrieve file by ID |
-| `list_files` | Browse files by category |
-| `delete_file` | Remove file |
-| `get_storage_stats` | Storage statistics |
-
-### ✍️ Content Tools (7)
-| Tool | Description |
-|------|-------------|
-| `generate_blog_post` | AI blog writing |
-| `generate_product_description` | E-commerce copy |
-| `generate_social_post` | Social media content |
-| `generate_email` | Email drafting |
-| `summarize_text` | Text summarization |
-| `rewrite_text` | Content rewriting |
-| `generate_ideas` | Brainstorming |
-
-### 🔌 Plugin Tools (Extensible)
-| Plugin | Description |
-|--------|-------------|
-| `web_scraper` | Scrape pages, extract links, tables, search content |
-| `notification_sender` | Send via Email, Slack, Discord, webhooks |
-| `database_connector` | Query SQLite, PostgreSQL, MySQL databases |
-| *Your plugin here* | [Create your own →](plugins/README.md) |
 
 ---
 
 ## 🐳 Docker Deployment
 
-### Quick Start with Docker
+### Quick Start
 
 ```bash
-# Build and run
 docker-compose up -d
+```
+
+### Services
+
+| Service | Image | Port | Purpose |
+|---------|-------|------|---------|
+| `otto-api` | Build from Dockerfile | 8000 | Main API server |
+| `postgres` | postgres:15-alpine | 5432 | Relational database |
+| `redis` | redis:7-alpine | 6379 | Caching & sessions |
+| `chromadb` | chromadb/chroma:latest | 8001 | Vector store |
+| `nginx` | nginx:alpine | 80, 443 | Reverse proxy |
+
+### Docker Commands
+
+```bash
+# Build and start all services
+docker-compose up -d --build
 
 # View logs
-docker-compose logs -f otto
+docker-compose logs -f otto-api
 
-# Stop
+# Stop all services
 docker-compose down
+
+# Reset data volumes
+docker-compose down -v
 ```
 
-### docker-compose.yml
+### Production Deployment
 
-```yaml
-version: '3.8'
+```bash
+# Set environment
+export PORT=8000
+export WORKERS=4
+export LOG_LEVEL=warning
 
-services:
-  otto:
-    build: .
-    container_name: otto-chat
-    ports:
-      - "8000:8000"
-    env_file:
-      - .env
-    volumes:
-      - ./data:/app/data
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-```
-
-### Dockerfile
-
-```dockerfile
-FROM python:3.11-slim
-
-WORKDIR /app
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install Python dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy application
-COPY . .
-
-# Create data directories
-RUN mkdir -p data/files/images data/files/documents data/files/audio data/files/video
-
-# Expose port
-EXPOSE 8000
-
-# Run application
-CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run with production settings
+uvicorn src.api.main:app \
+  --host 0.0.0.0 \
+  --port $PORT \
+  --workers $WORKERS \
+  --log-level $LOG_LEVEL
 ```
 
 ---
@@ -558,156 +800,80 @@ CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
 ## 🔐 Security
 
 - **Environment Variables** — API keys stored in `.env` (never committed)
-- **CORS Configuration** — Configurable for production
-- **Rate Limiting** — Built-in request throttling
+- **JWT Authentication** — Token-based auth with configurable expiry
+- **CORS** — Configurable origin restrictions
+- **Rate Limiting** — Per-minute and per-hour request throttling
 - **Input Validation** — Pydantic models for all inputs
-- **JWT Ready** — Authentication infrastructure in place
-
-### Security Best Practices
+- **Sandboxed Execution** — Code execution in isolated environments
 
 ```bash
-# Never commit .env files
+# Never commit secrets
 echo ".env" >> .gitignore
 
-# Use secrets manager in production
-# AWS Secrets Manager, HashiCorp Vault, etc.
-
-# Restrict CORS in production
-# Edit src/api/main.py allow_origins
+# Generate a secure JWT secret
+python -c "import secrets; print(secrets.token_urlsafe(32))"
 ```
-
----
-
-## 📊 API Response Format
-
-### Chat Response
-
-```json
-{
-  "response": "I've generated your mountain landscape image...",
-  "type": "success",
-  "session_id": "abc123",
-  "plan": {
-    "steps": ["Generate image", "Save to storage", "Return result"],
-    "current_step": 3,
-    "completed": true
-  },
-  "results": [
-    {
-      "tool": "generate_image_flux_pro",
-      "success": true,
-      "data": {
-        "url": "https://...",
-        "file_id": "img_123"
-      }
-    }
-  ]
-}
-```
-
-### Error Response
-
-```json
-{
-  "detail": "Error message here",
-  "error_code": "TOOL_EXECUTION_FAILED",
-  "tool": "generate_image_flux_pro"
-}
-```
-
----
-
-## 🗺️ Roadmap
-
-### ✅ Recently Completed
-- [x] **Plugin System** — Third-party extensibility with example plugins
-- [x] **Agent Delegation** — Specialized agents for different task types
-- [x] **Calendar Integration** — Schedule tasks with recurring support
-- [x] **14 Color Themes** — Including Neon, Monochrome, Sakura
-- [x] **Progress Indicators** — Real-time task progress visualization
-- [x] **Keyboard Shortcuts** — Power-user navigation
-- [x] **Enhanced UI** — Scroll-to-bottom, improved contrast, CSS compatibility
-- [x] Super planning agent with autonomous execution
-- [x] Context preservation across conversations
-- [x] Multi-product batch creation with correct image mapping
-- [x] Video generation with 5+ AI models
-- [x] Cinematic video style presets
-- [x] Premium commercial script generation
-- [x] Framed art product support
-- [x] Modern UI with Canva/Gemini-inspired design
-
-### 🚧 In Progress
-- [ ] Workflow automation builder (visual)
-- [ ] Analytics dashboard
-- [ ] Team collaboration features
-
-### Coming Soon
-- [ ] Multi-user authentication
-- [ ] Scheduled tasks / cron jobs
-- [ ] Webhook integrations
-- [ ] Plugin marketplace
-
-### Future
-- [ ] Mobile app companion
-- [ ] Voice-first mode
-- [ ] Custom AI model support
-- [ ] White-label deployment
 
 ---
 
 ## 🐛 Troubleshooting
 
-### Common Issues
+| Issue | Solution |
+|-------|----------|
+| **Server won't start** | Check `python --version` is 3.11+, run `pip install -r requirements.txt` |
+| **"Anthropic API key required"** | Add `ANTHROPIC_API_KEY=sk-ant-...` to `.env` |
+| **Port 8000 in use** | `lsof -ti:8000 \| xargs kill -9` or use `--port 8001` |
+| **Image generation failing** | Verify `REPLICATE_API_TOKEN` is valid |
+| **Printify not connecting** | Check both `PRINTIFY_API_TOKEN` and `PRINTIFY_SHOP_ID` |
+| **Browser automation errors** | Run `playwright install` for browser binaries |
+| **ChromaDB errors** | Ensure `data/chroma/` directory exists and is writable |
+| **Module import errors** | Run from project root: `cd otto-chat && python run.py` |
 
-**Server won't start**
-```bash
-# Check Python version
-python --version  # Should be 3.11+
+---
 
-# Check dependencies
-pip install -r requirements.txt
+## 🗺️ Roadmap
 
-# Check .env file exists
-cat .env
-```
+### ✅ Completed
 
-**"Anthropic API key required"**
-```bash
-# Add to .env file
-echo 'ANTHROPIC_API_KEY=sk-ant-...' >> .env
-```
+- Multi-agent orchestration with planning, execution, and verification
+- 100+ tools across image, video, audio, e-commerce, research, and more
+- Plugin system with 8 built-in plugins
+- 17 skill packages
+- 14 visual themes
+- Task queue with calendar and scheduling
+- Multi-channel support (Web, Telegram, Discord, Slack, WhatsApp)
+- Voice pipeline (STT + TTS)
+- WebSocket gateway for unified client connectivity
+- Creative platform with state machine and audit trails
+- Autonomous business workflows
+- Self-improvement and advanced reasoning
 
-**Port 8000 already in use**
-```bash
-# Kill existing process
-lsof -ti:8000 | xargs kill -9
+### 🚧 In Progress
 
-# Or use different port
-uvicorn src.api.main:app --port 8001
-```
+- Visual workflow automation builder
+- Analytics dashboard
+- Team collaboration features
+- Plugin marketplace
 
-**Image generation failing**
-```bash
-# Check Replicate token
-curl -H "Authorization: Token $REPLICATE_API_TOKEN" \
-  https://api.replicate.com/v1/account
-```
+### 🔮 Future
+
+- Mobile app companion
+- Voice-first interaction mode
+- Custom fine-tuned model support
+- White-label deployment toolkit
+- Multi-tenant architecture
 
 ---
 
 ## 📚 Documentation
 
+- **[GitHub Wiki](https://github.com/RhythrosaLabs/otto-chat/wiki)** — Comprehensive guides and reference
 - [Getting Started](docs/GETTING_STARTED.md)
-- [Plugin Development Guide](plugins/README.md)
 - [Architecture Overview](docs/ARCHITECTURE.md)
-- [API Reference](docs/QUICK_START_GUIDE.md)
-- [GitHub Wiki](https://github.com/RhythrosaLabs/otto-chat/wiki)
-
----
-
-## 🤝 Contributing
-
-This is a private repository. Contact the owner for contribution access.
+- [Plugin Development](plugins/README.md)
+- [API Quick Start](docs/QUICK_START_GUIDE.md)
+- [Smart Model System](docs/SMART_MODEL_SYSTEM.md)
+- [Agentic Architecture](docs/AGENTIC_ARCHITECTURE.md)
 
 ---
 
@@ -715,28 +881,12 @@ This is a private repository. Contact the owner for contribution access.
 
 **Private** — All Rights Reserved
 
-© 2024-2026 RhythrosaLabs
-
----
-
-## 🙏 Acknowledgments
-
-Built with amazing open-source projects and APIs:
-
-- [Anthropic Claude](https://anthropic.com) — AI language model
-- [FastAPI](https://fastapi.tiangolo.com) — Web framework
-- [Replicate](https://replicate.com) — Image generation
-- [Printify](https://printify.com) — Print-on-demand
-- [Shopify](https://shopify.com) — E-commerce
-- [Serper](https://serper.dev) — Search API
-- [Pydantic](https://pydantic.dev) — Data validation
+© 2024–2026 RhythrosaLabs
 
 ---
 
 <p align="center">
   <strong>Built with ❤️ by <a href="https://github.com/RhythrosaLabs">RhythrosaLabs</a></strong>
-</p>
-
-<p align="center">
+  <br>
   <sub>Otto Chat — Your AI Business Partner</sub>
 </p>

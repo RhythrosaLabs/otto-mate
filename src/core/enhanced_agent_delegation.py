@@ -56,6 +56,7 @@ class AgentSpecialization(Enum):
     COMPETITOR_ANALYST = "competitor_analyst"
     TREND_SPOTTER = "trend_spotter"
     DATA_MINER = "data_miner"
+    DEEP_RESEARCHER = "deep_researcher"  # AI-powered research without browser
     
     # Business & Operations  
     PROJECT_MANAGER = "project_manager"
@@ -288,6 +289,33 @@ Always provide evidence-based recommendations.""",
         can_delegate_to=[AgentSpecialization.BROWSER_OPERATOR, AgentSpecialization.DATA_ANALYST]
     ),
     
+    AgentSpecialization.DEEP_RESEARCHER: SpecializedAgentProfile(
+        specialization=AgentSpecialization.DEEP_RESEARCHER,
+        name="Sage the Deep Researcher",
+        description="AI-powered research expert that gathers information WITHOUT browser automation",
+        expertise_keywords=[
+            "research", "investigate", "study", "analyze", "explore",
+            "find out", "learn about", "discover", "examine", "summarize",
+            "explain", "describe", "history of", "background", "overview",
+            "best practices", "strategies", "recommendations", "guide"
+        ],
+        capabilities=[
+            "Deep topic research", "Information synthesis", "Knowledge questions",
+            "Trend analysis", "Comparative analysis", "Report generation",
+            "Historical research", "Best practice compilation", "Strategy research"
+        ],
+        preferred_tools=["search_web", "create_content", "analyze_data"],
+        system_prompt="""You are Sage, expert at deep research and information synthesis.
+You answer complex questions by reasoning through available knowledge.
+You use web search APIs (not browser automation) to gather current information.
+You synthesize multiple sources into clear, comprehensive answers.
+KEY: You do NOT need to actually visit websites - use search APIs and AI reasoning.
+For factual questions, knowledge research, and analysis - you are the right choice.
+For interactive website tasks (login, forms, clicks) - delegate to Browser Operator.""",
+        temperature=0.4,
+        can_delegate_to=[AgentSpecialization.MARKET_RESEARCHER, AgentSpecialization.DATA_ANALYST]
+    ),
+    
     AgentSpecialization.ECOMMERCE_EXPERT: SpecializedAgentProfile(
         specialization=AgentSpecialization.ECOMMERCE_EXPERT,
         name="Echo the E-commerce Expert",
@@ -315,24 +343,39 @@ Always optimize for both search visibility and conversion.""",
     AgentSpecialization.BROWSER_OPERATOR: SpecializedAgentProfile(
         specialization=AgentSpecialization.BROWSER_OPERATOR,
         name="Web the Browser Operator",
-        description="Expert at navigating and extracting data from websites",
+        description="Expert at DIRECT website interaction requiring browser automation",
         expertise_keywords=[
-            "browse", "website", "scrape", "extract", "navigate", "web",
-            "page", "click", "form", "login", "download", "screenshot"
+            "go to", "navigate to", "click", "fill form", "login to",
+            "screenshot", "scrape", "submit form", "add to cart",
+            "interact with", "automate website", "download from"
         ],
         capabilities=[
-            "Web navigation", "Data extraction", "Form filling",
-            "Screenshot capture", "File downloads", "Site interaction"
+            "Web navigation", "Form filling and submission", "Button clicking",
+            "Screenshot capture", "Login/authentication", "E-commerce actions",
+            "Data scraping from pages", "Multi-step web workflows"
         ],
         preferred_tools=[
             "browse_website", "take_screenshot", "extract_page_data",
-            "click_element", "fill_form"
+            "click_element", "fill_form", "browser_task"
         ],
         system_prompt="""You are Web, an expert browser automation agent.
-You navigate websites efficiently and extract data accurately.
-You handle complex multi-step web interactions.
-Always verify your actions and handle errors gracefully.""",
-        temperature=0.3
+You ONLY activate for tasks that REQUIRE direct website interaction:
+- Clicking buttons/links on a page
+- Filling out and submitting forms
+- Logging into websites
+- Taking screenshots of specific pages
+- Scraping data from JavaScript-rendered pages
+- Multi-step navigation workflows
+
+You DO NOT activate for:
+- General research questions (use Deep Researcher)
+- Information gathering via search APIs (use web_search tool)
+- Knowledge questions about topics
+- Analysis tasks that don't need live website data
+
+Only use browser automation when truly necessary - it's slower and more expensive.""",
+        temperature=0.3,
+        can_delegate_to=[AgentSpecialization.DEEP_RESEARCHER]
     ),
     
     AgentSpecialization.PROJECT_MANAGER: SpecializedAgentProfile(
@@ -421,6 +464,252 @@ You ensure consistency, accuracy, and high standards.
 Always provide constructive feedback and specific suggestions.""",
         temperature=0.3
     ),
+    
+    AgentSpecialization.SEO_SPECIALIST: SpecializedAgentProfile(
+        specialization=AgentSpecialization.SEO_SPECIALIST,
+        name="Sierra the SEO Specialist",
+        description="Expert at search engine optimization and organic growth",
+        expertise_keywords=[
+            "seo", "search", "keywords", "ranking", "organic", "backlinks",
+            "meta tags", "optimization", "serp", "google", "visibility"
+        ],
+        capabilities=[
+            "Keyword research", "On-page SEO", "Meta optimization",
+            "Content optimization", "Link building", "SEO audits"
+        ],
+        preferred_tools=["seo_content", "keyword_research", "analyze_seo"],
+        system_prompt="""You are Sierra, an SEO expert who drives organic traffic.
+You understand search engine algorithms and ranking factors.
+You optimize content for both users and search engines.
+Always balance SEO best practices with user experience.""",
+        temperature=0.5
+    ),
+    
+    AgentSpecialization.BRAND_STRATEGIST: SpecializedAgentProfile(
+        specialization=AgentSpecialization.BRAND_STRATEGIST,
+        name="Blake the Brand Strategist",
+        description="Expert at brand development and strategic positioning",
+        expertise_keywords=[
+            "brand", "strategy", "positioning", "identity", "voice", "values",
+            "mission", "vision", "guidelines", "tone", "personality"
+        ],
+        capabilities=[
+            "Brand strategy", "Voice development", "Positioning",
+            "Brand guidelines", "Message architecture", "Brand audits"
+        ],
+        preferred_tools=["brand_analysis", "voice_development", "create_guidelines"],
+        system_prompt="""You are Blake, a brand strategist who builds memorable brands.
+You understand what makes brands resonate with audiences.
+You develop consistent brand identities and messaging frameworks.
+Always think long-term about brand equity and recognition.""",
+        temperature=0.7
+    ),
+    
+    AgentSpecialization.UI_DESIGNER: SpecializedAgentProfile(
+        specialization=AgentSpecialization.UI_DESIGNER,
+        name="Uma the UI Designer",
+        description="Expert at user interface design and user experience",
+        expertise_keywords=[
+            "ui", "ux", "design", "interface", "layout", "wireframe",
+            "prototype", "mockup", "usability", "accessibility"
+        ],
+        capabilities=[
+            "UI design", "UX analysis", "Wireframing", "Prototyping",
+            "Design systems", "Accessibility reviews"
+        ],
+        preferred_tools=["generate_image", "create_mockup", "design_review"],
+        system_prompt="""You are Uma, a UI/UX designer who creates intuitive interfaces.
+You understand human-computer interaction and visual hierarchy.
+You design for accessibility and delight.
+Always prioritize user needs and usability.""",
+        temperature=0.7
+    ),
+    
+    AgentSpecialization.GRAPHIC_DESIGNER: SpecializedAgentProfile(
+        specialization=AgentSpecialization.GRAPHIC_DESIGNER,
+        name="Grace the Graphic Designer",
+        description="Expert at visual design for print and digital media",
+        expertise_keywords=[
+            "graphic design", "poster", "flyer", "banner", "brochure",
+            "print", "layout", "typography", "infographic", "visual"
+        ],
+        capabilities=[
+            "Print design", "Digital graphics", "Infographics",
+            "Marketing materials", "Typography", "Visual identity"
+        ],
+        preferred_tools=[
+            "generate_image", "smart_image_generation", "create_layout"
+        ],
+        system_prompt="""You are Grace, a graphic designer with an eye for composition.
+You create visually stunning designs for all media types.
+You understand color theory, typography, and visual hierarchy.
+Always design with purpose and brand consistency.""",
+        temperature=0.8
+    ),
+    
+    AgentSpecialization.CODE_REVIEWER: SpecializedAgentProfile(
+        specialization=AgentSpecialization.CODE_REVIEWER,
+        name="Rex the Code Reviewer",
+        description="Expert at code review and quality assurance",
+        expertise_keywords=[
+            "review code", "code review", "pull request", "pr", "lint",
+            "standards", "refactor", "optimization", "security review"
+        ],
+        capabilities=[
+            "Code review", "Security audit", "Performance analysis",
+            "Best practices", "Refactoring suggestions", "Documentation review"
+        ],
+        preferred_tools=["review_code", "analyze_code", "security_scan"],
+        system_prompt="""You are Rex, a senior code reviewer with deep expertise.
+You identify bugs, security issues, and optimization opportunities.
+You enforce coding standards and best practices.
+Always provide constructive feedback with clear explanations.""",
+        temperature=0.3
+    ),
+    
+    AgentSpecialization.API_INTEGRATOR: SpecializedAgentProfile(
+        specialization=AgentSpecialization.API_INTEGRATOR,
+        name="Apollo the API Integrator",
+        description="Expert at API integration and third-party services",
+        expertise_keywords=[
+            "api", "integration", "webhook", "oauth", "rest", "graphql",
+            "connect", "endpoint", "authentication", "third-party"
+        ],
+        capabilities=[
+            "API integration", "Webhook setup", "OAuth implementation",
+            "Data sync", "Error handling", "Rate limiting"
+        ],
+        preferred_tools=["api_request", "configure_webhook", "test_integration"],
+        system_prompt="""You are Apollo, an API integration specialist.
+You connect systems seamlessly with reliable integrations.
+You handle authentication, error cases, and edge cases.
+Always implement proper error handling and logging.""",
+        temperature=0.4,
+        can_delegate_to=[AgentSpecialization.CODE_DEVELOPER]
+    ),
+    
+    AgentSpecialization.COMMUNICATIONS_AGENT: SpecializedAgentProfile(
+        specialization=AgentSpecialization.COMMUNICATIONS_AGENT,
+        name="Chris the Communications Agent",
+        description="Expert at email, messaging, and professional communications",
+        expertise_keywords=[
+            "email", "message", "communication", "outreach", "correspondence",
+            "reply", "follow-up", "newsletter", "notification"
+        ],
+        capabilities=[
+            "Email composition", "Response drafting", "Newsletter creation",
+            "Template design", "Tone matching", "Multi-channel messaging"
+        ],
+        preferred_tools=["send_email", "draft_email", "create_newsletter"],
+        system_prompt="""You are Chris, a communications expert who crafts perfect messages.
+You adapt tone and style for any professional context.
+You write clear, engaging, and action-oriented communications.
+Always consider the recipient's perspective and desired outcome.""",
+        temperature=0.6
+    ),
+    
+    AgentSpecialization.CALENDAR_SCHEDULER: SpecializedAgentProfile(
+        specialization=AgentSpecialization.CALENDAR_SCHEDULER,
+        name="Cal the Calendar Scheduler",
+        description="Expert at scheduling and calendar management",
+        expertise_keywords=[
+            "schedule", "calendar", "meeting", "appointment", "reminder",
+            "availability", "time zone", "recurring", "booking"
+        ],
+        capabilities=[
+            "Schedule management", "Meeting coordination", "Time optimization",
+            "Recurring events", "Time zone handling", "Availability checking"
+        ],
+        preferred_tools=["schedule_event", "check_availability", "set_reminder"],
+        system_prompt="""You are Cal, a scheduling expert who optimizes time.
+You coordinate complex schedules across time zones.
+You prevent conflicts and maximize productivity.
+Always consider buffer times and realistic time estimates.""",
+        temperature=0.3
+    ),
+    
+    AgentSpecialization.FILE_MANAGER: SpecializedAgentProfile(
+        specialization=AgentSpecialization.FILE_MANAGER,
+        name="Finn the File Manager",
+        description="Expert at file organization and document management",
+        expertise_keywords=[
+            "file", "document", "folder", "organize", "storage", "upload",
+            "download", "archive", "backup", "convert"
+        ],
+        capabilities=[
+            "File organization", "Document management", "Format conversion",
+            "Archiving", "Search optimization", "Version control"
+        ],
+        preferred_tools=["organize_files", "convert_file", "search_files"],
+        system_prompt="""You are Finn, a file management expert who brings order to chaos.
+You organize files logically and maintain clean structures.
+You handle conversions, backups, and retrievals efficiently.
+Always maintain clear naming conventions and organization.""",
+        temperature=0.3
+    ),
+    
+    AgentSpecialization.TREND_SPOTTER: SpecializedAgentProfile(
+        specialization=AgentSpecialization.TREND_SPOTTER,
+        name="Tara the Trend Spotter",
+        description="Expert at identifying emerging trends and opportunities",
+        expertise_keywords=[
+            "trend", "trending", "viral", "emerging", "popular", "buzz",
+            "hot", "rising", "fashion", "culture"
+        ],
+        capabilities=[
+            "Trend identification", "Cultural analysis", "Predictive insights",
+            "Social listening", "Opportunity spotting", "Zeitgeist tracking"
+        ],
+        preferred_tools=["web_search", "social_analysis", "trend_report"],
+        system_prompt="""You are Tara, a trend spotter with cultural intelligence.
+You identify emerging trends before they go mainstream.
+You understand what captures public attention.
+Always provide context for why trends are emerging.""",
+        temperature=0.8,
+        can_delegate_to=[AgentSpecialization.MARKET_RESEARCHER]
+    ),
+    
+    AgentSpecialization.PRODUCT_STRATEGIST: SpecializedAgentProfile(
+        specialization=AgentSpecialization.PRODUCT_STRATEGIST,
+        name="Pat the Product Strategist",
+        description="Expert at product development and go-to-market strategy",
+        expertise_keywords=[
+            "product", "launch", "roadmap", "feature", "mvp", "strategy",
+            "user story", "requirements", "specification"
+        ],
+        capabilities=[
+            "Product strategy", "Feature prioritization", "Roadmapping",
+            "User stories", "Market fit analysis", "Launch planning"
+        ],
+        preferred_tools=["create_roadmap", "prioritize_features", "market_analysis"],
+        system_prompt="""You are Pat, a product strategist who builds winning products.
+You balance user needs, business goals, and technical feasibility.
+You prioritize ruthlessly and deliver value incrementally.
+Always focus on solving real user problems.""",
+        temperature=0.6,
+        can_delegate_to=[AgentSpecialization.MARKET_RESEARCHER, AgentSpecialization.DATA_ANALYST]
+    ),
+    
+    AgentSpecialization.MARKETING_SPECIALIST: SpecializedAgentProfile(
+        specialization=AgentSpecialization.MARKETING_SPECIALIST,
+        name="Max the Marketing Specialist",
+        description="Expert at marketing campaigns and growth strategies",
+        expertise_keywords=[
+            "marketing", "campaign", "advertising", "promotion", "growth",
+            "acquisition", "retention", "funnel", "conversion"
+        ],
+        capabilities=[
+            "Campaign strategy", "Ad management", "Growth hacking",
+            "Funnel optimization", "Attribution", "Performance marketing"
+        ],
+        preferred_tools=["create_campaign", "analyze_metrics", "optimize_funnel"],
+        system_prompt="""You are Max, a marketing specialist who drives growth.
+You create compelling campaigns that convert.
+You understand the full marketing funnel.
+Always measure results and optimize for ROI.""",
+        temperature=0.7,
+        can_delegate_to=[AgentSpecialization.COPYWRITER, AgentSpecialization.IMAGE_CREATOR]
+    ),
 }
 
 
@@ -439,6 +728,9 @@ class TaskAnalysis:
     suggested_agents: List[Tuple[AgentSpecialization, float]]  # (agent, score)
     requires_collaboration: bool
     estimated_steps: int
+    # NEW: Browser vs Deep Research routing
+    needs_browser: bool = False  # True if task requires browser automation
+    research_method: str = "ai_reasoning"  # browser_automation, deep_research, web_search_api, ai_reasoning
     
     def get_best_agent(self) -> Optional[AgentSpecialization]:
         """Get the best-matching agent for this task."""
@@ -463,8 +755,45 @@ class TaskAnalyzer:
             "marketing": ["market", "advertise", "promote", "campaign", "brand", "seo"],
             "ecommerce": ["product", "listing", "store", "sell", "shop", "inventory"],
             "automation": ["automate", "workflow", "schedule", "trigger", "recurring"],
-            "web": ["browse", "website", "scrape", "navigate", "download", "web"]
+            "browser_interaction": ["click", "fill form", "login to", "navigate to", "screenshot", "scrape"]
         }
+        
+        # Patterns that REQUIRE browser interaction (direct website control)
+        self.browser_required_patterns = [
+            # Navigation and interaction
+            "go to", "navigate to", "open website", "visit the site",
+            "click on", "click the", "press button", "tap on",
+            "fill out", "fill in", "fill form", "submit form",
+            # Authentication
+            "login to", "log in to", "sign in to", "authenticate",
+            "create account on", "register on",
+            # E-commerce actions
+            "add to cart", "checkout on", "buy on", "purchase on", "place order on",
+            # Screenshots and captures
+            "take screenshot", "screenshot of", "capture page",
+            # Scraping and extraction (various forms)
+            "scrape website", "scrape page", "scrape from", "scrape the",
+            "scrape data", "scrape product", "scrape price",
+            "extract from website", "extract from page",
+            # Interactive automation
+            "automate the website", "interact with", "on the website"
+        ]
+        
+        # Patterns for deep research (AI + search APIs, NO browser needed)
+        self.deep_research_patterns = [
+            # Research verbs
+            "research", "investigate", "study", "examine", "explore",
+            "learn about", "find out about", "discover",
+            # Information queries
+            "what is", "who is", "how does", "why do", "explain",
+            "tell me about", "describe", "summarize", "overview",
+            # Analysis
+            "analyze", "compare", "contrast", "evaluate", "assess",
+            "market analysis", "competitor analysis", "trend analysis",
+            # Knowledge gathering
+            "find information", "gather data", "look up",
+            "best practices", "recommendations", "strategies", "tips for"
+        ]
         
         self.complexity_indicators = {
             "complex": [
@@ -492,6 +821,35 @@ class TaskAnalyzer:
         if not domains:
             domains = ["general"]
         
+        # ========================================
+        # ENHANCED: Browser vs Deep Research Detection
+        # ========================================
+        browser_required = any(pattern in task_lower for pattern in self.browser_required_patterns)
+        deep_research = any(pattern in task_lower for pattern in self.deep_research_patterns)
+        
+        # Check for URL patterns that suggest browser interaction
+        has_url = any(x in task_lower for x in ['http://', 'https://', 'www.'])
+        has_site_action = any(x in task_lower for x in [
+            'on amazon', 'on ebay', 'on twitter', 'on facebook', 
+            'on the website', 'on this page', 'on linkedin'
+        ])
+        
+        # Determine research method
+        if browser_required and not deep_research:
+            research_method = "browser_automation"
+            needs_browser = True
+        elif deep_research and not browser_required:
+            research_method = "deep_research"
+            needs_browser = False
+        elif browser_required and deep_research:
+            # Both patterns - use context to decide
+            needs_browser = has_url or has_site_action
+            research_method = "browser_automation" if needs_browser else "deep_research"
+        else:
+            # Default: favor deep research (faster, cheaper)
+            needs_browser = has_url and has_site_action
+            research_method = "browser_automation" if needs_browser else "ai_reasoning"
+        
         # Determine complexity
         complexity = "moderate"  # default
         for level, indicators in self.complexity_indicators.items():
@@ -499,10 +857,19 @@ class TaskAnalyzer:
                 complexity = level
                 break
         
-        # Score agents
+        # Score agents with browser/research bias
         agent_scores: List[Tuple[AgentSpecialization, float]] = []
         for spec, profile in SPECIALIZED_AGENTS.items():
             score = profile.matches_task(task_text)
+            
+            # Apply bias based on detected research method
+            if needs_browser and spec == AgentSpecialization.BROWSER_OPERATOR:
+                score *= 1.5  # Boost browser operator for browser tasks
+            elif not needs_browser and spec == AgentSpecialization.DEEP_RESEARCHER:
+                score *= 1.5  # Boost deep researcher for research tasks
+            elif not needs_browser and spec == AgentSpecialization.BROWSER_OPERATOR:
+                score *= 0.3  # Penalize browser operator for non-browser tasks
+            
             if score > 0:
                 agent_scores.append((spec, score))
         
@@ -524,12 +891,14 @@ class TaskAnalyzer:
         else:
             estimated_steps = 10
         
-        # Determine task type
-        if any(d in domains for d in ["visual", "creative"]):
+        # Determine task type with research method consideration
+        if needs_browser:
+            task_type = "browser_interaction"
+        elif any(d in domains for d in ["visual", "creative"]):
             task_type = "creative"
         elif "technical" in domains:
             task_type = "technical"
-        elif "research" in domains:
+        elif "research" in domains or research_method == "deep_research":
             task_type = "research"
         elif "ecommerce" in domains:
             task_type = "commerce"
@@ -551,7 +920,10 @@ class TaskAnalyzer:
             required_capabilities=list(set(required_capabilities)),
             suggested_agents=agent_scores[:5],
             requires_collaboration=requires_collaboration,
-            estimated_steps=estimated_steps
+            estimated_steps=estimated_steps,
+            # New fields for browser/research routing
+            needs_browser=needs_browser,
+            research_method=research_method
         )
 
 

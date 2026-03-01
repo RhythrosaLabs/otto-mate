@@ -47,7 +47,7 @@ if ! python -c "import fastapi" 2>/dev/null; then
 fi
 
 # Default port
-PORT=${PORT:-8001}
+PORT=${PORT:-8000}
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do

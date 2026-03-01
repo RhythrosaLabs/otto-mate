@@ -34,6 +34,25 @@ from .agent_communication import get_message_bus, MessageType
 from .context_manager import ContextManager
 from .memory_agent import MemoryAgent
 
+# Import new intelligence systems (optional, graceful fallback)
+try:
+    from .enhanced_reasoning import get_reasoner, ReasoningStrategy
+    ENHANCED_REASONING_AVAILABLE = True
+except ImportError:
+    ENHANCED_REASONING_AVAILABLE = False
+
+try:
+    from .result_verifier import get_verifier, VerificationLevel
+    RESULT_VERIFIER_AVAILABLE = True
+except ImportError:
+    RESULT_VERIFIER_AVAILABLE = False
+
+try:
+    from .tool_composer import get_composer
+    TOOL_COMPOSER_AVAILABLE = True
+except ImportError:
+    TOOL_COMPOSER_AVAILABLE = False
+
 logger = logging.getLogger(__name__)
 
 
@@ -101,10 +120,18 @@ class AgentConfig:
     use_vision: bool = False
     use_thinking: bool = True
     use_planning: bool = True
+    use_enhanced_reasoning: bool = True  # Use multi-strategy reasoning
+    use_result_verification: bool = True  # Verify outputs
+    use_tool_composition: bool = True  # Chain tools automatically
     
     # Model config
     model: str = "claude-sonnet-4-20250514"
     max_tokens: int = 4096
+    
+    # Reasoning config
+    reasoning_strategy: Optional[str] = None  # Force specific strategy
+    min_confidence: float = 0.7  # Minimum confidence for results
+    verification_level: str = "standard"  # quick, standard, thorough, critical
     
     # System prompts
     system_prompt: Optional[str] = None
@@ -421,8 +448,51 @@ Respond with a detailed plan in JSON format."""
         context: Dict[str, Any],
         last_result: Any
     ) -> Dict[str, Any]:
-        """Intelligently decide the next action."""
-        # Build decision prompt
+        """Intelligently decide the next action using enhanced reasoning if available."""
+        
+        # Use enhanced reasoning for complex decisions
+        if ENHANCED_REASONING_AVAILABLE and self.config.use_enhanced_reasoning:
+            try:
+                reasoner = get_reasoner()
+                
+                decision_query = f"""Decide the next action for this task:
+Task: {task.description}
+Goal: {task.goal}
+Progress: {len(task.action_log)} actions taken
+Available tools: {', '.join(self.config.tools)}
+Previous result: {last_result}
+
+What should be done next? Options: use a specific tool, delegate, or mark complete."""
+
+                result = await reasoner.reason(
+                    query=decision_query,
+                    context=str(context),
+                    require_steps=False
+                )
+                
+                decision_text = result.answer
+                task.thinking_log.append(
+                    f"Decision (confidence: {result.confidence:.2f}): {decision_text[:200]}..."
+                )
+                
+                # Parse enhanced decision
+                if "complete" in decision_text.lower() and result.confidence >= 0.7:
+                    return {"type": "complete", "result": last_result}
+                
+                # Try to extract tool from response
+                for tool_name in self.config.tools:
+                    if tool_name.lower() in decision_text.lower():
+                        return {
+                            "type": "tool",
+                            "tool": tool_name,
+                            "parameters": {},
+                            "reasoning": decision_text
+                        }
+                
+            except Exception as e:
+                logger.warning(f"Enhanced reasoning failed, using fallback: {e}")
+        
+        # Fallback to original decision logic
         prompt = f"""Task: {task.description}
 Goal: {task.goal}
 Current progress: {len(task.action_log)} actions taken
@@ -476,7 +546,12 @@ Think step by step and decide the optimal next action."""
             if not tool:
                 raise ValueError(f"Tool not found: {action['tool']}")
             
-            result = await tool(**action.get("parameters", {}))
+            # Pre-filter known meta-parameters that should never be passed to tools
+            params = action.get("parameters", {})
+            meta_params_to_remove = {'task_description', 'task_type', 'task_id', 'step_id', 'execution_context'}
+            params = {k: v for k, v in params.items() if k not in meta_params_to_remove}
+            
+            result = await tool(**params)
             return result
         
         elif action["type"] == "delegate":
@@ -495,6 +570,39 @@ Think step by step and decide the optimal next action."""
     
     async def _verify_result(self, task: AgentTask, result: Any) -> bool:
         """Verify if the result meets the goal."""
+        # Use enhanced verification if available
+        if RESULT_VERIFIER_AVAILABLE and self.config.use_result_verification:
+            try:
+                verifier = get_verifier()
+                level_map = {
+                    "quick": VerificationLevel.QUICK,
+                    "standard": VerificationLevel.STANDARD,
+                    "thorough": VerificationLevel.THOROUGH,
+                    "critical": VerificationLevel.CRITICAL
+                }
+                level = level_map.get(self.config.verification_level, VerificationLevel.STANDARD)
+                
+                report = await verifier.verify(
+                    result=result,
+                    task_description=f"{task.description} - Goal: {task.goal}",
+                    level=level,
+                    retry_on_fail=False  # We handle retry in _self_correct
+                )
+                
+                task.thinking_log.append(
+                    f"Verification: {report.result.value} (confidence: {report.confidence:.2f})"
+                )
+                
+                # Update result if improved version available
+                if report.improved_result:
+                    task.result = report.improved_result
+                
+                return report.confidence >= self.config.min_confidence
+                
+            except Exception as e:
+                logger.warning(f"Enhanced verification failed, using fallback: {e}")
+        
+        # Fallback to simple verification
         prompt = f"""Task: {task.description}
 Goal: {task.goal}
 Result: {result}

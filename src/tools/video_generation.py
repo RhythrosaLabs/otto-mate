@@ -91,46 +91,111 @@ CAMERA_DIRECTIONS = [
     "closing shot with logo emphasis, call to action vibe"
 ]
 
+# Visual styles for different ad tones (from printify_clean)
+VISUAL_STYLES = {
+    "Exciting & Energetic": "dynamic, high-energy, vibrant colors, fast-paced, bold movements",
+    "Warm & Friendly": "warm lighting, friendly atmosphere, cozy environment, soft tones",
+    "Professional & Trustworthy": "clean, professional, modern setting, confident presentation",
+    "Fun & Playful": "bright, colorful, animated expressions, joyful energy",
+    "Luxury & Premium": "elegant, sophisticated, high-end materials, golden lighting, refined",
+    "Urgent & Action-Driven": "dramatic, bold, intense, action-packed, compelling",
+}
+
+# Ad tone to voice mapping
+AD_TONE_VOICE_MAP = {
+    "Exciting & Energetic": "Lively_Girl",
+    "Warm & Friendly": "Friendly_Person",
+    "Professional & Trustworthy": "Deep_Voice_Man",
+    "Fun & Playful": "Casual_Guy",
+    "Luxury & Premium": "Elegant_Man",
+    "Urgent & Action-Driven": "Determined_Man",
+}
+
+# Ad tone to music style mapping
+AD_TONE_MUSIC_MAP = {
+    "Exciting & Energetic": "Energetic",
+    "Warm & Friendly": "Friendly",
+    "Professional & Trustworthy": "Professional",
+    "Fun & Playful": "Upbeat",
+    "Luxury & Premium": "Luxury",
+    "Urgent & Action-Driven": "Cinematic",
+}
+
+# Rate limiting constants (from printify_clean)
+VIDEO_RATE_LIMIT_DELAY = 12  # 12 seconds between video requests (Replicate limit: 6/min)
+
 
 class AdvancedVideoGenerator(ToolBase):
     """
-    Advanced video generation with 15+ AI models and professional features.
+    Advanced video generation with 25+ AI models and professional features.
     
-    Supported Models:
+    Updated from printify_clean (Feb 2026):
     - Ken Burns (local, instant, free)
-    - Kling v2.5 (premium quality)
-    - Luma Ray Flash 2 / Ray 2
-    - OpenAI Sora-2
-    - Google Veo 3 / 3 Fast / 3.1 Fast / Veo 2
-    - Pixverse v5 / v4.5
-    - Leonardo Motion 2.0
-    - Minimax Hailuo
-    - Wan Video 2.5
-    - Bytedance Seedance Pro
+    - Sora-2 (OpenAI flagship)
+    - Kling v2.5 Turbo Pro (premium)
+    - Veo 3.1 Fast (audio support)
+    - Pixverse v5, Leonardo Motion 2.0
+    - Luma Ray 2, Hailuo 2.3 Fast
+    - Wan 2.5, Seedance Pro
     """
     
-    # Model configuration: (replicate_model, supports_image_to_video, max_duration, notes)
+    # Video Model Catalog (updated Feb 2026 from printify_clean)
+    # Format: (replicate_model, supports_image_to_video, max_duration, notes)
     VIDEO_MODELS = {
+        # ── Local / Free ──
         "ken_burns": (None, True, 60, "Local MoviePy processing, instant, free"),
-        "kling": ("kwaivgi/kling-v1.6-pro", True, 10, "Premium quality, image-to-video excellent"),
-        "kling_turbo": ("kwaivgi/kling-v2.5-turbo-pro", True, 10, "Faster Kling variant"),
-        "luma_flash": ("luma/ray-flash-2", True, 5, "Fast, 540p"),
-        "luma_ray2": ("luma/ray-2", True, 5, "High quality, 540p"),
-        "luma": ("luma/photon", True, 5, "Standard Luma"),
-        "sora": ("minimax/video-01-live", False, 4, "OpenAI Sora-2 quality"),
-        "veo3": ("google-deepmind/veo-3", True, 8, "Audio support, top quality"),
-        "veo3_fast": ("google-deepmind/veo-3-fast", True, 8, "Audio, faster"),
-        "veo31_fast": ("google-deepmind/veo-3.1-fast", True, 8, "Audio, improved"),
-        "veo2": ("google-deepmind/veo-2", True, 8, "4K quality"),
-        "pixverse5": ("pixverse/pixverse-v5", False, 8, "Anime style, 1080p"),
+        
+        # ── OpenAI Sora ──
+        "sora": ("openai/sora-2", True, 10, "OpenAI flagship with synced audio"),
+        "sora2": ("openai/sora-2", True, 10, "OpenAI flagship with synced audio"),
+        
+        # ── Kling Family ──
+        "kling": ("kwaivgi/kling-v2.5-turbo-pro", True, 10, "Pro-level text/image-to-video"),
+        "kling_turbo": ("kwaivgi/kling-v2.5-turbo-pro", True, 10, "Latest Kling turbo"),
+        "kling_pro": ("kwaivgi/kling-v2.5-turbo-pro", True, 10, "Alias for kling_turbo"),
+        
+        # ── Google Veo Family ──
+        "veo": ("google/veo-3.1-fast", True, 8, "Latest Veo with context-aware audio"),
+        "veo3": ("google/veo-3", True, 8, "Veo 3 high quality"),
+        "veo3_fast": ("google/veo-3-fast", True, 8, "Faster Veo 3"),
+        "veo31_fast": ("google/veo-3.1-fast", True, 8, "Audio support, improved"),
+        "veo2": ("google/veo-2", True, 8, "4K quality"),
+        
+        # ── Pixverse ──
+        "pixverse": ("pixverse/pixverse-v5", False, 8, "Latest Pixverse"),
+        "pixverse5": ("pixverse/pixverse-v5", False, 8, "1080p"),
         "pixverse45": ("pixverse/pixverse-v4.5", False, 8, "Fast, 1080p"),
-        "leonardo": ("leonardo-ai/motion-2.0", True, 5, "480p"),
-        "hailuo": ("minimax/video-01", True, 10, "Image-only model"),
-        "wan": ("alibaba/wan-video-2.5", False, 5, "Fast T2V"),
-        "seedance": ("bytedance/seedance-pro", False, 5, "Cinematic"),
+        
+        # ── Luma Family ──
+        "luma": ("luma/ray-2-540p", True, 5, "High quality 540p"),
+        "luma_ray": ("luma/ray-2-540p", True, 5, "Ray 2 540p"),
+        "luma_flash": ("luma/ray-flash-2", True, 5, "Fast 540p"),
+        "luma_modify": ("luma/modify-video", True, 10, "Video modification"),
+        
+        # ── Leonardo ──
+        "leonardo": ("leonardoai/motion-2.0", True, 5, "Motion engine, 480p"),
+        
+        # ── Minimax Hailuo ──
+        "hailuo": ("minimax/hailuo-2.3-fast", True, 10, "Fast image-to-video"),
+        "hailuo_fast": ("minimax/hailuo-2.3-fast", True, 10, "768p"),
         "minimax": ("minimax/video-01", True, 10, "General purpose"),
+        
+        # ── Wan Video ──
+        "wan": ("wan-video/wan-2.5-t2v-fast", False, 5, "Fast T2V"),
+        "wan_fast": ("wan-video/wan-2.5-t2v-fast", False, 5, "Text-to-video"),
+        "wan_v2v": ("wan-video/wan-2.5-v2v-fast", True, 5, "Video-to-video transform"),
+        
+        # ── Bytedance Seedance ──
+        "seedance": ("bytedance/seedance-1-pro-fast", False, 5, "Cinematic 3x faster"),
+        "seedance_v2v": ("bytedance/seedance-1-pro-v2v", True, 5, "Video editing"),
+        
+        # ── Stability AI ──
         "svd": ("stability-ai/stable-video-diffusion", True, 4, "Image-to-video classic"),
-        "zeroscope": ("anotherjesse/zeroscope-v2-xl", False, 4, "Fast T2V, free tier"),
+        
+        # ── Video Editing / Utility ──
+        "upscale": ("lucataco/video-upscaler", True, 60, "Upscale videos 2x/4x"),
+        "stabilize": ("lucataco/video-stabilizer", True, 60, "Stabilize shaky video"),
+        "style_transfer": ("lucataco/video-style-transfer", True, 30, "Apply artistic styles"),
     }
     
     def __init__(self, replicate_api=None, api_token: str = None):
@@ -429,7 +494,11 @@ class AdvancedVideoGenerator(ToolBase):
         resolution: str = "1080p",
         aspect_ratio: str = "16:9",
         style: str = "cinematic",
-        output_path: str = None
+        output_path: str = None,
+        motion_level: int = 2,
+        cfg_scale: float = 7.5,
+        negative_prompt: str = None,
+        seed: int = -1
     ) -> Dict[str, Any]:
         """
         Generate PREMIUM quality video using AI models.
@@ -443,6 +512,10 @@ class AdvancedVideoGenerator(ToolBase):
             aspect_ratio: Aspect ratio (16:9, 9:16, 1:1)
             style: Production style - "cinematic", "commercial", "luxury", "dynamic", "ambient"
             output_path: Output path (auto-generated if None)
+            motion_level: Amount of motion 1-5 (default 2, higher=more movement)
+            cfg_scale: Guidance scale (default 7.5)
+            negative_prompt: What to avoid in generation
+            seed: Reproducibility seed (-1 for random)
             
         Returns:
             {"success": bool, "video_path": str, "video_url": str, "duration": float}
@@ -494,7 +567,11 @@ class AdvancedVideoGenerator(ToolBase):
                 image_url=image_url,
                 duration=duration,
                 aspect_ratio=aspect_ratio,
-                style=style
+                style=style,
+                motion_level=motion_level,
+                cfg_scale=cfg_scale,
+                negative_prompt=negative_prompt,
+                seed=seed
             )
             
             logger.info(f"🎬 Generating PREMIUM {style} video with {model}: {prompt[:50]}...")
@@ -593,9 +670,21 @@ class AdvancedVideoGenerator(ToolBase):
         image_url: str = None,
         duration: int = 5,
         aspect_ratio: str = "16:9",
-        style: str = "cinematic"
+        style: str = "cinematic",
+        motion_level: int = 2,
+        cfg_scale: float = 7.5,
+        negative_prompt: str = None,
+        seed: int = -1
     ) -> Dict[str, Any]:
-        """Build model-specific input parameters with enhanced prompting."""
+        """
+        Build model-specific input parameters with enhanced prompting.
+        
+        Advanced parameters (from printify_clean):
+        - motion_level: 1-5, higher = more movement (default 2)
+        - cfg_scale: Guidance scale (default 7.5)
+        - negative_prompt: What to avoid in generation
+        - seed: Reproducibility (-1 for random)
+        """
         
         # Enhance prompt for high-quality output
         enhanced_prompt = self._enhance_video_prompt(prompt, style)
@@ -603,27 +692,37 @@ class AdvancedVideoGenerator(ToolBase):
         # Base inputs with enhanced prompt
         inputs = {"prompt": enhanced_prompt}
         
-        # Model-specific parameters
-        if model in ["kling", "kling_turbo"]:
-            inputs["duration"] = str(duration)
+        # Model-specific parameters with advanced Kling support from printify_clean
+        if model in ["kling", "kling_turbo", "kling_pro"]:
+            inputs["duration"] = duration
+            inputs["aspect_ratio"] = aspect_ratio
+            inputs["motion_level"] = motion_level
+            inputs["cfg_scale"] = cfg_scale
             if image_url:
-                inputs["image_url"] = image_url
+                inputs["image"] = image_url  # Kling uses "image" not "image_url"
+            if negative_prompt:
+                inputs["negative_prompt"] = negative_prompt
+            if seed != -1:
+                inputs["seed"] = seed
+            
+        elif model in ["luma_flash", "luma_ray2", "luma", "luma_ray"]:
+            if image_url:
+                inputs["first_frame_image"] = image_url  # Luma uses first_frame_image
             inputs["aspect_ratio"] = aspect_ratio
             
-        elif model in ["luma_flash", "luma_ray2", "luma"]:
-            if image_url:
-                inputs["image_url"] = image_url
+        elif model in ["veo", "veo3", "veo3_fast", "veo31_fast", "veo2"]:
+            # Veo-specific parameters from printify_clean
             inputs["aspect_ratio"] = aspect_ratio
-            
-        elif model in ["veo3", "veo3_fast", "veo31_fast", "veo2"]:
-            inputs["aspect_ratio"] = aspect_ratio
+            inputs["duration"] = duration
+            inputs["guidance_scale"] = cfg_scale  # Veo uses guidance_scale
             if image_url:
-                inputs["image"] = image_url
+                inputs["first_frame_image"] = image_url  # Veo uses first_frame_image
                 
-        elif model in ["pixverse5", "pixverse45"]:
+        elif model in ["pixverse", "pixverse5", "pixverse45"]:
             inputs["duration"] = duration
             
-        elif model == "hailuo":
+        elif model in ["hailuo", "hailuo_fast"]:
+            inputs["motion_level"] = motion_level
             if image_url:
                 inputs["image"] = image_url
             else:
@@ -635,13 +734,29 @@ class AdvancedVideoGenerator(ToolBase):
                 inputs["motion_bucket_id"] = 127
                 inputs["fps"] = 7
                 
-        elif model == "minimax":
+        elif model in ["minimax", "minimax_live"]:
             if image_url:
                 inputs["first_frame_image"] = image_url
             inputs["prompt_optimizer"] = True
             
-        elif model == "sora":
-            inputs["prompt_optimizer"] = True
+        elif model in ["sora", "sora2"]:
+            # Sora-2 specific parameters from printify_clean
+            inputs["aspect_ratio"] = "landscape" if aspect_ratio == "16:9" else "portrait"
+            inputs["seconds"] = duration
+            inputs["resolution"] = "1080p"
+            inputs["include_audio"] = True  # Sora-2 supports synchronized audio
+            if image_url:
+                inputs["input_reference"] = image_url  # KEY: Sora uses input_reference for image-to-video
+            if seed != -1:
+                inputs["seed"] = seed
+            
+        elif model in ["wan", "wan_fast"]:
+            inputs["duration"] = duration
+            
+        elif model in ["seedance", "seedance_v2v"]:
+            inputs["duration"] = duration
+            if image_url and model == "seedance_v2v":
+                inputs["video"] = image_url  # For video-to-video
         
         return inputs
     
@@ -650,9 +765,11 @@ class AdvancedVideoGenerator(ToolBase):
         if not self.api_token:
             return {"success": False, "error": "No Replicate API token"}
         
+        # Use identity/gzip encoding to avoid brotli decoding issues
         headers = {
             "Authorization": f"Token {self.api_token}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Accept-Encoding": "identity, gzip, deflate"
         }
         
         try:
@@ -1015,6 +1132,222 @@ class AdvancedVideoGenerator(ToolBase):
             return {"success": False, "error": str(e)}
     
     # ═══════════════════════════════════════════════════════════════════
+    # COMMERCIAL VIDEO PRODUCTION (from printify_clean)
+    # ═══════════════════════════════════════════════════════════════════
+    
+    @tool(
+        name="generate_commercial_script",
+        description="Generate a professional ad script for product commercials",
+        category="video"
+    )
+    async def generate_commercial_script(
+        self,
+        product_name: str,
+        target_audience: str,
+        ad_tone: str = "Professional & Trustworthy",
+        key_benefits: str = "",
+        call_to_action: str = "Shop Now",
+        duration: int = 20
+    ) -> Dict[str, Any]:
+        """
+        Generate sophisticated ad script following proven commercial structure.
+        
+        Args:
+            product_name: Name of the product
+            target_audience: Target audience description
+            ad_tone: Tone from VISUAL_STYLES (Professional, Exciting, Luxury, etc.)
+            key_benefits: Key benefits to highlight
+            call_to_action: CTA text
+            duration: Total duration in seconds (segments = duration // 5)
+            
+        Returns:
+            {"success": bool, "script": str, "segments": list}
+        """
+        import re
+        
+        num_segments = duration // 5
+        
+        script_prompt = f"""You are an expert advertising copywriter creating a {duration}-second commercial script.
+
+Product: {product_name}
+Target Audience: {target_audience}
+Tone: {ad_tone}
+Key Benefits: {key_benefits}
+Call to Action: {call_to_action}
+
+Create a {num_segments}-segment script (5 seconds each) following this proven commercial structure:
+
+Segment 1 - HOOK/PROBLEM (5s):
+- Grab attention immediately with a relatable problem or exciting hook
+- 6-8 words maximum - punchy and memorable
+- Create emotional connection or curiosity
+
+Segment 2 - SOLUTION (5s):
+- Introduce {product_name} as the perfect solution
+- 6-8 words - highlight the "aha" moment
+- Show transformation or relief
+
+Segment 3 - CALL TO ACTION (5s):
+- Strong, urgent call to action: {call_to_action}
+- 6-8 words - clear, action-oriented, and compelling
+- Create sense of urgency or exclusivity
+
+Each segment must be exactly 6-8 words for perfect 5-second delivery.
+Make it persuasive, memorable, and emotionally resonant.
+Label each section as '1:', '2:', and '3:'.
+
+Write ONLY the script segments - no additional commentary."""
+
+        try:
+            # Use Replicate for text generation
+            if self.replicate:
+                result = await self.replicate.run_model(
+                    model="meta/meta-llama-3-70b-instruct",
+                    inputs={
+                        "prompt": script_prompt,
+                        "max_tokens": 400,
+                        "temperature": 0.8
+                    }
+                )
+                full_script = result.get("output", "")
+            else:
+                # Direct API call
+                result = await self._run_replicate_model(
+                    "meta/meta-llama-3-70b-instruct",
+                    {
+                        "prompt": script_prompt,
+                        "max_tokens": 400,
+                        "temperature": 0.8
+                    }
+                )
+                full_script = result.get("output", "")
+            
+            # Extract segments
+            segments = re.findall(r"\d+:\s*(.+)", str(full_script))
+            
+            if len(segments) < num_segments:
+                # Fallback segments
+                segments = [
+                    f"Discover {product_name} - Your solution awaits",
+                    f"{product_name} transforms your experience completely",
+                    f"{call_to_action} - Limited time only"
+                ][:num_segments]
+            
+            return {
+                "success": True,
+                "script": full_script,
+                "segments": segments[:num_segments],
+                "product": product_name,
+                "ad_tone": ad_tone
+            }
+            
+        except Exception as e:
+            logger.error(f"Script generation failed: {e}")
+            return {"success": False, "error": str(e)}
+    
+    @tool(
+        name="generate_multi_segment_video",
+        description="Generate multi-segment commercial video with rate limiting and professional orchestration",
+        category="video"
+    )
+    async def generate_multi_segment_video(
+        self,
+        script_segments: List[str],
+        product_name: str = "",
+        product_image: str = None,
+        ad_tone: str = "Professional & Trustworthy",
+        model: str = "kling",
+        aspect_ratio: str = "16:9",
+        motion_level: int = 2,
+        cfg_scale: float = 7.5
+    ) -> Dict[str, Any]:
+        """
+        Generate multi-segment video with rate limiting between segments.
+        
+        From printify_clean: Uses 12-second delay between video requests
+        to avoid Replicate rate limits (6 requests/minute).
+        
+        Args:
+            script_segments: List of script text for each segment
+            product_name: Product being advertised
+            product_image: Optional product image for image-to-video
+            ad_tone: Tone from VISUAL_STYLES
+            model: Video model (kling, sora, veo3, etc.)
+            aspect_ratio: Output aspect ratio
+            motion_level: 1-5, movement amount
+            cfg_scale: Guidance scale
+            
+        Returns:
+            {"success": bool, "video_paths": list, "segments_completed": int}
+        """
+        logger.info(f"🎥 PHASE 1: VIDEO GENERATION - Creating {len(script_segments)} video segments (5 seconds each)")
+        logger.info(f"   📹 Style: {ad_tone}")
+        logger.info(f"   ⏱️ Estimated time: ~{len(script_segments) * 30} seconds")
+        
+        video_paths = []
+        style_description = VISUAL_STYLES.get(ad_tone, "professional, appealing")
+        
+        for i, segment in enumerate(script_segments):
+            try:
+                # Rate limit: Wait between video requests (printify_clean pattern)
+                if i > 0:
+                    logger.info(f"   ⏱️ Rate limit cooldown: Waiting {VIDEO_RATE_LIMIT_DELAY}s before next video...")
+                    await asyncio.sleep(VIDEO_RATE_LIMIT_DELAY)
+                
+                progress_pct = int((i / len(script_segments)) * 100)
+                logger.info(f"🎬 Generating video segment {i+1}/{len(script_segments)} ({progress_pct}% complete)...")
+                
+                # Build commercial video prompt
+                if product_image and i == 0:
+                    # Hero segment with product image
+                    video_prompt = (
+                        f"Transform this product into a beautiful commercial scene. "
+                        f"Cinematic slow camera movement. {style_description}. "
+                        f"Professional lighting, 4K quality, smooth motion. "
+                        f"Visual narrative: {segment}. No text overlays."
+                    )
+                else:
+                    video_prompt = (
+                        f"Commercial advertisement: {style_description}. "
+                        f"Professional shot for {product_name}. "
+                        f"Cinematic quality, engaging visuals. "
+                        f"Visual narrative: {segment}. No text overlays."
+                    )
+                
+                # Generate video
+                result = await self.generate_ai_video(
+                    prompt=video_prompt,
+                    model=model,
+                    image_url=product_image if i == 0 else None,
+                    duration=5,
+                    aspect_ratio=aspect_ratio,
+                    style="commercial",
+                    motion_level=motion_level,
+                    cfg_scale=cfg_scale
+                )
+                
+                if not result.get("success"):
+                    logger.error(f"   ❌ Segment {i+1} failed: {result.get('error')}")
+                    continue
+                
+                video_paths.append(result.get("video_path"))
+                logger.info(f"   ✅ Video segment {i+1} complete")
+                
+            except Exception as e:
+                logger.error(f"Segment {i+1} generation failed: {e}")
+                continue
+        
+        if not video_paths:
+            return {"success": False, "error": "No video segments were generated"}
+        
+        return {
+            "success": True,
+            "video_paths": video_paths,
+            "segments_completed": len(video_paths),
+            "total_segments": len(script_segments)
+        }
+    
+    # ═══════════════════════════════════════════════════════════════════
     # UTILITY METHODS
     # ═══════════════════════════════════════════════════════════════════
     
@@ -1047,6 +1380,489 @@ class AdvancedVideoGenerator(ToolBase):
         except Exception as e:
             logger.error(f"Download failed: {e}")
             raise
+
+
+    # ═══════════════════════════════════════════════════════════════════
+    # ASSEMBLE FINAL VIDEO WITH AUDIO (from printify_clean)
+    # ═══════════════════════════════════════════════════════════════════
+    
+    @tool(
+        name="assemble_video_with_audio",
+        description="Assemble final video by combining video clips with voiceover and background music",
+        category="video"
+    )
+    async def assemble_video_with_audio(
+        self,
+        video_paths: List[str],
+        voiceover_path: str = None,
+        music_path: str = None,
+        output_path: str = None,
+        voiceover_volume: float = 1.0,
+        music_volume: float = 0.25,
+        add_cta: bool = False,
+        cta_text: str = "Shop Now!"
+    ) -> Dict[str, Any]:
+        """
+        Assemble final video with sophisticated audio/video sync.
+        From printify_clean's proven multi-attempt encoding strategy.
+        
+        Args:
+            video_paths: List of video clip paths to concatenate
+            voiceover_path: Path to voiceover audio
+            music_path: Path to background music
+            output_path: Output path (auto-generated if None)
+            voiceover_volume: Voiceover volume multiplier (default 1.0)
+            music_volume: Music volume multiplier (default 0.25)
+            add_cta: Whether to add CTA endcard
+            cta_text: Call-to-action text
+            
+        Returns:
+            {"success": bool, "video_path": str, "duration": float}
+        """
+        try:
+            from moviepy.editor import (
+                AudioFileClip, CompositeAudioClip, VideoFileClip,
+                concatenate_audioclips, concatenate_videoclips
+            )
+            import numpy as np
+            from moviepy.audio.AudioClip import AudioArrayClip
+            
+            logger.info("🎬 PHASE 4: FINAL ASSEMBLY - Combining all elements")
+            logger.info(f"   📊 Components: {len(video_paths)} video clips + voiceover + music")
+            
+            # Load and combine video segments
+            logger.info(f"   📼 Loading {len(video_paths)} video segments...")
+            clips = [VideoFileClip(path) for path in video_paths if os.path.exists(path)]
+            
+            if not clips:
+                return {"success": False, "error": "No valid video clips found"}
+            
+            logger.info("   🔗 Concatenating video clips...")
+            final_video = concatenate_videoclips(clips, method="compose")
+            video_duration = final_video.duration
+            logger.info(f"   ⏱️ Video duration: {video_duration:.2f}s")
+            
+            audio_clips = []
+            
+            # Load voiceover
+            if voiceover_path and os.path.exists(voiceover_path):
+                logger.info("   🎙️ Loading voiceover audio...")
+                voice_clip = AudioFileClip(voiceover_path)
+                
+                # Sync with video duration
+                if voice_clip.duration > video_duration:
+                    voice_clip = voice_clip.subclip(0, video_duration)
+                elif voice_clip.duration < video_duration:
+                    # Pad with silence
+                    silence_duration = video_duration - voice_clip.duration
+                    silence_array = np.zeros((int(silence_duration * 22050), 2))
+                    silence_clip = AudioArrayClip(silence_array, fps=22050)
+                    voice_clip = concatenate_audioclips([voice_clip, silence_clip])
+                
+                voice_clip = voice_clip.volumex(voiceover_volume)
+                audio_clips.append(voice_clip)
+            
+            # Load background music
+            if music_path and os.path.exists(music_path):
+                logger.info("   🎵 Loading background music...")
+                music_clip = AudioFileClip(music_path)
+                
+                # Loop/trim to match video duration
+                if music_clip.duration > video_duration:
+                    music_clip = music_clip.subclip(0, video_duration)
+                elif music_clip.duration < video_duration:
+                    loops_needed = int(video_duration / music_clip.duration) + 1
+                    music_clip = concatenate_audioclips([music_clip] * loops_needed)
+                    music_clip = music_clip.subclip(0, video_duration)
+                
+                music_clip = music_clip.volumex(music_volume)
+                audio_clips.append(music_clip)
+            
+            # Mix audio
+            if audio_clips:
+                logger.info("   🎚️ Mixing audio tracks...")
+                final_audio = CompositeAudioClip(audio_clips)
+                final_audio = final_audio.subclip(0, video_duration)
+                final_video = final_video.set_audio(final_audio)
+            
+            # Generate output path
+            if not output_path:
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                output_path = str(self.output_dir / f"final_commercial_{timestamp}.mp4")
+            
+            # Multi-attempt encoding (proven approach from printify_clean)
+            encoding_success = False
+            
+            # Attempt 1: Standard encoding
+            try:
+                logger.info("   💾 Encoding final video (standard quality)...")
+                final_video.write_videofile(
+                    output_path,
+                    codec="libx264",
+                    audio_codec="aac",
+                    fps=24,
+                    bitrate="2000k",
+                    verbose=False,
+                    logger=None,
+                    preset="ultrafast"
+                )
+                encoding_success = True
+            except Exception as e:
+                logger.warning(f"Standard encoding failed: {str(e)[:100]}")
+            
+            # Attempt 2: Simplified encoding
+            if not encoding_success:
+                try:
+                    logger.info("   💾 Encoding attempt 2: Simplified encoding...")
+                    final_video.write_videofile(
+                        output_path,
+                        codec="libx264",
+                        audio_codec="aac",
+                        fps=24,
+                        verbose=False,
+                        logger=None,
+                        preset="ultrafast",
+                        threads=1
+                    )
+                    encoding_success = True
+                except Exception as e:
+                    logger.warning(f"Simplified encoding failed: {str(e)[:100]}")
+            
+            # Cleanup
+            for clip in clips:
+                try:
+                    clip.close()
+                except:
+                    pass
+            
+            if not encoding_success:
+                return {"success": False, "error": "All encoding attempts failed"}
+            
+            # Add CTA if requested
+            if add_cta:
+                cta_result = self.add_cta_card(output_path, cta_text=cta_text)
+                if cta_result.get("success"):
+                    output_path = cta_result["video_path"]
+            
+            file_size_mb = os.path.getsize(output_path) / (1024 * 1024)
+            logger.info(f"✅ Video assembly complete! Final video ready.")
+            logger.info(f"   📦 Output: {output_path}")
+            logger.info(f"   💾 File size: {file_size_mb:.2f} MB")
+            
+            return {
+                "success": True,
+                "video_path": output_path,
+                "duration": video_duration,
+                "file_size_mb": round(file_size_mb, 2)
+            }
+            
+        except ImportError:
+            return {"success": False, "error": "MoviePy not installed. Run: pip install moviepy"}
+        except Exception as e:
+            logger.error(f"Video assembly failed: {e}")
+            return {"success": False, "error": str(e)}
+    
+    # ═══════════════════════════════════════════════════════════════════
+    # END-TO-END COMMERCIAL CREATION (from printify_clean)
+    # ═══════════════════════════════════════════════════════════════════
+    
+    @tool(
+        name="create_full_commercial",
+        description="Create a complete product commercial with script, video segments, voiceover, and music",
+        category="video"
+    )
+    async def create_full_commercial(
+        self,
+        product_name: str,
+        target_audience: str = "General consumers",
+        ad_tone: str = "Professional & Trustworthy",
+        key_benefits: str = "",
+        call_to_action: str = "Shop Now",
+        duration: int = 20,
+        product_image: str = None,
+        video_model: str = "kling",
+        add_cta_card: bool = True,
+        include_voiceover: bool = True,
+        include_music: bool = True
+    ) -> Dict[str, Any]:
+        """
+        Complete end-to-end product ad creation pipeline.
+        From printify_clean's AdvancedVideoProducer.create_product_ad().
+        
+        This is the full commercial workflow:
+        1. Generate commercial script (3-4 segments)
+        2. Generate video for each segment
+        3. Generate professional voiceover
+        4. Generate background music
+        5. Assemble everything into final video
+        6. Add CTA endcard
+        
+        Args:
+            product_name: Name of the product
+            target_audience: Target demographic
+            ad_tone: Tone/style from VISUAL_STYLES
+            key_benefits: Key product benefits
+            call_to_action: CTA text
+            duration: Target duration in seconds
+            product_image: Optional product image for image-to-video
+            video_model: Video model to use
+            add_cta_card: Add CTA endcard
+            include_voiceover: Include professional voiceover
+            include_music: Include background music
+            
+        Returns:
+            {"success": bool, "video_path": str, "script": str, "components": dict}
+        """
+        try:
+            logger.info(f"🎬 CREATING FULL COMMERCIAL FOR: {product_name}")
+            
+            components = {
+                "script_segments": [],
+                "video_paths": [],
+                "voiceover_path": None,
+                "music_path": None
+            }
+            
+            # Step 1: Generate script
+            logger.info("📝 Step 1: Generating commercial script...")
+            script_result = await self.generate_commercial_script(
+                product_name=product_name,
+                target_audience=target_audience,
+                ad_tone=ad_tone,
+                key_benefits=key_benefits,
+                call_to_action=call_to_action,
+                duration=duration
+            )
+            
+            if not script_result.get("success"):
+                return {"success": False, "error": f"Script generation failed: {script_result.get('error')}"}
+            
+            script_segments = script_result.get("segments", [])
+            components["script_segments"] = script_segments
+            full_script = " ".join(script_segments)
+            
+            # Step 2: Generate video segments
+            logger.info("🎥 Step 2: Generating video segments...")
+            video_result = await self.generate_multi_segment_video(
+                script_segments=script_segments,
+                product_name=product_name,
+                product_image=product_image,
+                ad_tone=ad_tone,
+                model=video_model
+            )
+            
+            if not video_result.get("success"):
+                return {"success": False, "error": f"Video generation failed: {video_result.get('error')}"}
+            
+            video_paths = video_result.get("video_paths", [])
+            components["video_paths"] = video_paths
+            
+            # Step 3: Generate voiceover
+            if include_voiceover:
+                logger.info("🎙️ Step 3: Generating voiceover...")
+                voice_result = await self.generate_voiceover(
+                    text=full_script,
+                    tone=ad_tone
+                )
+                
+                if voice_result.get("success"):
+                    components["voiceover_path"] = voice_result.get("audio_path")
+            
+            # Step 4: Generate background music
+            if include_music:
+                logger.info("🎵 Step 4: Generating background music...")
+                music_style = AD_TONE_MUSIC_MAP.get(ad_tone, "Professional")
+                music_result = await self.generate_background_music(
+                    duration=duration,
+                    style=music_style,
+                    custom_prompt=f"commercial for {product_name}"
+                )
+                
+                if music_result.get("success"):
+                    components["music_path"] = music_result.get("audio_path")
+            
+            # Step 5: Assemble final video
+            logger.info("🎬 Step 5: Assembling final video...")
+            assembly_result = await self.assemble_video_with_audio(
+                video_paths=video_paths,
+                voiceover_path=components.get("voiceover_path"),
+                music_path=components.get("music_path"),
+                add_cta=add_cta_card,
+                cta_text=call_to_action
+            )
+            
+            if not assembly_result.get("success"):
+                return {"success": False, "error": f"Assembly failed: {assembly_result.get('error')}"}
+            
+            logger.info(f"✅ COMMERCIAL COMPLETE: {assembly_result.get('video_path')}")
+            
+            return {
+                "success": True,
+                "video_path": assembly_result.get("video_path"),
+                "duration": assembly_result.get("duration"),
+                "script": full_script,
+                "components": components
+            }
+            
+        except Exception as e:
+            logger.error(f"Commercial creation failed: {e}")
+            return {"success": False, "error": str(e)}
+    
+    # ═══════════════════════════════════════════════════════════════════
+    # YOUTUBE UPLOAD (from printify_clean)
+    # ═══════════════════════════════════════════════════════════════════
+    
+    @tool(
+        name="upload_to_youtube",
+        description="Upload a video to YouTube with AI-optimized metadata for virality",
+        category="distribution"
+    )
+    async def upload_to_youtube(
+        self,
+        video_path: str,
+        title: str = None,
+        description: str = None,
+        product_name: str = None,
+        target_audience: str = None,
+        category: str = "22",  # People & Blogs
+        privacy: str = "private",
+        tags: List[str] = None,
+        use_ai_metadata: bool = True
+    ) -> Dict[str, Any]:
+        """
+        Upload video to YouTube with AI-generated viral metadata.
+        
+        From printify_clean's YouTubeUploadService.
+        
+        Args:
+            video_path: Path to video file
+            title: Video title (AI-generated if None)
+            description: Video description (AI-generated if None)
+            product_name: Product name for AI metadata
+            target_audience: Target audience for AI metadata
+            category: YouTube category ID
+            privacy: Privacy setting (private, unlisted, public)
+            tags: Video tags
+            use_ai_metadata: Use AI to generate viral title/description
+            
+        Returns:
+            {"success": bool, "video_id": str, "url": str}
+        """
+        try:
+            # Check for YouTube credentials
+            client_secrets = os.getenv("YOUTUBE_CLIENT_SECRETS_PATH", "./client_secret.json")
+            token_path = os.getenv("YOUTUBE_TOKEN_PATH", "./token.pickle")
+            
+            if not os.path.exists(video_path):
+                return {"success": False, "error": f"Video not found: {video_path}"}
+            
+            # Generate AI metadata if requested
+            if use_ai_metadata and product_name:
+                logger.info("🤖 Generating AI-optimized YouTube metadata...")
+                
+                # Viral title templates
+                viral_templates = [
+                    f"{product_name} - You Won't Believe What Happens!",
+                    f"This {product_name} Changed Everything",
+                    f"Why Everyone is Talking About {product_name}",
+                    f"{product_name}: The Secret They Don't Want You to Know",
+                    f"I Tried {product_name} - Here's What Happened"
+                ]
+                
+                import random
+                if not title:
+                    title = random.choice(viral_templates)
+                
+                if not description:
+                    description = f"""🔥 {product_name} - The Ultimate Review & Demo
+
+In this video, we explore everything you need to know about {product_name}.
+
+✨ Key Features:
+• Premium quality design
+• Perfect for {target_audience or 'everyone'}
+• Limited availability
+
+👉 Shop Now: [Link in description]
+
+🔔 Subscribe for more amazing product reviews!
+
+#ProductReview #{product_name.replace(' ', '')} #Trending #Viral #MustHave
+"""
+            
+            if not title:
+                title = f"Product Video - {datetime.now().strftime('%Y%m%d')}"
+            
+            if not description:
+                description = "Product showcase video"
+            
+            # Try to upload via Google API
+            try:
+                from googleapiclient.discovery import build
+                from googleapiclient.http import MediaFileUpload
+                from google.oauth2.credentials import Credentials
+                import pickle
+                
+                if not os.path.exists(token_path):
+                    return {
+                        "success": False,
+                        "error": "YouTube authentication required. Run: python setup_youtube.py",
+                        "video_path": video_path,
+                        "generated_title": title,
+                        "generated_description": description
+                    }
+                
+                with open(token_path, "rb") as token:
+                    creds = pickle.load(token)
+                
+                youtube = build("youtube", "v3", credentials=creds)
+                
+                body = {
+                    "snippet": {
+                        "title": title[:100],  # YouTube limit
+                        "description": description[:5000],
+                        "tags": tags or ["product", "review", "viral"],
+                        "categoryId": category
+                    },
+                    "status": {
+                        "privacyStatus": privacy,
+                        "selfDeclaredMadeForKids": False
+                    }
+                }
+                
+                media = MediaFileUpload(video_path, mimetype="video/*", resumable=True)
+                
+                request = youtube.videos().insert(
+                    part="snippet,status",
+                    body=body,
+                    media_body=media
+                )
+                
+                response = request.execute()
+                video_id = response.get("id")
+                
+                logger.info(f"✅ YouTube upload complete: https://youtube.com/watch?v={video_id}")
+                
+                return {
+                    "success": True,
+                    "video_id": video_id,
+                    "url": f"https://youtube.com/watch?v={video_id}",
+                    "title": title,
+                    "privacy": privacy
+                }
+                
+            except ImportError:
+                return {
+                    "success": False,
+                    "error": "Google API client not installed. Run: pip install google-api-python-client google-auth",
+                    "video_path": video_path,
+                    "generated_title": title,
+                    "generated_description": description
+                }
+                
+        except Exception as e:
+            logger.error(f"YouTube upload failed: {e}")
+            return {"success": False, "error": str(e)}
 
 
 # Singleton instance

@@ -54,6 +54,9 @@ screenshots/
 workspace/
 data/files/temp/
 
+# External repos
+useful repos/
+
 # Secrets
 *.pem
 *.key

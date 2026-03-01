@@ -37,6 +37,18 @@ python-dotenv==1.0.0
 python-multipart==0.0.6
 pyyaml==6.0.1
 tenacity==8.2.3
+psutil>=5.9.0
+
+# Messaging Channels (optional - Gateway features)
+python-telegram-bot>=20.0  # Telegram integration
+discord.py>=2.3.0            # Discord integration
+slack-bolt>=1.18.0           # Slack integration
+
+# Voice Capabilities (optional - Voice features)
+# pvporcupine>=2.2.0         # Wake word detection (requires access key)
+# openai-whisper>=20231117   # Speech-to-text
+# elevenlabs>=0.2.0          # Text-to-speech
+# pyaudio>=0.2.0             # Audio I/O
 
 # Testing (dev)
 pytest==7.4.4

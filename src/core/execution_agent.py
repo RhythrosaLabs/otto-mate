@@ -51,7 +51,7 @@ class Artifact:
 
 
 # ============================================================================
-# FALLBACK STRATEGIES
+# FALLBACK STRATEGIES - Enhanced with comprehensive fallbacks
 # ============================================================================
 
 FALLBACK_STRATEGIES = {
@@ -68,10 +68,57 @@ FALLBACK_STRATEGIES = {
             "provider": {"print_provider_id": 28}  # Try different provider
         }
     },
-    # Image generation fallbacks
+    "printify_get_top_products": {
+        # If no top products found, fall back to listing all products
+        "fallback_tools": ["printify_list_products"],
+        "fallback_params": {"limit": 10}
+    },
+    
+    # Shopify fallbacks
+    "shopify_get_top_products": {
+        # If no top products found, fall back to listing all products
+        "fallback_tools": ["shopify_list_products"],
+        "fallback_params": {"limit": 10}
+    },
+    
+    # Image generation fallbacks - multiple models to try
     "generate_image": {
+        "fallback_tools": ["replicate_run_model", "replicate_smart_generate"],
+        "fallback_params": {"model": "black-forest-labs/flux-schnell"},
+        "alternative_models": [
+            "black-forest-labs/flux-schnell",
+            "stability-ai/sdxl",
+            "ideogram-ai/ideogram-v2",
+            "stability-ai/stable-diffusion-3",
+            "playgroundai/playground-v2.5-1024px-aesthetic"
+        ]
+    },
+    "generate_tshirt_design": {
+        "fallback_tools": ["generate_image"],
+        "fallback_params": {"style": "vector"}
+    },
+    
+    # Video generation fallbacks
+    "generate_video": {
         "fallback_tools": ["replicate_run_model"],
-        "fallback_params": {"model": "black-forest-labs/flux-schnell"}
+        "fallback_params": {"model": "minimax/video-01"},
+        "alternative_models": [
+            "minimax/video-01",
+            "stability-ai/stable-video-diffusion",
+            "anotherjesse/zeroscope-v2-xl"
+        ]
+    },
+    "create_product_promo_video": {
+        "fallback_tools": ["generate_video_from_mockup", "replicate_run_model"],
+        "fallback_params": {"model": "stability-ai/stable-video-diffusion"}
+    },
+    
+    # Research fallbacks
+    "search_web": {
+        "fallback_tools": ["browse_url", "research_topic"]
+    },
+    "research_topic": {
+        "fallback_tools": ["search_web"]
     }
 }
 
@@ -390,6 +437,13 @@ class ExecutionAgent:
             Tool execution result
         """
         last_error = None
+        
+        # Pre-filter known meta-parameters that should never be passed to tools
+        meta_params_to_remove = {'task_description', 'task_type', 'task_id', 'step_id', 'execution_context'}
+        for meta_param in meta_params_to_remove:
+            if meta_param in parameters:
+                logger.debug(f"Pre-filtering meta parameter '{meta_param}' from tool call")
+                parameters = {k: v for k, v in parameters.items() if k != meta_param}
         
         for attempt in range(max_retries):
             try:
@@ -884,6 +938,135 @@ class ExecutionAgent:
         ]
         return any(indicator in error_lower for indicator in rate_limit_indicators)
     
+    async def _try_simplified_prompt(
+        self,
+        original_params: Dict[str, Any],
+        tool_name: str,
+        tool_registry: Any,
+        context: Dict[str, Any]
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Recovery strategy: Simplify the prompt and retry.
+        Based on printify_clean/ultra_smart_executor.py pattern.
+        """
+        prompt = original_params.get("prompt", "")
+        if not prompt:
+            return None
+        
+        import re
+        
+        # Simplify: remove special characters, shorten to 20 words max
+        simplified_prompt = re.sub(r"[^\w\s,]", "", prompt)
+        simplified_prompt = " ".join(simplified_prompt.split()[:20])
+        
+        # Add quality boosters back
+        simplified_prompt = f"{simplified_prompt}, high quality, detailed"
+        
+        simplified_params = {**original_params, "prompt": simplified_prompt}
+        
+        logger.info(f"🔄 Trying simplified prompt: {simplified_prompt[:50]}...")
+        
+        result = await self._execute_with_retry(
+            tool_name=tool_name,
+            parameters=simplified_params,
+            tool_registry=tool_registry,
+            context=context
+        )
+        
+        if result.get("success"):
+            result["recovery_used"] = "simplified_prompt"
+            return result
+        
+        return None
+    
+    async def _try_with_different_size(
+        self,
+        original_params: Dict[str, Any],
+        tool_name: str,
+        tool_registry: Any,
+        context: Dict[str, Any]
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Recovery strategy: Try with different image size (1:1 square is safest).
+        Based on printify_clean/ultra_smart_executor.py pattern.
+        """
+        # Try with square aspect ratio as it's the most universally supported
+        size_variants = [
+            {"aspect_ratio": "1:1", "width": 1024, "height": 1024},
+            {"aspect_ratio": "1:1", "width": 512, "height": 512},
+            {"width": 768, "height": 768},
+        ]
+        
+        for size_params in size_variants:
+            try_params = {**original_params, **size_params}
+            
+            logger.info(f"🔄 Trying with size: {size_params}")
+            
+            result = await self._execute_with_retry(
+                tool_name=tool_name,
+                parameters=try_params,
+                tool_registry=tool_registry,
+                context=context
+            )
+            
+            if result.get("success"):
+                result["recovery_used"] = "different_size"
+                return result
+        
+        return None
+    
+    def _auto_fill_missing_params(
+        self,
+        params: Dict[str, Any],
+        step: Dict[str, Any],
+        running_context: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Auto-fill missing parameters from context.
+        Based on printify_clean/ultra_smart_executor.py _enrich_config pattern.
+        """
+        filled_params = dict(params)
+        tool_name = step.get("tool", "").lower()
+        
+        # Auto-fill image inputs for editing/upscaling tools
+        if any(kw in tool_name for kw in ["edit", "upscale", "enhance", "background", "inpaint"]):
+            if not filled_params.get("image") and not filled_params.get("input_image"):
+                # Try to get from context
+                context_image = (
+                    running_context.get("last_generated_image") or
+                    running_context.get("current_image") or
+                    running_context.get("image_url")
+                )
+                if context_image:
+                    filled_params["image"] = context_image
+                    logger.info(f"Auto-filled image parameter from context")
+        
+        # Auto-fill prompt if missing
+        if "image" in tool_name or "generate" in tool_name:
+            if not filled_params.get("prompt"):
+                # Try to construct from step description
+                description = step.get("description", "")
+                if description:
+                    filled_params["prompt"] = f"{description}, high quality, detailed, professional"
+                    logger.info(f"Auto-filled prompt from step description")
+        
+        # Auto-fill video image inputs
+        if "video" in tool_name:
+            if not filled_params.get("image_url") and not filled_params.get("first_frame_image"):
+                context_image = running_context.get("last_generated_image")
+                if context_image:
+                    filled_params["image_url"] = context_image
+                    filled_params["first_frame_image"] = context_image
+                    logger.info(f"Auto-filled video image from context")
+        
+        # Add quality boosters to prompts if short
+        if filled_params.get("prompt"):
+            prompt = filled_params["prompt"]
+            if len(prompt) < 100 and "quality" not in prompt.lower():
+                filled_params["prompt"] = f"{prompt}, high quality, detailed"
+        
+        return filled_params
+    
     async def _try_fallback(
         self,
         step: Dict[str, Any],
@@ -927,6 +1110,44 @@ class ExecutionAgent:
                     )
                     if result.get("success"):
                         return result
+            
+            # Try alternative models if available (for AI model tools)
+            if "alternative_models" in strategy:
+                original_params = step.get("parameters", {})
+                for alt_model in strategy["alternative_models"]:
+                    logger.info(f"Trying alternative model: {alt_model}")
+                    # Try with replicate_run_model using the alternative model
+                    alt_params = {
+                        **original_params,
+                        "model": alt_model,
+                        "model_name": alt_model,
+                        "inputs": {"prompt": original_params.get("prompt", "")}
+                    }
+                    result = await self._execute_with_retry(
+                        tool_name="replicate_run_model",
+                        parameters=alt_params,
+                        tool_registry=tool_registry,
+                        context=context,
+                        step_data=step
+                    )
+                    if result.get("success"):
+                        logger.info(f"✓ Alternative model {alt_model} succeeded!")
+                        return result
+        
+        # NEW: Try recovery strategies for image generation (simplified prompt, different size)
+        original_params = step.get("parameters", {})
+        if any(kw in tool_name.lower() for kw in ["image", "generate", "design"]):
+            # Try simplified prompt
+            result = await self._try_simplified_prompt(original_params, tool_name, tool_registry, context)
+            if result and result.get("success"):
+                logger.info("✓ Simplified prompt strategy succeeded!")
+                return result
+            
+            # Try with different size
+            result = await self._try_with_different_size(original_params, tool_name, tool_registry, context)
+            if result and result.get("success"):
+                logger.info("✓ Different size strategy succeeded!")
+                return result
         
         return None
     
@@ -1110,6 +1331,10 @@ class ExecutionAgent:
                     'reference_images': 'image_url',  # For video from images
                     'input_image': 'image_url',  # For video from images
                     'style': None,  # Remove unsupported video style param
+                    # Task parameters that don't belong in tool calls
+                    'task_description': None,  # Remove, this is task metadata not tool param
+                    'task_type': None,  # Remove, this is task metadata not tool param
+                    'task_id': None,  # Remove, this is task metadata not tool param
                 }
                 
                 # Map unexpected parameters to expected ones
@@ -1159,6 +1384,14 @@ class ExecutionAgent:
         """
         Generate smart default values for common parameters.
         """
+        # Title parameter - common for products and content
+        if param_name == 'title':
+            return (existing_params.get('title') or
+                    existing_params.get('product_title') or
+                    existing_params.get('name') or
+                    existing_params.get('product_type', '').replace('_', ' ').title() + ' Product' or
+                    'Generated Product')
+        
         # Common parameter patterns
         if param_name in ['prompt', 'text', 'content', 'description', 'body_html']:
             # Try to find description-like values from existing params
@@ -1207,6 +1440,59 @@ class ExecutionAgent:
                 return 'flux-schnell'
             elif 'video' in tool_name.lower():
                 return 'stable-video'
+        
+        # Browser tool specific defaults
+        if param_name == 'data_description':
+            # For browser_extract_data - infer from URL or task
+            url = existing_params.get('url', '')
+            if 'reddit' in url.lower():
+                return 'subreddits, posts, and community information'
+            elif 'linkedin' in url.lower():
+                return 'profiles, companies, and job listings'
+            elif 'twitter' in url.lower() or 'x.com' in url.lower():
+                return 'tweets, profiles, and trending topics'
+            return 'structured data, text content, links, and relevant information'
+        
+        if param_name == 'niche':
+            # For browser_find_influencers - infer from context
+            task = existing_params.get('task', '') or existing_params.get('description', '')
+            if task:
+                # Try to extract niche keywords from task
+                task_lower = task.lower()
+                for niche_keyword in ['fitness', 'beauty', 'tech', 'fashion', 'food', 'travel', 
+                                      'gaming', 'music', 'art', 'lifestyle', 'business', 'health']:
+                    if niche_keyword in task_lower:
+                        return niche_keyword
+            return 'lifestyle'  # Default fallback niche
+        
+        if param_name == 'platform':
+            # For social media/influencer tools
+            task = existing_params.get('task', '') or existing_params.get('description', '')
+            if task:
+                task_lower = task.lower()
+                if 'tiktok' in task_lower:
+                    return 'tiktok'
+                elif 'instagram' in task_lower:
+                    return 'instagram'
+                elif 'youtube' in task_lower:
+                    return 'youtube'
+                elif 'twitter' in task_lower or 'x.com' in task_lower:
+                    return 'twitter'
+            return 'instagram'  # Default platform
+        
+        if param_name == 'url' and 'browser' in tool_name.lower():
+            # Try to infer URL from task description
+            task = existing_params.get('task', '') or existing_params.get('description', '')
+            if task:
+                task_lower = task.lower()
+                if 'reddit' in task_lower:
+                    return 'https://www.reddit.com'
+                elif 'tiktok' in task_lower:
+                    return 'https://www.tiktok.com'
+                elif 'instagram' in task_lower:
+                    return 'https://www.instagram.com'
+                elif 'twitter' in task_lower:
+                    return 'https://twitter.com'
         
         return None
     

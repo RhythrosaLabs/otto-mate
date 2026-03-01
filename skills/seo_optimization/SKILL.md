@@ -27,16 +27,16 @@ Complete SEO optimization for e-commerce stores, blog content, and digital asset
 ```yaml
 name: Optimize Product for Search
 steps:
-  1. Research keywords for product niche
-  2. Analyze top-ranking competitor products
-  3. Identify keyword opportunities
-  4. Optimize product title (60 chars, keyword-rich)
-  5. Write SEO description (155 chars)
-  6. Create detailed product description (500+ words)
-  7. Add keyword-rich alt text to images
-  8. Set SEO URL slug
-  9. Add schema markup
-  10. Generate internal link opportunities
+  - Research keywords for product niche
+  - Analyze top-ranking competitor products
+  - Identify keyword opportunities
+  - Optimize product title (60 chars, keyword-rich)
+  - Write SEO description (155 chars)
+  - Create detailed product description (500+ words)
+  - Add keyword-rich alt text to images
+  - Set SEO URL slug
+  - Add schema markup
+  - Generate internal link opportunities
 
 success_criteria:
   - Primary keyword in title
@@ -50,21 +50,15 @@ success_criteria:
 ```yaml
 name: Create SEO-Optimized Blog Post
 steps:
-  1. Research target keyword (search volume, difficulty)
-  2. Analyze top 10 ranking articles
-  3. Identify content gaps
-  4. Create comprehensive outline
-  5. Write 1500+ word article
-  6. Optimize:
-     - Title tag (keyword + modifier)
-     - Meta description
-     - H1, H2, H3 headers with keywords
-     - Image alt text
-     - Internal links (3-5)
-     - External links (2-3 authority sites)
-  7. Add FAQ schema
-  8. Create social media snippets
-  9. Publish and index
+  - Research target keyword (search volume, difficulty)
+  - Analyze top 10 ranking articles
+  - Identify content gaps
+  - Create comprehensive outline
+  - Write 1500+ word article
+  - "Optimize: Title tag (keyword + modifier), Meta description, H1/H2/H3 headers with keywords, Image alt text, Internal links (3-5), External links (2-3 authority sites)"
+  - Add FAQ schema
+  - Create social media snippets
+  - Publish and index
 
 success_criteria:
   - 1500+ words
@@ -79,26 +73,13 @@ success_criteria:
 ```yaml
 name: Perform SEO Audit
 steps:
-  1. Crawl site structure
-  2. Analyze technical SEO:
-     - Page speed
-     - Mobile responsiveness
-     - SSL certificate
-     - XML sitemap
-     - Robots.txt
-  3. On-page analysis:
-     - Title tags
-     - Meta descriptions
-     - Header structure
-     - Image optimization
-     - Internal linking
-  4. Content analysis:
-     - Thin content
-     - Duplicate content
-     - Keyword targeting
-  5. Competitor comparison
-  6. Generate prioritized fix list
-  7. Create implementation plan
+  - Crawl site structure
+  - "Analyze technical SEO: Page speed, Mobile responsiveness, SSL certificate, XML sitemap, Robots.txt"
+  - "On-page analysis: Title tags, Meta descriptions, Header structure, Image optimization, Internal linking"
+  - "Content analysis: Thin content, Duplicate content, Keyword targeting"
+  - Competitor comparison
+  - Generate prioritized fix list
+  - Create implementation plan
 
 success_criteria:
   - Complete audit report

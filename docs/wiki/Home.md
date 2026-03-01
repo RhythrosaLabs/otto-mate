@@ -1,219 +1,76 @@
 # Otto Chat Wiki
 
-Welcome to the comprehensive Otto Chat documentation! Otto Chat is a universal AI business platform that automates everything through natural conversation.
+Welcome to the **Otto Chat** wiki — the comprehensive documentation for the Universal AI Business Platform.
 
 ---
 
-## 📚 Table of Contents
+## 📖 Table of Contents
 
 ### Getting Started
-- [[Getting Started]] - Installation and first-time setup
-- [[Configuration]] - Environment variables and settings
-- [[Docker Deployment]] - Container-based deployment
+- [Home](Home) — Overview and quick links
+- [Getting Started](Getting-Started) — Installation, setup, and first run
+- [Configuration](Configuration) — All environment variables and settings
 
-### Core Features
-- [[Features]] - Complete feature overview
-- [[AI Models]] - Available AI models and capabilities
-- [[Tools Reference]] - All 100+ tools documented
-- [[Agent Delegation]] - Specialized agent system
+### Core Concepts
+- [Architecture](Architecture) — System design, patterns, and module map
+- [Multi-Agent System](Multi-Agent-System) — Agent orchestration, roles, and execution modes
+- [Modality System](Modality-System) — How Otto selects AI models for different output types
 
-### Integrations
-- [[Printify Integration]] - Print-on-demand workflows
-- [[Shopify Integration]] - E-commerce management
-- [[Replicate Integration]] - AI model access
-- [[Email Integration]] - Marketing automation
+### Features
+- [Features Overview](Features) — Complete feature catalog
+- [Image Generation](Image-Generation) — 15+ models, styles, and aspect ratios
+- [Video Generation](Video-Generation) — Multi-model video with cinematic presets
+- [E-Commerce](E-Commerce) — Printify and Shopify integration
+- [Research & Browser](Research-and-Browser) — Web search, scraping, and browser automation
+- [Task Queue & Scheduling](Task-Queue) — Task management, calendar, and recurring jobs
+- [Voice](Voice) — Speech-to-text, text-to-speech, and voice pipeline
+- [Creative Platform](Creative-Platform) — Multi-project creative workflows
 
-### User Interface
-- [[Themes]] - Visual customization
-- [[Keyboard Shortcuts]] - Power-user navigation
-- [[Task Queue]] - Task management and scheduling
-- [[File Management]] - Asset organization
+### Customization
+- [Themes](Themes) — 14 visual themes for the web UI
+- [Slash Commands](Slash-Commands) — Quick-access command syntax
+- [Plugin Development](Plugin-Development) — Creating custom plugins
+- [Skill Development](Skill-Development) — Creating skill packages
 
-### Development
-- [[Plugin Development]] - Create custom plugins
-- [[API Reference]] - REST API documentation
-- [[Webhooks]] - Event-driven integrations
-- [[Contributing]] - Development guidelines
+### Reference
+- [API Reference](API-Reference) — All REST and WebSocket endpoints
+- [Tools Reference](Tools-Reference) — Complete tool catalog with parameters
+- [Environment Variables](Environment-Variables) — All 109 configuration options
+- [CLI Reference](CLI-Reference) — Command-line tools and scripts
 
-### Support
-- [[Troubleshooting]] - Common issues and solutions
-- [[FAQ]] - Frequently asked questions
-- [[Changelog]] - Version history
-
----
-
-## 🤖 What is Otto Chat?
-
-Otto Chat is an **autonomous AI business automation platform** that combines Claude Opus 4's intelligence with 100+ integrated tools. Unlike simple chatbots, Otto can:
-
-1. **Understand complex, multi-step requests**
-2. **Create execution plans automatically**
-3. **Run tasks in parallel when possible**
-4. **Chain tool outputs together**
-5. **Remember your preferences across sessions**
-6. **Delegate to specialized agents**
-
-### Example Workflow
-
-When you say: *"Create a product line of 5 nature-themed framed art prints and publish them to my store"*
-
-Otto automatically:
-```
-1. Generates 5 unique nature images (parallel)
-   ├── Forest scene
-   ├── Ocean sunset
-   ├── Mountain landscape
-   ├── Desert vista
-   └── Aurora borealis
-
-2. Uploads each image to Printify (parallel)
-
-3. Creates 5 framed art products with:
-   ├── Auto-generated titles
-   ├── SEO-optimized descriptions
-   ├── Appropriate pricing
-   └── Correct product templates
-
-4. Publishes all to your connected store
-
-5. Returns summary with product links
-```
-
-This entire workflow runs autonomously without additional prompts.
+### Operations
+- [Docker Deployment](Docker-Deployment) — Container setup and production deployment
+- [Multi-Channel Setup](Multi-Channel-Setup) — Telegram, Discord, Slack, WhatsApp configuration
+- [Security](Security) — Authentication, CORS, rate limiting, and best practices
+- [Troubleshooting](Troubleshooting) — Common issues and solutions
+- [FAQ](FAQ) — Frequently asked questions
 
 ---
 
-## 🏗️ Architecture Overview
+## Quick Links
 
-```
-┌──────────────────────────────────────────────────────────────────────┐
-│                        USER INTERFACE                                 │
-│  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────────────────┐ │
-│  │   Chat     │ │   Queue    │ │  Calendar  │ │   File Browser     │ │
-│  └────────────┘ └────────────┘ └────────────┘ └────────────────────┘ │
-└──────────────────────────────────────────────────────────────────────┘
-                                   │
-                                   ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│                     SUPER PLANNING AGENT                              │
-│  ┌─────────────────────────────────────────────────────────────────┐ │
-│  │  Claude Opus 4 + Task Decomposition + Context Preservation      │ │
-│  └─────────────────────────────────────────────────────────────────┘ │
-│                                                                       │
-│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐                 │
-│  │  Task        │ │  Dependency  │ │  Progress    │                 │
-│  │  Analyzer    │ │  Resolver    │ │  Tracker     │                 │
-│  └──────────────┘ └──────────────┘ └──────────────┘                 │
-└──────────────────────────────────────────────────────────────────────┘
-                                   │
-                    ┌──────────────┼──────────────┐
-                    ▼              ▼              ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│                    SPECIALIZED AGENTS                                 │
-│  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────────────────┐ │
-│  │  Content   │ │   Image    │ │   Video    │ │     Research       │ │
-│  │   Agent    │ │   Agent    │ │   Agent    │ │      Agent         │ │
-│  └────────────┘ └────────────┘ └────────────┘ └────────────────────┘ │
-│  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────────────────┐ │
-│  │ Analytics  │ │  E-commerce│ │   Audio    │ │     Automation     │ │
-│  │   Agent    │ │   Agent    │ │   Agent    │ │      Agent         │ │
-│  └────────────┘ └────────────┘ └────────────┘ └────────────────────┘ │
-└──────────────────────────────────────────────────────────────────────┘
-                                   │
-                                   ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│                      TOOL LAYER (100+)                               │
-│  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────────────────┐ │
-│  │   Image    │ │   Video    │ │   Audio    │ │     Content        │ │
-│  │   Tools    │ │   Tools    │ │   Tools    │ │     Tools          │ │
-│  └────────────┘ └────────────┘ └────────────┘ └────────────────────┘ │
-│  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────────────────┐ │
-│  │  Printify  │ │  Shopify   │ │  Research  │ │     Browser        │ │
-│  │   Tools    │ │   Tools    │ │   Tools    │ │     Tools          │ │
-│  └────────────┘ └────────────┘ └────────────┘ └────────────────────┘ │
-└──────────────────────────────────────────────────────────────────────┘
-                                   │
-                                   ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│                      PLUGIN SYSTEM                                    │
-│  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────────────────┐ │
-│  │   Web      │ │ Notification│ │  Database  │ │   Your Custom      │ │
-│  │  Scraper   │ │   Sender   │ │ Connector  │ │     Plugin         │ │
-│  └────────────┘ └────────────┘ └────────────┘ └────────────────────┘ │
-└──────────────────────────────────────────────────────────────────────┘
-                                   │
-                                   ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│                    EXTERNAL SERVICES                                  │
-│  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────────────────┐ │
-│  │ Anthropic  │ │ Replicate  │ │  Printify  │ │     Shopify        │ │
-│  │  (Claude)  │ │ (AI Models)│ │   (POD)    │ │   (E-commerce)     │ │
-│  └────────────┘ └────────────┘ └────────────┘ └────────────────────┘ │
-│  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────────────────┐ │
-│  │  Serper    │ │  SendGrid  │ │   OpenAI   │ │      SMTP          │ │
-│  │  (Search)  │ │  (Email)   │ │  (Whisper) │ │     (Email)        │ │
-│  └────────────┘ └────────────┘ └────────────┘ └────────────────────┘ │
-└──────────────────────────────────────────────────────────────────────┘
-```
+| Resource | Link |
+|----------|------|
+| **Repository** | [github.com/RhythrosaLabs/otto-chat](https://github.com/RhythrosaLabs/otto-chat) |
+| **README** | [README.md](https://github.com/RhythrosaLabs/otto-chat/blob/main/README.md) |
+| **Issues** | [Report a bug](https://github.com/RhythrosaLabs/otto-chat/issues) |
+| **Environment Template** | [config/.env.example](https://github.com/RhythrosaLabs/otto-chat/blob/main/config/.env.example) |
 
 ---
 
-## 🚀 Quick Start
+## About Otto Chat
 
-```bash
-# Clone repository
-git clone https://github.com/RhythrosaLabs/otto-chat.git
-cd otto-chat
+Otto Chat is a full-stack autonomous AI business platform built with Python and FastAPI. It combines Anthropic Claude's intelligence with 100+ integrated tools, multi-agent orchestration, and a beautiful web UI to automate creative and business operations through natural conversation.
 
-# Setup environment
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+**Key Stats:**
+- 100+ integrated tools across 40 modules
+- 15+ AI image generation models
+- 5+ video generation models
+- 30+ API routers with 60+ endpoints
+- 65 core business logic modules
+- 17 skill packages
+- 8 built-in plugins
+- 14 visual themes
+- Multi-channel: Web, Telegram, Discord, Slack, WhatsApp
 
-# Configure
-cp .env.example .env
-# Edit .env with your API keys
-
-# Run
-python run.py
-```
-
-Visit http://localhost:8000 to start!
-
----
-
-## 📊 Platform Statistics
-
-| Metric | Value |
-|--------|-------|
-| **Total Tools** | 100+ |
-| **AI Models** | 15+ |
-| **Visual Themes** | 14 |
-| **Plugin Examples** | 3 |
-| **Specialized Agents** | 8 |
-| **Product Templates** | 30+ |
-| **Supported Languages** | Python |
-| **API Style** | REST + WebSocket |
-
----
-
-## 🔗 External Resources
-
-- **GitHub Repository**: https://github.com/RhythrosaLabs/otto-chat
-- **Issue Tracker**: https://github.com/RhythrosaLabs/otto-chat/issues
-- **Anthropic Docs**: https://docs.anthropic.com
-- **Replicate Docs**: https://replicate.com/docs
-- **Printify API**: https://developers.printify.com
-- **Shopify API**: https://shopify.dev/docs/api
-
----
-
-## 📝 License
-
-**Private** — All Rights Reserved  
-© 2024-2026 RhythrosaLabs
-
----
-
-**Version:** 2.0.0  
-**Last Updated:** February 2026
+**Tech Stack:** Python 3.11+ · FastAPI · Anthropic Claude · OpenAI · Replicate · ChromaDB · SQLAlchemy · Playwright · Docker

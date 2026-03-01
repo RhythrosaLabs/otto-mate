@@ -1,0 +1,36 @@
+name: image_processor
+version: 1.0.0
+description: Advanced image processing - resize, crop, filters, effects, and format conversion
+author: Otto Examples
+type: tool
+icon: 🖼️
+
+entry_point: main
+
+provides_tools:
+  - resize_image
+  - crop_image
+  - apply_filter
+  - convert_format
+  - get_image_info
+  - create_thumbnail
+
+settings_schema:
+  default_quality:
+    type: integer
+    description: Default JPEG quality (1-100)
+    default: 85
+  
+  max_dimension:
+    type: integer
+    description: Maximum width/height for resized images
+    default: 4096
+  
+  preserve_metadata:
+    type: boolean
+    description: Preserve EXIF metadata when processing
+    default: true
+
+dependencies:
+  - pillow
+  - pillow-heif

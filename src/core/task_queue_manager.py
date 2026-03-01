@@ -7,145 +7,21 @@ Autonomous task planning, execution, and artifact management.
 import asyncio
 import logging
 from datetime import datetime, timedelta
-from enum import Enum
 from typing import Any, Dict, List, Optional
-from dataclasses import dataclass, field
 import json
 from pathlib import Path
 
+# Import shared task models
+from .task_models import (
+    TaskStatus, 
+    TaskPriority, 
+    ArtifactType, 
+    Artifact, 
+    TaskStep, 
+    Task
+)
+
 logger = logging.getLogger(__name__)
-
-
-class TaskStatus(Enum):
-    """Task execution status."""
-    PENDING = "pending"
-    PLANNING = "planning"
-    READY = "ready"
-    RUNNING = "running"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
-
-
-class TaskPriority(Enum):
-    """Task priority levels."""
-    LOW = 1
-    NORMAL = 2
-    HIGH = 3
-    URGENT = 4
-
-
-class ArtifactType(Enum):
-    """Types of artifacts that can be generated."""
-    IMAGE = "image"
-    VIDEO = "video"
-    TEXT = "text"
-    PRODUCT = "product"
-    BLOG = "blog"
-    SOCIAL_POST = "social_post"
-
-
-@dataclass
-class Artifact:
-    """Represents generated content from task execution."""
-    id: str
-    type: ArtifactType
-    name: str
-    url: Optional[str] = None
-    content: Optional[str] = None
-    metadata: Dict = field(default_factory=dict)
-    created_at: datetime = field(default_factory=datetime.now)
-    
-    def to_dict(self) -> Dict:
-        return {
-            "id": self.id,
-            "type": self.type.value,
-            "name": self.name,
-            "url": self.url,
-            "content": self.content[:500] if self.content else None,
-            "metadata": self.metadata,
-            "created_at": self.created_at.isoformat()
-        }
-
-
-@dataclass
-class TaskStep:
-    """Represents a single step in task execution."""
-    id: str
-    name: str
-    description: str
-    tool_name: str
-    parameters: Dict
-    status: TaskStatus = TaskStatus.PENDING
-    result: Optional[Dict] = None
-    artifacts: List[Artifact] = field(default_factory=list)
-    error: Optional[str] = None
-    depends_on: List[str] = field(default_factory=list)
-    
-    def to_dict(self) -> Dict:
-        return {
-            "id": self.id,
-            "name": self.name,
-            "description": self.description,
-            "tool_name": self.tool_name,
-            "parameters": self.parameters,
-            "status": self.status.value,
-            "result": self.result,
-            "artifacts": [a.to_dict() for a in self.artifacts],
-            "error": self.error,
-            "depends_on": self.depends_on
-        }
-
-
-@dataclass
-class Task:
-    """Represents a complete task in the queue."""
-    id: str
-    description: str
-    status: TaskStatus = TaskStatus.PENDING
-    priority: TaskPriority = TaskPriority.NORMAL
-    
-    # Planning
-    steps: List[TaskStep] = field(default_factory=list)
-    current_step: int = 0
-    
-    # Execution context
-    context: Dict = field(default_factory=dict)
-    artifacts: List[Artifact] = field(default_factory=list)
-    
-    # Timing
-    created_at: datetime = field(default_factory=datetime.now)
-    scheduled_for: Optional[datetime] = None
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
-    
-    # Publishing
-    publish_to: List[str] = field(default_factory=list)
-    
-    # Recurrence
-    recurring: bool = False
-    recurrence_pattern: Optional[str] = None
-    
-    # Results
-    final_summary: str = ""
-    error: Optional[str] = None
-    
-    def to_dict(self) -> Dict:
-        return {
-            "id": self.id,
-            "description": self.description,
-            "status": self.status.value,
-            "priority": self.priority.value,
-            "steps": [s.to_dict() for s in self.steps],
-            "current_step": self.current_step,
-            "artifacts": [a.to_dict() for a in self.artifacts],
-            "created_at": self.created_at.isoformat(),
-            "scheduled_for": self.scheduled_for.isoformat() if self.scheduled_for else None,
-            "publish_to": self.publish_to,
-            "recurring": self.recurring,
-            "final_summary": self.final_summary,
-            "error": self.error
-        }
 
 
 class TaskQueueManager:
@@ -232,6 +108,8 @@ class TaskQueueManager:
                     id=f"step_{i}",
                     name=step.get("name", f"Step {i+1}"),
                     description=step.get("description", ""),
+                    agent=step.get("agent", "orchestrator"),
+                    action=step.get("tool", ""),
                     tool_name=step.get("tool", ""),
                     parameters=step.get("parameters", {}),
                     depends_on=step.get("depends_on", [])

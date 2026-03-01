@@ -1,0 +1,419 @@
+/**
+ * Otto Chat - Sidebar Styles
+ * History sidebar, folders, and navigation
+ */
+
+/* History Sidebar - Canva/Gemini Inspired */
+.history-sidebar {
+    width: var(--sidebar-width);
+    min-width: 200px;
+    max-width: 400px;
+    height: 100vh;
+    background: 
+        var(--sidebar-glow),
+        var(--sidebar-gradient),
+        linear-gradient(180deg, var(--bg-sidebar, #0d0d1a) 0%, var(--bg, #0a0a14) 100%);
+    border-right: 1px solid rgba(139, 92, 246, 0.15);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    box-shadow: 
+        4px 0 24px rgba(0, 0, 0, 0.4),
+        1px 0 0 rgba(139, 92, 246, 0.1);
+    position: relative;
+    overflow: visible;
+}
+
+/* Subtle animated glow effect */
+.history-sidebar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 200px;
+    background: radial-gradient(ellipse 100% 100% at 50% -20%, 
+        rgba(99, 102, 241, 0.12) 0%, 
+        rgba(139, 92, 246, 0.06) 40%,
+        transparent 70%);
+    pointer-events: none;
+}
+
+.history-sidebar.collapsed {
+    width: 0 !important;
+    min-width: 0 !important;
+    overflow: hidden;
+    border: none;
+    padding: 0;
+}
+
+.sidebar-header {
+    padding: 20px 16px 16px;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.12);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    background: linear-gradient(180deg, rgba(99, 102, 241, 0.05) 0%, transparent 100%);
+}
+
+.sidebar-header h2 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sidebar-header h2::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(167, 139, 250, 0.5);
+}
+
+.new-chat-btn {
+    padding: 16px 18px;
+    margin: 16px;
+    background: linear-gradient(135deg, 
+        rgba(99, 102, 241, 0.9) 0%, 
+        rgba(139, 92, 246, 0.9) 50%, 
+        rgba(236, 72, 153, 0.8) 100%);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+        0 4px 16px rgba(139, 92, 246, 0.3),
+        0 1px 3px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.new-chat-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.new-chat-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 8px 25px rgba(139, 92, 246, 0.4),
+        0 2px 8px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.new-chat-btn:hover::before {
+    left: 100%;
+}
+
+.new-chat-btn:active {
+    transform: translateY(0);
+}
+
+/* Project Folders */
+.folders-section {
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.08);
+}
+
+.folders-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 8px;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.add-folder-btn {
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    color: var(--accent-purple);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.add-folder-btn:hover {
+    background: rgba(99, 102, 241, 0.2);
+    border-color: rgba(99, 102, 241, 0.4);
+    color: #c4b5fd;
+    transform: scale(1.05);
+}
+
+.folder-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--text);
+    font-size: 13px;
+    border: 1px solid transparent;
+    margin-bottom: 2px;
+    position: relative;
+}
+
+.folder-item:hover {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%);
+    border-color: rgba(99, 102, 241, 0.15);
+}
+
+.folder-item.open .folder-icon {
+    transform: rotate(90deg);
+}
+
+.folder-icon {
+    font-size: 10px;
+    transition: transform 0.15s;
+    color: var(--text-muted);
+}
+
+.folder-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.folder-count {
+    font-size: 11px;
+    color: var(--accent-purple);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.1) 100%);
+    padding: 3px 8px;
+    border-radius: 12px;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    font-weight: 500;
+}
+
+.folder-children {
+    margin-left: 16px;
+    display: none;
+}
+
+.folder-item.open + .folder-children {
+    display: block;
+}
+
+.folder-drop-target {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(236, 72, 153, 0.08) 100%) !important;
+    border: 1px dashed rgba(139, 92, 246, 0.5) !important;
+    box-shadow: inset 0 0 20px rgba(139, 92, 246, 0.1);
+}
+
+/* History List */
+.history-list {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 12px;
+    min-height: 0;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(139, 92, 246, 0.3) transparent;
+}
+
+.history-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.history-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.history-list::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(99, 102, 241, 0.4) 0%, rgba(139, 92, 246, 0.3) 100%);
+    border-radius: 3px;
+}
+
+.history-section-header {
+    padding: 10px 8px 6px;
+    color: var(--text-muted);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.history-section-header::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(139, 92, 246, 0.2) 0%, transparent 100%);
+}
+
+/* History Items */
+.history-item {
+    padding: 14px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-bottom: 6px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.history-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: transparent;
+    border-radius: 0 3px 3px 0;
+    transition: all 0.2s ease;
+}
+
+.history-item:hover {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.04) 100%);
+    border-color: rgba(99, 102, 241, 0.12);
+    transform: translateX(2px);
+}
+
+.history-item:hover::before {
+    background: linear-gradient(180deg, var(--accent-purple), var(--accent-cyan));
+}
+
+.history-item.active {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.1) 50%, rgba(236, 72, 153, 0.05) 100%);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    box-shadow: 
+        0 4px 16px rgba(99, 102, 241, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.history-item.active::before {
+    background: linear-gradient(180deg, var(--accent-purple), var(--accent-pink));
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+}
+
+.history-item.active .history-title {
+    color: #e0d4fc;
+    font-weight: 600;
+}
+
+.history-item.active .history-time {
+    color: rgba(167, 139, 250, 0.8);
+}
+
+.history-title {
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 5px;
+    transition: color 0.2s ease;
+}
+
+.history-time {
+    font-size: 11px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.history-time::before {
+    content: '●';
+    font-size: 6px;
+    opacity: 0.4;
+}
+
+/* History item actions */
+.history-item-actions {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: none;
+    gap: 4px;
+}
+
+.history-item:hover .history-item-actions { 
+    display: flex; 
+}
+
+.history-action-btn {
+    width: 26px;
+    height: 26px;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.history-action-btn:hover {
+    background: rgba(139, 92, 246, 0.3);
+    transform: scale(1.1);
+}
+
+.history-action-btn.delete:hover {
+    background: rgba(239, 68, 68, 0.3);
+}
+
+/* Folder item actions */
+.folder-item-actions {
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: none;
+    gap: 4px;
+}
+
+.folder-item:hover .folder-item-actions { 
+    display: flex; 
+}
+
+/* Empty state */
+.history-empty {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.history-empty::before {
+    content: '💬';
+    display: block;
+    font-size: 32px;
+    margin-bottom: 12px;
+    opacity: 0.6;
+}

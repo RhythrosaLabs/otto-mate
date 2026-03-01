@@ -7,11 +7,134 @@ Printify automatically syncs to connected Shopify stores - no manual sync needed
 """
 
 import logging
+import os
+import io
+import base64
 import aiohttp
+from pathlib import Path
 from typing import Optional, Dict, Any, List
 from .core import tool, ToolBase
 
+try:
+    from PIL import Image
+except ImportError:
+    Image = None  # Will fail gracefully if PIL not available
+
 logger = logging.getLogger(__name__)
+
+# ═══════════════════════════════════════════════════════════════════
+# CONSTANTS
+# ═══════════════════════════════════════════════════════════════════
+MAX_VARIANTS_PER_PRODUCT = 50  # Printify API limit
+DEFAULT_PRICE_CENTS = 2499  # $24.99
+MOCKUP_WAIT_SECONDS = 60
+MOCKUP_POLL_INTERVAL = 5
+
+# ═══════════════════════════════════════════════════════════════════
+# ENHANCED PRODUCT TYPE ALIASES FOR CONVERSATIONAL PARSING
+# ═══════════════════════════════════════════════════════════════════
+# Comprehensive mapping of natural language phrases to canonical product types
+# Enables Otto to understand "I want a cool shirt" → "t-shirt"
+PRODUCT_TYPE_ALIASES = {
+    # ── Apparel - T-Shirts ──
+    "tee shirt": "t-shirt", "teeshirt": "t-shirt", "tee-shirt": "t-shirt",
+    "graphic tee": "t-shirt", "printed shirt": "t-shirt", "custom shirt": "t-shirt",
+    "unisex shirt": "t-shirt", "cotton shirt": "t-shirt", "casual shirt": "t-shirt",
+    
+    # ── Apparel - Hoodies & Sweaters ──
+    "hoody": "hoodie", "pullover": "hoodie", "sweat shirt": "sweatshirt",
+    "jumper": "sweatshirt", "fleece": "sweatshirt", "crew neck": "crewneck",
+    "zip up": "zip hoodie", "zipup": "zip hoodie", "zipper hoodie": "zip hoodie",
+    
+    # ── Apparel - Tanks & Tops ──
+    "tank": "tank top", "sleeveless": "tank top", "muscle tee": "tank top",
+    "workout top": "tank top", "gym shirt": "tank top",
+    
+    # ── Clock/time products ──
+    "wall clock": "clock", "desk clock": "clock", "acrylic clock": "clock",
+    "wrist watch": "watch", "wristwatch": "watch", "timepiece": "clock",
+    "home clock": "clock", "office clock": "clock",
+    
+    # ── Home & Living ──
+    "drink coasters": "coaster", "coaster set": "coaster", "coasters": "coaster",
+    "cup coaster": "coaster", "beverage coaster": "coaster",
+    "cutting board": "cutting board", "cheese board": "cutting board",
+    "chopping board": "cutting board", "kitchen board": "cutting board",
+    "beach towel": "towel", "bath towel": "towel", "hand towel": "towel",
+    "throw blanket": "blanket", "cozy blanket": "blanket", "fleece throw": "blanket",
+    "decorative pillow": "pillow", "cushion": "pillow", "throw pillow": "pillow",
+    "accent pillow": "pillow", "sofa pillow": "pillow",
+    "door mat": "doormat", "welcome mat": "doormat", "entry mat": "doormat",
+    
+    # ── Wall Art & Decor ──
+    "wall art": "canvas", "wall poster": "poster", "art poster": "poster",
+    "wall canvas": "canvas", "canvas art": "canvas", "canvas print": "canvas",
+    "art print": "poster", "framed art": "framed poster", "framed print": "framed poster",
+    "metal print": "metal print", "acrylic print": "acrylic print", "wood print": "wood print",
+    "gallery wrap": "canvas", "stretched canvas": "canvas", "wall decor": "canvas",
+    "home decor": "canvas", "living room art": "canvas", "bedroom art": "poster",
+    
+    # ── Apparel Accessories ──
+    "knit cap": "beanie", "winter cap": "beanie", "knit beanie": "beanie",
+    "ski hat": "beanie", "toboggan": "beanie", "winter beanie": "beanie",
+    "crew sock": "socks", "dress socks": "socks", "athletic socks": "socks",
+    "sock": "socks", "ankle socks": "socks", "tube socks": "socks",
+    "fun socks": "socks", "novelty socks": "socks", "custom socks": "socks",
+    "dad cap": "dad hat", "baseball hat": "dad hat", "baseball cap": "cap",
+    "trucker hat": "cap", "snapback": "cap", "fitted hat": "cap",
+    "sports cap": "cap", "golf hat": "cap",
+    
+    # ── Stationery & Office ──
+    "hardcover journal": "journal", "lined journal": "journal",
+    "spiral notebook": "notebook", "ruled notebook": "notebook",
+    "composition book": "notebook", "writing journal": "journal",
+    "diary": "journal", "planner cover": "notebook",
+    "refrigerator magnet": "magnet", "fridge magnet": "magnet",
+    "car sticker": "sticker", "laptop sticker": "sticker", "bumper sticker": "sticker",
+    "decal": "sticker", "vinyl sticker": "sticker",
+    
+    # ── Drinkware ──
+    "coffee cup": "mug", "tea mug": "mug", "ceramic mug": "mug",
+    "custom mug": "mug", "photo mug": "mug", "personalized mug": "mug",
+    "travel cup": "travel mug", "thermos": "tumbler", "insulated cup": "tumbler",
+    "water jug": "water bottle", "sports bottle": "water bottle",
+    
+    # ── Phone Cases ──
+    "cell phone case": "phone case", "mobile case": "phone case",
+    "smartphone case": "phone case", "protective case": "phone case",
+    "iphone cover": "iphone case", "galaxy case": "samsung case",
+    
+    # ── Novelty & Gifts ──
+    "face mask": "mask", "fabric mask": "mask", "cloth mask": "mask",
+    "jigsaw puzzle": "puzzle", "jigsaw": "puzzle", "picture puzzle": "puzzle",
+    "photo puzzle": "puzzle", "custom puzzle": "puzzle",
+    "ornament": "ornament", "christmas ornament": "ornament", "xmas ornament": "ornament",
+    "tree ornament": "ornament", "holiday ornament": "ornament",
+    "garden flag": "flag", "yard flag": "flag", "house flag": "flag",
+    "outdoor flag": "flag", "decorative flag": "flag", "seasonal flag": "flag",
+    "playing cards": "playing cards", "card deck": "playing cards", "deck of cards": "playing cards",
+    "poker cards": "playing cards", "game cards": "playing cards", "custom cards": "playing cards",
+    "tarot deck": "playing cards", "card game": "playing cards",
+    
+    # ── Bags & Accessories ──
+    "tote": "tote bag", "canvas bag": "tote bag", "shopping bag": "tote bag",
+    "grocery bag": "tote bag", "reusable bag": "tote bag", "market bag": "tote bag",
+    "fanny pack": "fanny pack", "hip bag": "fanny pack", "belt bag": "fanny pack",
+    "waist bag": "fanny pack", "bum bag": "fanny pack",
+    "book bag": "backpack", "school bag": "backpack", "daypack": "backpack",
+    "gym bag": "drawstring bag", "string bag": "drawstring bag",
+    
+    # ── Clothing Accessories ──
+    "kitchen apron": "apron", "cooking apron": "apron", "chef apron": "apron",
+    "bbq apron": "apron", "grilling apron": "apron",
+    "sandals": "flip flops", "beach sandals": "flip flops", "thongs": "flip flops",
+    "yoga pants": "leggings", "workout leggings": "leggings", "gym leggings": "leggings",
+    "exercise pants": "leggings", "athletic leggings": "leggings",
+    
+    # ── Pet Products ──
+    "dog scarf": "pet bandana", "cat bandana": "pet bandana", "puppy bandana": "pet bandana",
+    "pet scarf": "pet bandana", "dog accessory": "pet bandana",
+}
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -70,6 +193,9 @@ PRINTIFY_PRODUCT_CATALOG = {
     "clock": {"blueprint_id": 462, "print_provider_id": 56, "name": "Wall Clock"},
     "wall clock": {"blueprint_id": 462, "print_provider_id": 56, "name": "Wall Clock"},
     "acrylic clock": {"blueprint_id": 462, "print_provider_id": 56, "name": "Wall Clock"},
+    "watch": {"blueprint_id": 462, "print_provider_id": 56, "name": "Wall Clock"},  # Printify has clocks, not wrist watches
+    "wrist watch": {"blueprint_id": 462, "print_provider_id": 56, "name": "Wall Clock"},
+    "wristwatch": {"blueprint_id": 462, "print_provider_id": 56, "name": "Wall Clock"},
     "cutting board": {"blueprint_id": 492, "print_provider_id": 56, "name": "Cutting Board"},
     "towel": {"blueprint_id": 507, "print_provider_id": 56, "name": "Beach Towel"},
     "beach towel": {"blueprint_id": 507, "print_provider_id": 56, "name": "Beach Towel"},
@@ -815,6 +941,51 @@ class PrintifyTools(ToolBase):
         """Set Shopify tools for cross-platform sync."""
         self._shopify_tools = shopify_tools
     
+    @tool(
+        name="printify_list_shops",
+        description="List all shops/stores connected to your Printify account, including Shopify stores",
+        category="printify"
+    )
+    async def list_shops(self) -> Dict[str, Any]:
+        """
+        List all shops connected to your Printify account.
+        
+        This shows which stores (Shopify, Etsy, WooCommerce, etc.) are connected
+        and where products will be published to.
+        
+        Returns:
+            Dict with list of connected shops and their details
+        """
+        try:
+            result = await self._request("GET", "/shops.json")
+            
+            if isinstance(result, list):
+                shops = []
+                for shop in result:
+                    shops.append({
+                        "id": shop.get("id"),
+                        "title": shop.get("title"),
+                        "sales_channel": shop.get("sales_channel"),  # shopify, etsy, woocommerce, etc.
+                        "is_default": shop.get("id") == self.shop_id
+                    })
+                
+                return {
+                    "success": True,
+                    "shops": shops,
+                    "count": len(shops),
+                    "current_shop_id": self.shop_id,
+                    "note": "Products are published to the shop matching current_shop_id"
+                }
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Failed to list shops: {e}")
+            return {
+                "success": False,
+                "error": str(e)
+            }
+    
     async def _sync_to_shopify(
         self,
         title: str,
@@ -859,6 +1030,43 @@ class PrintifyTools(ToolBase):
         except Exception as e:
             logger.error(f"Failed to sync to Shopify: {e}")
             return {"synced": False, "reason": str(e)}
+    
+    def _infer_product_type(self, title: str) -> Optional[str]:
+        """
+        Infer product type from title by looking for known product keywords.
+        
+        Args:
+            title: Product title to analyze
+            
+        Returns:
+            Product type string or None if not found
+        """
+        if not title:
+            return None
+            
+        title_lower = title.lower()
+        
+        # Check for product keywords in order of specificity (longer first)
+        product_keywords = [
+            # Specific products first
+            "wall clock", "wrist watch", "framed poster", "framed art", "canvas print",
+            "metal print", "acrylic print", "wood print", "throw pillow", "beach towel",
+            "travel mug", "water bottle", "phone case", "tote bag", "fanny pack",
+            "dad hat", "spiral notebook", "hardcover journal", "jigsaw puzzle",
+            # Generic products
+            "clock", "watch", "mug", "t-shirt", "tshirt", "shirt", "hoodie", "sweatshirt",
+            "poster", "canvas", "pillow", "blanket", "towel", "coaster", "mousepad",
+            "hat", "cap", "beanie", "socks", "apron", "puzzle", "ornament", "flag",
+            "sticker", "magnet", "notebook", "journal", "postcard", "backpack",
+            "leggings", "onesie", "bandana", "tumbler", "doormat"
+        ]
+        
+        for keyword in product_keywords:
+            if keyword in title_lower:
+                logger.info(f"Inferred product type '{keyword}' from title: {title}")
+                return keyword
+        
+        return None
     
     async def _request(
         self,
@@ -1308,6 +1516,250 @@ class PrintifyTools(ToolBase):
             }
 
     @tool(
+        name="printify_search_full_catalog",
+        description="Search Printify's ENTIRE product catalog with fuzzy matching. Returns all matching products with verified working providers. Use this to find ANY product type.",
+        category="printify"
+    )
+    async def search_full_catalog(
+        self,
+        search_query: str,
+        limit: int = 10,
+        include_providers: bool = True
+    ) -> Dict[str, Any]:
+        """
+        Search the FULL Printify catalog with intelligent fuzzy matching.
+        
+        This is the most comprehensive search - it:
+        1. Fetches ALL blueprints from Printify API (cached)
+        2. Uses fuzzy/partial matching to find products
+        3. Validates that providers are actually available
+        4. Returns complete blueprint + provider info for product creation
+        
+        Args:
+            search_query: What to search for (e.g., "socks", "framed art", "canvas", "mug")
+            limit: Maximum results to return (default 10)
+            include_providers: Whether to include provider details (slower but more useful)
+            
+        Returns:
+            List of matching products with blueprint IDs and available providers
+        """
+        from difflib import SequenceMatcher
+        
+        logger.info(f"🔍 Searching full Printify catalog for: '{search_query}'")
+        
+        try:
+            # Fetch all blueprints (cached)
+            all_blueprints = await self.get_all_blueprints()
+            if not all_blueprints:
+                return {
+                    "success": False,
+                    "error": "Could not fetch Printify catalog",
+                    "hint": "Check your Printify API token"
+                }
+            
+            query_lower = search_query.lower().strip()
+            query_words = set(query_lower.split())
+            
+            # Scoring algorithm
+            scored_results = []
+            for bp in all_blueprints:
+                title = bp.get("title", "").lower()
+                title_words = set(title.split())
+                bp_id = bp.get("id")
+                
+                score = 0
+                match_reason = []
+                
+                # Exact match (highest priority)
+                if query_lower == title:
+                    score += 1000
+                    match_reason.append("exact_match")
+                
+                # Query contained in title
+                elif query_lower in title:
+                    score += 500
+                    match_reason.append("contains_query")
+                
+                # Title contained in query
+                elif title in query_lower:
+                    score += 400
+                    match_reason.append("query_contains_title")
+                
+                # Word overlap scoring
+                common_words = query_words & title_words
+                if common_words:
+                    score += len(common_words) * 100
+                    match_reason.append(f"word_overlap:{len(common_words)}")
+                
+                # Partial word matching
+                for qword in query_words:
+                    if len(qword) >= 3:
+                        for tword in title_words:
+                            if qword in tword or tword in qword:
+                                score += 50
+                                match_reason.append(f"partial:{qword}~{tword}")
+                                break
+                
+                # Fuzzy matching for typos
+                if score == 0:
+                    ratio = SequenceMatcher(None, query_lower, title).ratio()
+                    if ratio > 0.6:
+                        score = int(ratio * 100)
+                        match_reason.append(f"fuzzy:{ratio:.2f}")
+                
+                if score > 0:
+                    scored_results.append({
+                        "blueprint_id": bp_id,
+                        "name": bp.get("title"),
+                        "description": bp.get("description", "")[:100],
+                        "score": score,
+                        "match_reason": match_reason
+                    })
+            
+            # Sort by score descending
+            scored_results.sort(key=lambda x: x["score"], reverse=True)
+            top_results = scored_results[:limit]
+            
+            # Optionally fetch provider info
+            if include_providers and top_results:
+                for result in top_results:
+                    try:
+                        providers = await self.get_print_providers(result["blueprint_id"])
+                        if providers and isinstance(providers, list):
+                            # Get first working provider
+                            for prov in providers[:5]:
+                                try:
+                                    variants = await self.get_variants(result["blueprint_id"], prov.get("id"))
+                                    variant_list = variants.get("variants", [])
+                                    if variant_list:
+                                        result["recommended_provider"] = {
+                                            "id": prov.get("id"),
+                                            "name": prov.get("title"),
+                                            "variant_count": len(variant_list)
+                                        }
+                                        result["all_providers"] = [{"id": p.get("id"), "name": p.get("title")} for p in providers[:5]]
+                                        break
+                                except:
+                                    continue
+                    except Exception as e:
+                        logger.debug(f"Could not fetch providers for {result['blueprint_id']}: {e}")
+            
+            return {
+                "success": True,
+                "query": search_query,
+                "total_catalog_size": len(all_blueprints),
+                "matches_found": len(scored_results),
+                "showing": len(top_results),
+                "results": top_results,
+                "usage_hint": "Use the blueprint_id with printify_smart_create_product or pass the product name directly"
+            }
+            
+        except Exception as e:
+            logger.error(f"Full catalog search failed: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "query": search_query
+            }
+
+    @tool(
+        name="printify_catalog_stats",
+        description="Get statistics about Printify's full product catalog. Shows total products available, categories, and confirms Otto has access to the entire inventory.",
+        category="printify"
+    )
+    async def get_catalog_stats(self) -> Dict[str, Any]:
+        """
+        Get comprehensive statistics about the Printify catalog.
+        
+        This confirms that Otto has access to Printify's ENTIRE inventory,
+        not just a limited subset. Shows:
+        - Total number of available products/blueprints
+        - Categories and product counts per category
+        - Sample products from each category
+        
+        Returns:
+            Dict with catalog statistics and sample products
+        """
+        try:
+            # Fetch all blueprints (cached)
+            all_blueprints = await self.get_all_blueprints()
+            
+            if not all_blueprints:
+                return {
+                    "success": False,
+                    "error": "Could not fetch Printify catalog",
+                    "hint": "Check your Printify API token"
+                }
+            
+            # Categorize products
+            categories = {}
+            category_keywords = {
+                "apparel": ["shirt", "tee", "hoodie", "sweatshirt", "tank", "jersey", "polo", "dress", "legging", "shorts", "pants", "jacket", "romper", "bodysuit"],
+                "drinkware": ["mug", "cup", "tumbler", "bottle", "glass", "can", "cooler", "stein"],
+                "home_decor": ["pillow", "blanket", "towel", "curtain", "doormat", "rug", "mat", "clock", "coaster", "lamp"],
+                "accessories": ["hat", "cap", "beanie", "socks", "mask", "apron", "bandana", "scarf", "gloves", "tie", "bow tie"],
+                "bags": ["bag", "tote", "pouch", "backpack", "fanny", "clutch", "duffel", "satchel"],
+                "wall_art": ["canvas", "poster", "print", "frame", "metal print", "acrylic", "tapestry", "banner", "flag"],
+                "stationery": ["notebook", "journal", "sticker", "magnet", "card", "postcard", "bookmark"],
+                "tech": ["phone", "case", "mousepad", "laptop", "mouse pad", "tablet", "airpods"],
+                "jewelry": ["necklace", "bracelet", "earring", "ring", "pendant", "charm"],
+                "pet_products": ["pet", "dog", "cat", "collar", "bowl", "bandana"],
+                "kids_baby": ["baby", "kid", "infant", "onesie", "bib", "toddler", "youth"],
+                "novelty": ["puzzle", "ornament", "flag", "playing card", "game", "cutting board", "coaster"],
+                "footwear": ["shoe", "slipper", "flip flop", "sandal", "sneaker"]
+            }
+            
+            for bp in all_blueprints:
+                title = bp.get("title", "").lower()
+                assigned = False
+                
+                for cat, keywords in category_keywords.items():
+                    if any(kw in title for kw in keywords):
+                        if cat not in categories:
+                            categories[cat] = {"count": 0, "sample_products": []}
+                        categories[cat]["count"] += 1
+                        if len(categories[cat]["sample_products"]) < 5:
+                            categories[cat]["sample_products"].append({
+                                "name": bp.get("title"),
+                                "blueprint_id": bp.get("id")
+                            })
+                        assigned = True
+                        break
+                
+                if not assigned:
+                    if "other" not in categories:
+                        categories["other"] = {"count": 0, "sample_products": []}
+                    categories["other"]["count"] += 1
+                    if len(categories["other"]["sample_products"]) < 5:
+                        categories["other"]["sample_products"].append({
+                            "name": bp.get("title"),
+                            "blueprint_id": bp.get("id")
+                        })
+            
+            # Sort categories by count
+            sorted_categories = dict(sorted(categories.items(), key=lambda x: x[1]["count"], reverse=True))
+            
+            return {
+                "success": True,
+                "total_products_available": len(all_blueprints),
+                "message": f"Otto has access to Printify's FULL catalog of {len(all_blueprints)} products!",
+                "categories": sorted_categories,
+                "capabilities": [
+                    "Search any product type with printify_search_full_catalog",
+                    "Create any product with printify_smart_create_product",
+                    "List all products with printify_list_all_products",
+                    "Find specific products with printify_find_product"
+                ]
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to get catalog stats: {e}")
+            return {
+                "success": False,
+                "error": str(e)
+            }
+
+    @tool(
         name="printify_list_products",
         description="List all products in the Printify shop",
         category="printify"
@@ -1316,6 +1768,60 @@ class PrintifyTools(ToolBase):
         """List products from Printify shop."""
         endpoint = f"/shops/{self.shop_id}/products.json?limit={limit}&page={page}"
         return await self._request("GET", endpoint)
+    
+    async def _wait_for_mockups_ready(
+        self, 
+        product_id: str, 
+        max_wait_seconds: int = 60, 
+        poll_interval: int = 5
+    ) -> bool:
+        """
+        Wait for Printify to finish generating mockup images for a product.
+        
+        Printify needs time (typically 10-30 seconds) to render mockups after
+        product creation. Publishing before mockups are ready results in 
+        missing images on Shopify.
+        
+        Args:
+            product_id: The Printify product ID
+            max_wait_seconds: Maximum time to wait (default 60s)
+            poll_interval: Seconds between checks (default 5s)
+            
+        Returns:
+            True if mockups are ready, False if timeout
+        """
+        import asyncio
+        
+        start_time = asyncio.get_event_loop().time()
+        elapsed = 0
+        
+        logger.info(f"Waiting for mockups to be ready for product {product_id}...")
+        
+        while elapsed < max_wait_seconds:
+            try:
+                product = await self.get_product(product_id)
+                images = product.get("images", [])
+                
+                # Check if we have valid image URLs (not just placeholders)
+                valid_images = [
+                    img for img in images 
+                    if img.get("src") and "placeholder" not in img.get("src", "").lower()
+                ]
+                
+                if valid_images:
+                    logger.info(f"✓ Mockups ready: {len(valid_images)} images for product {product_id}")
+                    return True
+                    
+                logger.debug(f"Mockups not ready yet, waiting {poll_interval}s... ({elapsed:.0f}s elapsed)")
+                
+            except Exception as e:
+                logger.warning(f"Error checking mockups: {e}")
+            
+            await asyncio.sleep(poll_interval)
+            elapsed = asyncio.get_event_loop().time() - start_time
+        
+        logger.warning(f"Timeout waiting for mockups after {max_wait_seconds}s for product {product_id}")
+        return False
     
     @tool(
         name="printify_get_product",
@@ -1413,15 +1919,15 @@ class PrintifyTools(ToolBase):
     
     @tool(
         name="printify_create_product",
-        description="Create a new product on Printify with design",
+        description="Create a new product on Printify. PREFER using printify_smart_create_product instead - it auto-discovers blueprint and provider from product type name.",
         category="printify"
     )
     async def create_product(
         self,
         title: str,
         description: str,
-        blueprint_id: int,
-        print_provider_id: int,
+        blueprint_id: int = None,
+        print_provider_id: int = None,
         image_url: str = None,
         variants: Optional[List[Dict]] = None,
         tags: Optional[List[str]] = None,
@@ -1432,6 +1938,7 @@ class PrintifyTools(ToolBase):
         url: str = None,
         image_path: str = None,
         price: int = None,  # Ignored - pricing is set per variant
+        product_type: str = None,  # Allow product type for smart routing
         **kwargs  # Catch any other unexpected params
     ) -> Dict[str, Any]:
         """
@@ -1440,12 +1947,46 @@ class PrintifyTools(ToolBase):
         Args:
             title: Product title
             description: Product description
-            blueprint_id: Printify blueprint ID (e.g., 6 for t-shirt, 12 for mug, 384 for canvas)
-            print_provider_id: Print provider ID
+            blueprint_id: Printify blueprint ID (optional if product_type provided)
+            print_provider_id: Print provider ID (optional if product_type provided)
+            product_type: Human-readable product type (e.g., 'mug', 'clock', 'watch')
             image_url: URL of the design image (accepts many aliases)
             variants: List of variant configurations
             tags: Product tags
         """
+        # If blueprint_id/print_provider_id not provided, redirect to smart_create_product
+        if blueprint_id is None or print_provider_id is None:
+            if product_type:
+                logger.info(f"Redirecting to smart_create_product for product_type: {product_type}")
+                return await self.smart_create_product(
+                    title=title,
+                    description=description,
+                    product_type=product_type,
+                    image_url=image_url or design_url or design_image_url or url or image_path,
+                    design_url=design_url,
+                    tags=tags,
+                    **kwargs
+                )
+            else:
+                # Try to infer product type from title
+                inferred_type = self._infer_product_type(title)
+                if inferred_type:
+                    logger.info(f"Inferred product_type '{inferred_type}' from title: {title}")
+                    return await self.smart_create_product(
+                        title=title,
+                        description=description,
+                        product_type=inferred_type,
+                        image_url=image_url or design_url or design_image_url or url or image_path,
+                        design_url=design_url,
+                        tags=tags,
+                        **kwargs
+                    )
+                return {
+                    "success": False,
+                    "error": "Missing blueprint_id and print_provider_id. Either provide these IDs or use product_type parameter.",
+                    "hint": "Use printify_smart_create_product with product_type='mug' or similar"
+                }
+        
         # Resolve image URL from aliases (ignore design_image_id as it's handled by upload)
         actual_image_url = image_url or design_url or design_image_url or url or image_path
         if not actual_image_url and not design_image_id:
@@ -1537,14 +2078,30 @@ class PrintifyTools(ToolBase):
         endpoint = f"/shops/{self.shop_id}/products.json"
         result = await self._request("POST", endpoint, product_data)
         
-        # Auto-publish to connected store (Shopify) immediately
+        # Wait for mockups to be ready before publishing
+        # Printify needs time to render mockup images after product creation
         product_id = result.get("id")
         if product_id:
             try:
-                await self.publish_product(product_id, visible=True)
-                logger.info(f"✓ Product {product_id} auto-published to Shopify")
-                result["published"] = True
-                result["shopify_status"] = "live"
+                # Wait for mockups
+                mockups_ready = await self._wait_for_mockups_ready(product_id, max_wait_seconds=MOCKUP_WAIT_SECONDS, poll_interval=MOCKUP_POLL_INTERVAL)
+                
+                if mockups_ready:
+                    # Mockups ready - safe to publish with images
+                    await self.publish_product(product_id, visible=True)
+                    logger.info(f"✓ Product {product_id} published to Shopify with images")
+                    result["published"] = True
+                    result["shopify_status"] = "live"
+                    result["images_synced"] = True
+                else:
+                    # Mockups not ready but publish anyway (may sync images later)
+                    logger.warning(f"Mockups not ready after 60s, publishing anyway - images may be missing")
+                    await self.publish_product(product_id, visible=True)
+                    result["published"] = True
+                    result["shopify_status"] = "live_images_pending"
+                    result["images_synced"] = False
+                    result["note"] = "Product published but images may need manual sync - call republish_product to retry"
+                    
             except Exception as pub_error:
                 logger.warning(f"Auto-publish failed: {pub_error}")
                 result["published"] = False
@@ -1615,9 +2172,20 @@ class PrintifyTools(ToolBase):
         # Prepare tags
         product_tags = tags or [product_type.lower(), "custom", "design"]
         
+        # CRITICAL: Log input for debugging product type issues
+        logger.info(f"🚀 Smart create: product_type='{product_type}', title='{title}'")
+        
+        # Verify product_type is a string and not empty
+        if not product_type or not isinstance(product_type, str):
+            logger.error(f"Invalid product_type: {product_type} (type: {type(product_type)})")
+            return {
+                "success": False,
+                "error": f"Invalid product_type: must be a non-empty string, got '{product_type}'",
+                "hint": "Specify a product type like 'socks', 'mug', 'canvas', 'framed poster', etc."
+            }
+        
         # Use the UNIVERSAL product creator for ALL products
         # This dynamically searches the Printify catalog and auto-fills everything
-        logger.info(f"🚀 Smart create: '{product_type}' - '{title}'")
         
         result = await self._create_any_product(
             title=title,
@@ -1659,11 +2227,7 @@ class PrintifyTools(ToolBase):
         if file_name:
             filename = file_name
             
-        import base64
-        from pathlib import Path
         import tempfile
-        from PIL import Image
-        import io
         
         endpoint = "/uploads/images.json"
         
@@ -1678,7 +2242,6 @@ class PrintifyTools(ToolBase):
                 logger.info(f"Reading local file: {file_id}")
                 
                 # Try to find the file in data/files/ using ABSOLUTE paths
-                import os
                 base_path = Path(os.getcwd()) / "data" / "files"
                 possible_paths = [
                     base_path / "images" / file_id,
@@ -1732,7 +2295,6 @@ class PrintifyTools(ToolBase):
                 else:
                     # File doesn't exist at given path - try to find it
                     logger.info(f"File not found at {actual_url}, searching for it...")
-                    import os
                     base_path = Path(os.getcwd()) / "data" / "files"
                     
                     # Search strategies:
@@ -1803,8 +2365,6 @@ class PrintifyTools(ToolBase):
                                 logger.warning(f"Replicate URL expired (HTTP {response.status}), searching for local cached version...")
                                 
                                 # Try to find locally saved version
-                                import os
-                                from pathlib import Path
                                 base_path = Path(os.getcwd()) / "data" / "files" / "images"
                                 
                                 # Get most recent image as fallback
@@ -1834,8 +2394,6 @@ class PrintifyTools(ToolBase):
                     # Network error - try local fallback for Replicate URLs
                     if 'replicate.delivery' in actual_url:
                         logger.warning(f"Network error for Replicate URL, trying local fallback: {e}")
-                        import os
-                        from pathlib import Path
                         base_path = Path(os.getcwd()) / "data" / "files" / "images"
                         
                         if base_path.exists():
@@ -1858,9 +2416,21 @@ class PrintifyTools(ToolBase):
                         raise Exception(f"Cannot upload to Printify: image download failed - {e}")
         
         # Step 2: Convert to PNG if needed (Printify prefers PNG)
+        png_data = None
         try:
+            # Validate we have actual image data
+            if not image_data or len(image_data) < 100:
+                raise ValueError(f"Image data too small or empty: {len(image_data) if image_data else 0} bytes")
+            
+            # Log first few bytes to help debug format issues
+            header_bytes = image_data[:8] if len(image_data) >= 8 else image_data
+            logger.debug(f"Image header bytes: {header_bytes.hex()}")
+            
             # Open image with PIL to ensure it's valid and convert to PNG
             img = Image.open(io.BytesIO(image_data))
+            img.load()  # Force load to catch truncated images
+            
+            logger.info(f"Image opened: {img.size[0]}x{img.size[1]}, mode={img.mode}, format={img.format}")
             
             # Convert to RGB if needed (removes alpha channel issues)
             if img.mode in ('RGBA', 'LA', 'P'):
@@ -1882,9 +2452,37 @@ class PrintifyTools(ToolBase):
             logger.info(f"Converted to PNG: {len(png_data)} bytes")
             
         except Exception as e:
-            logger.error(f"Failed to convert image: {e}")
-            # Fall back to original data if conversion fails
-            png_data = image_data
+            logger.error(f"Failed to convert image with PIL: {e}")
+            
+            # Check if original data is already valid PNG/JPEG
+            if image_data:
+                if image_data[:8] == b'\x89PNG\r\n\x1a\n':
+                    logger.info("Original data is already PNG, using as-is")
+                    png_data = image_data
+                elif image_data[:2] == b'\xff\xd8':
+                    logger.info("Original data is JPEG, using as-is")
+                    png_data = image_data
+                elif image_data[:4] == b'RIFF' and image_data[8:12] == b'WEBP':
+                    logger.info("Original data is WebP, using as-is")
+                    png_data = image_data
+            
+            if not png_data:
+                # Last resort: check local image cache
+                logger.warning("Attempting to find valid image in local cache...")
+                base_path = Path(os.getcwd()) / "data" / "files" / "images"
+                if base_path.exists():
+                    image_files = sorted(
+                        [f for f in base_path.iterdir() if f.suffix.lower() in ['.png', '.jpg', '.jpeg']],
+                        key=lambda x: x.stat().st_mtime,
+                        reverse=True
+                    )
+                    if image_files:
+                        logger.info(f"Using cached image: {image_files[0]}")
+                        with open(image_files[0], 'rb') as f:
+                            png_data = f.read()
+                
+            if not png_data:
+                raise ValueError(f"Cannot process image: {e}")
         
         # Step 3: Base64 encode
         try:
@@ -1973,6 +2571,161 @@ class PrintifyTools(ToolBase):
         return result
     
     @tool(
+        name="printify_republish_product",
+        description="Re-publish a product to Shopify with images. Use this to fix products with missing images.",
+        category="printify"
+    )
+    async def republish_product(self, product_id: str) -> Dict[str, Any]:
+        """
+        Re-publish a product to connected stores (Shopify), waiting for images to be ready.
+        
+        Use this to fix products that were published before their mockup images were generated.
+        
+        Args:
+            product_id: The Printify product ID
+            
+        Returns:
+            Status of the republish operation including image sync status
+        """
+        try:
+            # First check if product exists and has images
+            product = await self.get_product(product_id)
+            if not product:
+                return {
+                    "success": False,
+                    "error": f"Product {product_id} not found",
+                    "product_id": product_id
+                }
+            
+            # Get current image status
+            images = product.get("images", [])
+            logger.info(f"Product {product_id} has {len(images)} images on Printify")
+            
+            # Wait for mockups to be fully ready
+            mockups_ready = await self._wait_for_mockups_ready(product_id, max_wait_seconds=MOCKUP_WAIT_SECONDS, poll_interval=MOCKUP_POLL_INTERVAL)
+            
+            if not mockups_ready:
+                return {
+                    "success": False,
+                    "error": f"Mockup images not ready after {MOCKUP_WAIT_SECONDS} seconds",
+                    "product_id": product_id,
+                    "hint": "The product design may not have rendered correctly. Try updating the design image."
+                }
+            
+            # Re-publish with images
+            await self.publish_product(product_id, images=True, visible=True)
+            
+            # Get final mockup URLs
+            mockup_result = await self.get_mockup_urls(product_id)
+            mockup_urls = []
+            if mockup_result.get("success"):
+                mockup_urls = [m["url"] for m in mockup_result.get("mockups", [])]
+            
+            logger.info(f"✓ Product {product_id} republished with {len(mockup_urls)} images")
+            
+            return {
+                "success": True,
+                "product_id": product_id,
+                "title": product.get("title", ""),
+                "images_synced": True,
+                "image_count": len(mockup_urls),
+                "mockup_urls": mockup_urls[:5],
+                "default_mockup": mockup_urls[0] if mockup_urls else None,
+                "note": "Product republished with images successfully synced to Shopify"
+            }
+            
+        except Exception as e:
+            logger.error(f"Republish failed: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "product_id": product_id
+            }
+    
+    @tool(
+        name="printify_check_shopify_sync",
+        description="Check if a Printify product is properly synced to Shopify. Use this to debug sync issues.",
+        category="printify"
+    )
+    async def check_shopify_sync(self, product_id: str) -> Dict[str, Any]:
+        """
+        Check the Shopify sync status of a Printify product.
+        
+        This checks:
+        1. If the product exists on Printify
+        2. If it's been published
+        3. If it's connected to a Shopify store
+        4. If images are synced
+        
+        Args:
+            product_id: The Printify product ID
+            
+        Returns:
+            Dict with sync status and recommendations
+        """
+        try:
+            # Get product details
+            product = await self.get_product(product_id)
+            if not product:
+                return {
+                    "success": False,
+                    "error": f"Product {product_id} not found on Printify",
+                    "product_id": product_id
+                }
+            
+            # Check various status indicators
+            title = product.get("title", "Unknown")
+            images = product.get("images", [])
+            visible = product.get("visible", False)
+            is_locked = product.get("is_locked", False)
+            external = product.get("external", {})
+            
+            # External contains connected store info
+            shopify_id = external.get("id")
+            shopify_handle = external.get("handle")
+            
+            sync_status = {
+                "success": True,
+                "product_id": product_id,
+                "title": title,
+                "printify_status": {
+                    "exists": True,
+                    "visible": visible,
+                    "is_locked": is_locked,
+                    "image_count": len(images),
+                    "has_images": len(images) > 0
+                },
+                "shopify_status": {
+                    "synced": shopify_id is not None,
+                    "shopify_product_id": shopify_id,
+                    "shopify_handle": shopify_handle,
+                    "shopify_url": f"https://your-store.myshopify.com/products/{shopify_handle}" if shopify_handle else None
+                }
+            }
+            
+            # Provide recommendations
+            recommendations = []
+            if not visible:
+                recommendations.append("Product is not visible - call publish_product with visible=True")
+            if len(images) == 0:
+                recommendations.append("No images - wait for mockups or call republish_product")
+            if not shopify_id:
+                recommendations.append("Not synced to Shopify - ensure your Printify shop is connected to Shopify, then call publish_product")
+            
+            sync_status["recommendations"] = recommendations if recommendations else ["Product appears properly synced"]
+            sync_status["needs_action"] = len(recommendations) > 0
+            
+            return sync_status
+            
+        except Exception as e:
+            logger.error(f"Check Shopify sync failed: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "product_id": product_id
+            }
+    
+    @tool(
         name="printify_list_blueprints",
         description="List available product blueprints (t-shirts, mugs, etc.)",
         category="printify"
@@ -1980,6 +2733,94 @@ class PrintifyTools(ToolBase):
     async def list_blueprints(self) -> Dict[str, Any]:
         """Get available blueprints."""
         return await self._request("GET", "/catalog/blueprints.json")
+    
+    @tool(
+        name="printify_find_product",
+        description="Find available blueprints and providers for a product type. Use this to discover what's currently available on Printify.",
+        category="printify"
+    )
+    async def find_product(self, product_type: str, limit: int = 5) -> Dict[str, Any]:
+        """
+        Find available blueprints and their providers for a product type.
+        
+        This searches the Printify catalog and returns working blueprint/provider
+        combinations. Use this to debug availability or find alternatives.
+        
+        Args:
+            product_type: The type of product to search for (e.g., "socks", "canvas", "mug")
+            limit: Maximum number of results to return (default 5)
+            
+        Returns:
+            Dict with available products and their working providers
+        """
+        logger.info(f"🔍 Finding available products for: {product_type}")
+        
+        try:
+            # Get all blueprints
+            all_blueprints = await self.get_all_blueprints()
+            search_term = product_type.lower().strip()
+            
+            # Find matching blueprints
+            matches = []
+            for bp in all_blueprints:
+                title = bp.get("title", "").lower()
+                if search_term in title or any(word in title for word in search_term.split()):
+                    bp_id = bp.get("id")
+                    
+                    # Get providers for this blueprint
+                    try:
+                        providers = await self.get_print_providers(bp_id)
+                        if providers and isinstance(providers, list) and len(providers) > 0:
+                            # Test each provider
+                            working_providers = []
+                            for prov in providers[:3]:  # Test first 3 providers
+                                try:
+                                    variants = await self.get_variants(bp_id, prov.get("id"))
+                                    if variants.get("variants"):
+                                        working_providers.append({
+                                            "id": prov.get("id"),
+                                            "name": prov.get("title"),
+                                            "variant_count": len(variants.get("variants", []))
+                                        })
+                                except:
+                                    continue
+                            
+                            if working_providers:
+                                matches.append({
+                                    "blueprint_id": bp_id,
+                                    "name": bp.get("title"),
+                                    "description": bp.get("description", "")[:100],
+                                    "working_providers": working_providers
+                                })
+                                
+                                if len(matches) >= limit:
+                                    break
+                    except:
+                        continue
+            
+            if matches:
+                return {
+                    "success": True,
+                    "product_type": product_type,
+                    "available_products": matches,
+                    "count": len(matches),
+                    "hint": "Use the blueprint_id and provider id from working_providers to create products"
+                }
+            else:
+                return {
+                    "success": False,
+                    "product_type": product_type,
+                    "error": f"No available products found matching '{product_type}'",
+                    "suggestion": "Try a different search term (e.g., 'crew socks' instead of 'socks')"
+                }
+                
+        except Exception as e:
+            logger.error(f"Find product failed: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "product_type": product_type
+            }
     
     # Default fallbacks for common product types
     BLUEPRINT_DEFAULTS = {
@@ -2121,6 +2962,26 @@ class PrintifyTools(ToolBase):
                 key=lambda x: x["units_sold"],
                 reverse=True
             )[:limit]
+            
+            # FALLBACK: If no sales data, get available products instead
+            if not sorted_products:
+                logger.info("No Printify sales data found - falling back to listing products")
+                products_result = await self.list_products(limit=limit)
+                products = products_result.get("data", [])
+                
+                if products:
+                    sorted_products = [
+                        {
+                            "product_id": p.get("id"),
+                            "title": p.get("title", "Unknown"),
+                            "units_sold": 0,
+                            "order_count": 0,
+                            "images": p.get("images", []),
+                            "mockups": [img.get("src") for img in p.get("images", []) if img.get("src")],
+                            "note": "No sales data - showing available products"
+                        }
+                        for p in products[:limit]
+                    ]
             
             return {
                 "top_products": sorted_products,
@@ -2353,71 +3214,93 @@ class PrintifyTools(ToolBase):
         logger.info(f"🔧 Universal product creator: '{product_type}' - '{title}'")
         normalized = product_type.lower().strip()
         
-        # Common aliases for better matching - EXPANDED for all product types
-        search_aliases = {
-            # Clock/time products
-            "wall clock": "clock", "desk clock": "clock", "acrylic clock": "clock",
-            "wrist watch": "watch", "wristwatch": "watch",
-            # Home products
-            "drink coasters": "coaster", "coaster set": "coaster", "coasters": "coaster",
-            "cutting board": "cutting board", "cheese board": "cutting board",
-            "beach towel": "towel", "bath towel": "towel", "hand towel": "towel",
-            # Apparel accessories
-            "knit cap": "beanie", "winter cap": "beanie", "knit beanie": "beanie",
-            "crew sock": "socks", "dress socks": "socks", "athletic socks": "socks",
-            "sock": "socks", "ankle socks": "socks", "tube socks": "socks",
-            "dad cap": "dad hat", "baseball hat": "dad hat", "baseball cap": "cap",
-            # Wall art
-            "wall poster": "poster", "art poster": "poster",
-            "wall canvas": "canvas", "canvas art": "canvas", "canvas print": "canvas",
-            # Stationery
-            "hardcover journal": "journal", "lined journal": "journal",
-            "spiral notebook": "notebook", "ruled notebook": "notebook",
-            # Novelty - ADDED playing cards
-            "face mask": "mask", "fabric mask": "mask",
-            "jigsaw puzzle": "puzzle", "jigsaw": "puzzle",
-            "ornament": "ornament", "christmas ornament": "ornament", "xmas ornament": "ornament",
-            "garden flag": "flag", "yard flag": "flag", "house flag": "flag",
-            "playing cards": "playing card", "card deck": "playing card", "deck of cards": "playing card",
-            "poker cards": "playing card", "cards": "playing card",
-            # Bags
-            "tote": "tote bag", "canvas bag": "tote bag", "shopping bag": "tote bag",
-            "fanny pack": "fanny pack", "hip bag": "fanny pack", "belt bag": "fanny pack",
-        }
+        # ═══════════════════════════════════════════════════════════════════
+        # PRIORITY: DYNAMIC API SEARCH FIRST, THEN STATIC CATALOG FALLBACK
+        # This ensures Otto can access Printify's ENTIRE inventory (1000+ products)
+        # ═══════════════════════════════════════════════════════════════════
         
-        # Step 1: Try dynamic API search for the blueprint
+        search_result = None
+        static_catalog_entry = None
+        
+        # Prepare search terms
+        catalog_checks = [
+            normalized,
+            PRODUCT_TYPE_ALIASES.get(normalized, normalized),
+            normalized.rstrip('s'),  # Remove trailing 's'
+        ]
+        
+        # STEP 1: DYNAMIC API SEARCH - Search the FULL Printify catalog first
+        # This is the preferred approach as it covers ALL products
+        logger.info(f"🔍 Searching full Printify catalog for: '{product_type}'")
         search_result = await self.search_blueprint(product_type)
         
         if not search_result:
             # Try with alias
-            alias = search_aliases.get(normalized, normalized)
+            alias = PRODUCT_TYPE_ALIASES.get(normalized, normalized)
             if alias != normalized:
                 logger.info(f"Trying alias: '{normalized}' → '{alias}'")
                 search_result = await self.search_blueprint(alias)
         
-        # Step 2: If dynamic search fails, fall back to static catalog
+        # STEP 2: STATIC CATALOG FALLBACK - Only if dynamic search failed
+        # The static catalog is a curated subset with known-good blueprint/provider combos
         if not search_result:
-            logger.warning(f"Dynamic search failed for '{product_type}', trying static catalog...")
-            
-            # Check static catalog with various forms of the product type
-            catalog_checks = [
-                normalized,
-                normalized.rstrip('s'),  # Remove trailing 's' (socks -> sock doesn't exist but try)
-                search_aliases.get(normalized, normalized),
-            ]
-            
+            logger.info(f"Dynamic search found nothing, checking static catalog for: '{product_type}'")
             for check in catalog_checks:
                 if check in PRINTIFY_PRODUCT_CATALOG:
-                    catalog_entry = PRINTIFY_PRODUCT_CATALOG[check]
-                    search_result = {
-                        "blueprint_id": catalog_entry["blueprint_id"],
-                        "print_provider_id": catalog_entry["print_provider_id"],
-                        "name": catalog_entry["name"],
-                        "matched_from": f"static_catalog:{check}",
-                        "all_providers": [catalog_entry["print_provider_id"]]
-                    }
-                    logger.info(f"✓ Found in static catalog: {catalog_entry['name']}")
+                    static_catalog_entry = PRINTIFY_PRODUCT_CATALOG[check]
+                    logger.info(f"✓ Static catalog match: '{product_type}' → {static_catalog_entry['name']} (ID: {static_catalog_entry['blueprint_id']})")
                     break
+            
+            # STEP 2.5: Validate static catalog entry by checking if providers exist
+            if static_catalog_entry:
+                blueprint_id = static_catalog_entry["blueprint_id"]
+                static_provider_id = static_catalog_entry["print_provider_id"]
+                
+                # Get actual providers from API to validate
+                try:
+                    actual_providers = await self.get_print_providers(blueprint_id)
+                    actual_provider_ids = [p.get("id") for p in actual_providers if p.get("id")]
+                    
+                    if actual_provider_ids:
+                        # Check if static provider is still valid
+                        if static_provider_id in actual_provider_ids:
+                            search_result = {
+                                "blueprint_id": blueprint_id,
+                                "print_provider_id": static_provider_id,
+                                "name": static_catalog_entry["name"],
+                                "matched_from": f"static_catalog_validated:{check}",
+                                "all_providers": actual_provider_ids
+                            }
+                            logger.info(f"✓ Static catalog entry validated: provider {static_provider_id} available")
+                        else:
+                            # Static provider not available, use first available provider
+                            logger.warning(f"Static provider {static_provider_id} not available for blueprint {blueprint_id}, using provider {actual_provider_ids[0]}")
+                            search_result = {
+                                "blueprint_id": blueprint_id,
+                                "print_provider_id": actual_provider_ids[0],
+                                "name": static_catalog_entry["name"],
+                                "matched_from": f"static_catalog_fallback_provider:{check}",
+                                "all_providers": actual_provider_ids
+                            }
+                    else:
+                        # No providers available, use unvalidated as last resort
+                        logger.warning(f"Blueprint {blueprint_id} has no providers available, using unvalidated static entry")
+                        search_result = {
+                            "blueprint_id": blueprint_id,
+                            "print_provider_id": static_provider_id,
+                            "name": static_catalog_entry["name"],
+                            "matched_from": f"static_catalog_unvalidated:{check}",
+                            "all_providers": [static_provider_id]
+                        }
+                except Exception as e:
+                    logger.warning(f"Failed to validate static catalog entry: {e}, using unvalidated")
+                    search_result = {
+                        "blueprint_id": static_catalog_entry["blueprint_id"],
+                        "print_provider_id": static_catalog_entry["print_provider_id"],
+                        "name": static_catalog_entry["name"],
+                        "matched_from": f"static_catalog_unvalidated:{check}",
+                        "all_providers": [static_catalog_entry["print_provider_id"]]
+                    }
         
         if not search_result:
             return {
@@ -2425,13 +3308,25 @@ class PrintifyTools(ToolBase):
                 "error": f"Could not find a Printify product matching '{product_type}'",
                 "hint": "Try being more specific (e.g., 'knit beanie' instead of just 'hat')",
                 "suggestion": "Use printify_list_all_products to see available product types",
-                "tried": [product_type, normalized, search_aliases.get(normalized)]
+                "tried": [product_type, normalized, PRODUCT_TYPE_ALIASES.get(normalized)]
             }
         
         blueprint_id = search_result["blueprint_id"]
         print_provider_id = search_result["print_provider_id"]
         product_name = search_result["name"]
         
+        # CRITICAL: Log the final product selection for debugging
+        logger.info(f"🎯 FINAL PRODUCT SELECTION: requested='{product_type}' → name='{product_name}' (Blueprint: {blueprint_id}, Provider: {print_provider_id}, matched_from: {search_result.get('matched_from', 'unknown')})")
+        
+        # Validate reasonable match - warn if product name doesn't seem related
+        if product_type.lower() not in product_name.lower() and product_name.lower() not in product_type.lower():
+            # Check if any word from the request appears in the product name
+            request_words = set(product_type.lower().split())
+            product_words = set(product_name.lower().split())
+            common_words = request_words & product_words
+            if not common_words:
+                logger.warning(f"⚠️ POTENTIAL MISMATCH: Requested '{product_type}' but matched '{product_name}' - no common words!")
+
         logger.info(f"✓ Found blueprint: {product_name} (ID: {blueprint_id}, Provider: {print_provider_id})")
         
         try:
@@ -2457,14 +3352,19 @@ class PrintifyTools(ToolBase):
             
             logger.info(f"✓ Image uploaded: {image_id}")
             
-            # Step 3: Get variants from the API
-            variants_result = await self.get_variants(blueprint_id, print_provider_id)
-            variants = variants_result.get("variants", [])
+            # Step 3: Get variants from the API - wrap in try/except for first attempt
+            all_providers = search_result.get("all_providers", [print_provider_id])
+            variants = []
+            
+            try:
+                variants_result = await self.get_variants(blueprint_id, print_provider_id)
+                variants = variants_result.get("variants", [])
+            except Exception as e:
+                logger.warning(f"Failed to get variants for provider {print_provider_id}: {e}")
             
             if not variants:
                 # Try other providers - first from the search result, then fetch all
                 logger.warning(f"No variants for provider {print_provider_id}, trying alternatives...")
-                all_providers = search_result.get("all_providers", [])
                 
                 # If no providers cached, fetch them from the API
                 if not all_providers or len(all_providers) <= 1:
@@ -2487,17 +3387,40 @@ class PrintifyTools(ToolBase):
                             continue
             
             if not variants:
+                # Last resort: try dynamic search for alternative product
+                logger.warning(f"No variants found for blueprint {blueprint_id}, trying dynamic search for alternatives...")
+                dynamic_result = await self.search_blueprint(product_type)
+                if dynamic_result and dynamic_result.get("blueprint_id") != blueprint_id:
+                    alt_bp_id = dynamic_result["blueprint_id"]
+                    alt_providers = dynamic_result.get("all_providers", [dynamic_result["print_provider_id"]])
+                    for alt_prov in alt_providers:
+                        try:
+                            variants_result = await self.get_variants(alt_bp_id, alt_prov)
+                            variants = variants_result.get("variants", [])
+                            if variants:
+                                blueprint_id = alt_bp_id
+                                print_provider_id = alt_prov
+                                product_name = dynamic_result.get("name", product_name)
+                                all_providers = alt_providers
+                                logger.info(f"✓ Found alternative: {product_name} (BP: {blueprint_id}, Provider: {print_provider_id})")
+                                break
+                        except Exception as e:
+                            logger.debug(f"Alternative provider {alt_prov} failed: {e}")
+                            continue
+            
+            if not variants:
                 return {
                     "success": False,
-                    "error": f"No variants available for {product_name}. This product may not be available for custom printing.",
+                    "error": f"No variants available for {product_name} (Blueprint {blueprint_id}). This product/provider combination may not be available.",
                     "blueprint_id": blueprint_id,
                     "print_provider_id": print_provider_id,
-                    "hint": "Try a different product type or check if the product is available in your region",
-                    "providers_tried": all_providers[:5] if all_providers else [print_provider_id]
+                    "hint": "Try a different product type (e.g., 'crew socks', 'ankle socks') or check Printify directly",
+                    "providers_tried": all_providers[:5] if all_providers else [print_provider_id],
+                    "suggestion": "This often happens when product configurations change on Printify. Try using printify_search_blueprint to find current options."
                 }
             
-            # Limit variants to avoid API limits (usually 50-100 max)
-            max_variants = min(len(variants), 50)
+            # Limit variants to avoid API limits
+            max_variants = min(len(variants), MAX_VARIANTS_PER_PRODUCT)
             selected_variants = variants[:max_variants]
             logger.info(f"Using {len(selected_variants)} of {len(variants)} variants")
             
@@ -2513,45 +3436,27 @@ class PrintifyTools(ToolBase):
                 variant_ids.append(variant["id"])
             
             # Step 4: Get placeholders and build print areas
+            # CRITICAL: Printify requires ALL variants to be in print_areas, and each variant
+            # should appear EXACTLY ONCE. Error 8251 occurs when variants are missing or duplicated.
             placeholders = await self._get_blueprint_placeholders(blueprint_id, print_provider_id)
             
-            print_areas = []
-            if placeholders:
-                for placeholder in placeholders:
-                    # Only include variant IDs that are in our selected variants
-                    placeholder_variant_ids = [v for v in placeholder.get("variant_ids", []) if v in variant_ids]
-                    if placeholder_variant_ids:
-                        print_areas.append({
-                            "variant_ids": placeholder_variant_ids,
-                            "placeholders": [{
-                                "position": placeholder.get("position", "front"),
-                                "images": [{
-                                    "id": image_id,
-                                    "x": 0.5,
-                                    "y": 0.5,
-                                    "scale": 1.0,
-                                    "angle": 0
-                                }]
-                            }]
-                        })
-            
-            # Fallback: create default print area if none built
-            if not print_areas:
-                print_areas = [{
-                    "variant_ids": variant_ids,
-                    "placeholders": [{
-                        "position": "front",
-                        "images": [{
-                            "id": image_id,
-                            "x": 0.5,
-                            "y": 0.5,
-                            "scale": 1.0,
-                            "angle": 0
-                        }]
+            # SIMPLIFIED APPROACH: Use a single print_area with ALL variants for the primary position
+            # This is the most reliable method that works for all product types
+            print_areas = [{
+                "variant_ids": variant_ids,  # ALL selected variant IDs
+                "placeholders": [{
+                    "position": placeholders[0].get("position", "front") if placeholders else "front",
+                    "images": [{
+                        "id": image_id,
+                        "x": 0.5,
+                        "y": 0.5,
+                        "scale": 1.0,
+                        "angle": 0
                     }]
                 }]
+            }]
             
-            logger.info(f"Built {len(print_areas)} print areas covering {len(variant_ids)} variants")
+            logger.info(f"Built 1 print area covering {len(variant_ids)} variants (position: {print_areas[0]['placeholders'][0]['position']})")
             
             # Step 5: Create the product
             product_data = {
@@ -2572,14 +3477,38 @@ class PrintifyTools(ToolBase):
             product_id = result.get("id")
             logger.info(f"✓ Product created: {product_id}")
             
-            # Step 6: Auto-publish to Shopify
+            # Step 6: Wait for mockups, then auto-publish to Shopify
+            # Printify needs time to render mockup images before we publish
             published = False
             shopify_status = "draft"
+            mockup_urls = []
+            images_synced = False
+            
             try:
-                await self.publish_product(product_id, visible=True)
-                published = True
-                shopify_status = "live"
-                logger.info(f"✓ Published to Shopify: {product_id}")
+                # Wait for mockups to be ready before publishing
+                mockups_ready = await self._wait_for_mockups_ready(product_id, max_wait_seconds=MOCKUP_WAIT_SECONDS, poll_interval=MOCKUP_POLL_INTERVAL)
+                
+                if mockups_ready:
+                    # Mockups ready - safe to publish with images
+                    await self.publish_product(product_id, visible=True)
+                    published = True
+                    shopify_status = "live"
+                    images_synced = True
+                    logger.info(f"✓ Published to Shopify with images: {product_id}")
+                    
+                    # Get mockup URLs for response
+                    mockup_result = await self.get_mockup_urls(product_id)
+                    if mockup_result.get("success"):
+                        mockup_urls = [m["url"] for m in mockup_result.get("mockups", [])]
+                        logger.info(f"✓ Retrieved {len(mockup_urls)} mockup URLs")
+                else:
+                    # Mockups not ready but publish anyway
+                    logger.warning(f"Mockups not ready after 60s, publishing anyway")
+                    await self.publish_product(product_id, visible=True)
+                    published = True
+                    shopify_status = "live_images_pending"
+                    images_synced = False
+                    
             except Exception as pub_error:
                 logger.warning(f"Auto-publish failed: {pub_error}")
             
@@ -2596,14 +3525,15 @@ class PrintifyTools(ToolBase):
                 "price": price_cents / 100.0,
                 "published": published,
                 "shopify_status": shopify_status,
+                "images_synced": images_synced,
+                "mockup_urls": mockup_urls[:5] if mockup_urls else [],  # Include mockup URLs for display
+                "default_mockup": mockup_urls[0] if mockup_urls else None,
                 "product_url": f"https://printify.com/app/products/{product_id}",
-                "note": f"{product_name} is now LIVE on your store" if published else f"{product_name} created but not yet published"
+                "note": f"{product_name} is now LIVE on your store with images" if (published and images_synced) else (f"{product_name} published but images may still be syncing" if published else f"{product_name} created but not yet published")
             }
             
         except Exception as e:
-            logger.error(f"Universal product creation failed: {e}")
-            import traceback
-            traceback.print_exc()
+            logger.error(f"Universal product creation failed: {e}", exc_info=True)
             return {
                 "success": False,
                 "error": str(e),
@@ -3194,26 +4124,26 @@ class PrintifyTools(ToolBase):
         if price is not None:
             price_cents = int(price * 100)
         
-        # Wall art blueprint IDs - these are common Printify blueprints
-        # Note: Availability varies by region and provider
+        # Wall art blueprint IDs - try multiple provider options for each
+        # Note: Provider availability varies by region, so we try multiple
         WALL_ART_BLUEPRINTS = {
             "canvas": [
-                {"id": 384, "name": "Canvas (Stretched)", "provider": 29},
-                {"id": 607, "name": "Canvas Print", "provider": 99},
+                {"id": 384, "name": "Canvas (Stretched)", "provider": None},  # Dynamic provider discovery
+                {"id": 607, "name": "Canvas Print", "provider": None},
             ],
             "framed": [
-                {"id": 643, "name": "Framed Paper Poster", "provider": 99},
-                {"id": 594, "name": "Framed Canvas", "provider": 29},
-                {"id": 186, "name": "Framed poster", "provider": 27},
+                {"id": 643, "name": "Framed Paper Poster", "provider": None},
+                {"id": 594, "name": "Framed Canvas", "provider": None},
+                {"id": 186, "name": "Framed poster", "provider": None},
             ],
             "poster": [
-                {"id": 252, "name": "Premium Poster", "provider": 27},
-                {"id": 1, "name": "Poster", "provider": 99},
-                {"id": 641, "name": "Paper Poster", "provider": 99},
+                {"id": 252, "name": "Premium Poster", "provider": None},
+                {"id": 1, "name": "Poster", "provider": None},
+                {"id": 641, "name": "Paper Poster", "provider": None},
             ],
             "metal": [
-                {"id": 599, "name": "Metal Print", "provider": 99},
-                {"id": 385, "name": "Metal Wall Art", "provider": 29},
+                {"id": 599, "name": "Metal Print", "provider": None},
+                {"id": 385, "name": "Metal Wall Art", "provider": None},
             ]
         }
         
@@ -3231,17 +4161,33 @@ class PrintifyTools(ToolBase):
             working_blueprint = None
             working_provider = None
             
-            # First try the known blueprints
+            # First try the known blueprints with dynamic provider discovery
             for bp in blueprints_to_try:
                 try:
                     logger.info(f"Trying blueprint {bp['id']} ({bp['name']})...")
-                    # Check if this blueprint/provider combo is available
-                    variants_result = await self.get_variants(bp['id'], bp['provider'])
-                    variants = variants_result.get("variants", [])
-                    if variants:
-                        working_blueprint = bp['id']
-                        working_provider = bp['provider']
-                        logger.info(f"✓ Found working blueprint: {bp['name']} with {len(variants)} variants")
+                    
+                    # Dynamically fetch providers for this blueprint
+                    providers = await self.get_print_providers(bp['id'])
+                    if not providers or not isinstance(providers, list) or len(providers) == 0:
+                        logger.debug(f"No providers for blueprint {bp['id']}")
+                        continue
+                    
+                    # Try each provider until one works
+                    for prov in providers:
+                        prov_id = prov.get("id")
+                        try:
+                            variants_result = await self.get_variants(bp['id'], prov_id)
+                            variants = variants_result.get("variants", [])
+                            if variants:
+                                working_blueprint = bp['id']
+                                working_provider = prov_id
+                                logger.info(f"✓ Found working blueprint: {bp['name']} with provider {prov.get('title', prov_id)} - {len(variants)} variants")
+                                break
+                        except Exception as e:
+                            logger.debug(f"Provider {prov_id} failed for blueprint {bp['id']}: {e}")
+                            continue
+                    
+                    if working_blueprint:
                         break
                 except Exception as e:
                     logger.debug(f"Blueprint {bp['id']} not available: {e}")

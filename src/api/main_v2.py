@@ -44,6 +44,7 @@ from src.core.super_intelligent_chat import (
     ChatMessage,
     MessageRole
 )
+from src.core.enhanced_intelligence import EnhancedIntelligentChat
 from src.core.agent_health_monitor import get_health_monitor
 from src.core.agent_analytics import get_analytics
 from src.core.agent_communication import get_message_bus
@@ -131,7 +132,7 @@ class OttoState:
         self.anthropic: Optional[Anthropic] = None
         self.async_anthropic: Optional[AsyncAnthropic] = None
         self.tool_registry: Optional[ToolRegistry] = None
-        self.super_chat: Optional[SuperIntelligentChat] = None
+        self.super_chat: Optional[EnhancedIntelligentChat] = None
         self.default_crew: Optional[AgentCrew] = None
         self.crews: Dict[str, AgentCrew] = {}
         self.health_monitor = get_health_monitor()
@@ -191,13 +192,14 @@ async def lifespan(app: FastAPI):
         # Add core agents to the crew
         _create_core_agents(state.default_crew)
         
-        # Initialize super intelligent chat
-        state.super_chat = SuperIntelligentChat(
+        # Initialize enhanced intelligent chat with advanced capabilities
+        state.super_chat = EnhancedIntelligentChat(
             anthropic_client=state.anthropic,
             async_anthropic_client=state.async_anthropic,
             tool_registry=state.tool_registry,
             agent_crew=state.default_crew
         )
+        logger.info("Enhanced Intelligence modules loaded: reasoning, proactive, routing, self-improvement")
         
         # Start monitoring services
         await state.health_monitor.start_monitoring()

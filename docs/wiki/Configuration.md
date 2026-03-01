@@ -1,525 +1,302 @@
 # Configuration
 
-Complete guide to configuring Otto Chat.
-
----
-
-## Environment Variables
-
-Create a `.env` file in the project root:
+Otto Chat is configured through environment variables in a `.env` file. Copy the template to get started:
 
 ```bash
-cp .env.example .env
+cp config/.env.example .env
 ```
 
-### Required Variables
+---
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `OPENAI_API_KEY` | OpenAI API key | `sk-...` |
-| `ANTHROPIC_API_KEY` | Anthropic API key | `sk-ant-...` |
+## Required Configuration
 
-### AI Provider Keys
+Only one variable is required to run Otto:
 
 ```env
-# Primary AI (at least one required)
-OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-ANTHROPIC_API_KEY=sk-ant-xxxxxxxxxxxxxxxxxxxxxxxx
-
-# Image/Video Generation
-REPLICATE_API_TOKEN=r8_xxxxxxxxxxxxxxxxxxxxxxxx
-FAL_KEY=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-STABILITY_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxx
-IDEOGRAM_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxx
-
-# Search
-GOOGLE_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxx
-GOOGLE_CSE_ID=xxxxxxxxxxxxxxxx
-SERPER_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxx
+ANTHROPIC_API_KEY=sk-ant-your-key-here
 ```
 
-### E-Commerce Integration
-
-```env
-# Printify
-PRINTIFY_API_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxx
-PRINTIFY_SHOP_ID=xxxxxxxx
-
-# Shopify
-SHOPIFY_STORE_URL=your-store.myshopify.com
-SHOPIFY_ACCESS_TOKEN=shpat_xxxxxxxxxxxxxxxx
-
-# Stripe (optional)
-STRIPE_API_KEY=sk_live_xxxxxxxxxxxxxxxx
-STRIPE_WEBHOOK_SECRET=whsec_xxxxxxxxxxxxxxxx
-```
-
-### Server Configuration
-
-```env
-# Server
-HOST=0.0.0.0
-PORT=8000
-DEBUG=false
-LOG_LEVEL=INFO
-
-# Security
-SECRET_KEY=your-secret-key-at-least-32-characters
-CORS_ORIGINS=http://localhost:3000,https://your-domain.com
-
-# Rate Limiting
-RATE_LIMIT_ENABLED=true
-RATE_LIMIT_REQUESTS=60
-RATE_LIMIT_PERIOD=60
-```
-
-### Storage Configuration
-
-```env
-# File Storage
-STORAGE_PATH=./data
-MAX_FILE_SIZE=104857600
-ALLOWED_EXTENSIONS=png,jpg,jpeg,gif,webp,mp4,mp3,wav,pdf
-
-# Database
-DATABASE_URL=sqlite:///./data/otto.db
-CHROMA_PERSIST_DIRECTORY=./data/chroma
-```
+Everything else is optional and enables additional features.
 
 ---
 
-## Configuration Files
+## Complete Environment Variables Reference
 
-### config/settings.yaml
+### Core AI Providers
 
-Main application settings:
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `ANTHROPIC_API_KEY` | — | **Required.** Anthropic Claude API key |
+| `OPENAI_API_KEY` | — | OpenAI API key for voice features and fallback models |
+| `REPLICATE_API_TOKEN` | — | Replicate API token for image/video generation |
+| `ELEVENLABS_API_KEY` | — | ElevenLabs API key for text-to-speech |
 
-```yaml
-# AI Settings
-ai:
-  default_model: claude-3-5-sonnet-20241022
-  fallback_model: gpt-4o
-  max_tokens: 8192
-  temperature: 0.7
-  streaming: true
+### AI Model Settings
 
-# Memory
-memory:
-  max_context_messages: 50
-  enable_long_term: true
-  embedding_model: text-embedding-3-small
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DEFAULT_AI_MODEL` | `claude-sonnet-4-20250514` | Primary AI model |
+| `FALLBACK_AI_MODEL` | `gpt-4-turbo` | Fallback when primary fails |
+| `MAX_TOKENS` | `8192` | Maximum response tokens |
+| `TEMPERATURE` | `0.7` | Response creativity (0.0–1.0) |
 
-# Tools
-tools:
-  enabled: true
-  auto_execute: true
-  confirmation_required:
-    - delete_file
-    - publish_product
-    - send_email
+### Server Settings
 
-# Task Queue
-task_queue:
-  enabled: true
-  max_concurrent: 3
-  default_priority: normal
-  retry_attempts: 3
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `API_HOST` | `0.0.0.0` | Server bind address |
+| `PORT` | `8000` | Server port |
+| `API_WORKERS` | `1` | Number of uvicorn workers |
+| `API_RELOAD` | `true` | Auto-reload on code changes |
+| `DEBUG_MODE` | `false` | Enable debug output |
+| `LOG_LEVEL` | `INFO` | Logging level (DEBUG, INFO, WARNING, ERROR) |
+| `LOG_FILE` | — | Path to log file (optional) |
 
-# Plugins
-plugins:
-  enabled: true
-  auto_load: true
-  directory: ./plugins
+### E-Commerce — Printify
 
-# UI
-ui:
-  default_theme: default-dark
-  show_thinking: true
-  enable_sounds: false
-```
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PRINTIFY_API_TOKEN` | — | Printify API token |
+| `PRINTIFY_SHOP_ID` | — | Printify shop ID |
 
-### config/tools.yaml
+### E-Commerce — Shopify
 
-Tool-specific configuration:
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `SHOPIFY_SHOP_NAME` | — | Your Shopify store name (e.g., `my-store`) |
+| `SHOPIFY_ACCESS_TOKEN` | — | Shopify Admin API access token |
+| `SHOPIFY_API_KEY` | — | Shopify API key |
+| `SHOPIFY_API_SECRET` | — | Shopify API secret |
 
-```yaml
-# Image Generation
-image_generation:
-  default_model: flux-pro-1.1
-  default_aspect_ratio: "1:1"
-  auto_save: true
-  max_batch_size: 4
+### Search & Research
 
-# Video Generation
-video_generation:
-  default_model: runway
-  default_duration: 5
-  max_duration: 30
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `SERPER_API_KEY` | — | Serper.dev Google search API key |
 
-# Browser
-browser:
-  headless: true
-  timeout: 30000
-  viewport:
-    width: 1920
-    height: 1080
+### Email
 
-# Printify
-printify:
-  auto_publish: false
-  default_print_provider: auto
-  sync_interval: 3600
-```
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `SENDGRID_API_KEY` | — | SendGrid API key for email campaigns |
+| `SMTP_HOST` | — | SMTP server hostname |
+| `SMTP_PORT` | `587` | SMTP server port |
+| `SMTP_USER` | — | SMTP username |
+| `SMTP_PASSWORD` | — | SMTP password |
+| `EMAIL_FROM` | — | Default sender email address |
 
-### config/agents.yaml
+### Messaging — WhatsApp
 
-Agent configuration:
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `WHATSAPP_PHONE_ID` | — | WhatsApp Business phone number ID |
+| `WHATSAPP_ACCESS_TOKEN` | — | WhatsApp Cloud API access token |
+| `WHATSAPP_VERIFY_TOKEN` | — | Webhook verification token |
 
-```yaml
-agents:
-  researcher:
-    model: claude-3-5-sonnet-20241022
-    skills:
-      - web_search
-      - scrape_webpage
-      - summarize
-    max_iterations: 10
+### Messaging — Telegram
 
-  designer:
-    model: claude-3-5-sonnet-20241022
-    skills:
-      - generate_image
-      - edit_image
-      - create_logo
-    max_iterations: 5
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `TELEGRAM_BOT_TOKEN` | — | Telegram Bot API token |
 
-  developer:
-    model: claude-3-5-sonnet-20241022
-    skills:
-      - code_analysis
-      - code_generation
-      - testing
+### Messaging — Discord
 
-delegation:
-  enabled: true
-  auto_delegate: true
-  max_delegation_depth: 3
-```
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DISCORD_BOT_TOKEN` | — | Discord bot token |
 
----
+### Messaging — Slack
 
-## Settings API
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `SLACK_BOT_TOKEN` | — | Slack bot token |
+| `SLACK_APP_TOKEN` | — | Slack app-level token |
 
-### Get All Settings
+### Messaging — Twilio
 
-```bash
-GET /api/settings
-```
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `TWILIO_ACCOUNT_SID` | — | Twilio account SID |
+| `TWILIO_AUTH_TOKEN` | — | Twilio auth token |
+| `TWILIO_PHONE_NUMBER` | — | Twilio phone number |
 
-### Update Settings
+### YouTube
 
-```bash
-PUT /api/settings
-Content-Type: application/json
-
-{
-  "theme": "cyberpunk",
-  "default_model": "gpt-4o",
-  "temperature": 0.8
-}
-```
-
-### Reset to Defaults
-
-```bash
-POST /api/settings/reset
-```
-
----
-
-## Model Configuration
-
-### Supported Models
-
-| Provider | Models |
-|----------|--------|
-| Anthropic | claude-3-5-sonnet-20241022, claude-3-opus-20240229, claude-3-haiku-20240307 |
-| OpenAI | gpt-4o, gpt-4-turbo, gpt-4, gpt-3.5-turbo |
-| Local | ollama/llama2, ollama/mistral, ollama/codellama |
-
-### Model Selection Priority
-
-```yaml
-models:
-  # Primary model for main tasks
-  primary: claude-3-5-sonnet-20241022
-  
-  # Fallback if primary unavailable
-  fallback: gpt-4o
-  
-  # Specialized models
-  coding: claude-3-5-sonnet-20241022
-  creative: gpt-4o
-  fast: claude-3-haiku-20240307
-  
-  # Local models (Ollama)
-  local_enabled: true
-  local_models:
-    - ollama/llama2
-    - ollama/codellama
-```
-
-### Temperature Settings
-
-| Use Case | Temperature |
-|----------|------------|
-| Code generation | 0.2 |
-| Analysis | 0.3 |
-| General chat | 0.7 |
-| Creative writing | 0.9 |
-| Brainstorming | 1.0 |
-
----
-
-## Security Configuration
-
-### Authentication
-
-```yaml
-auth:
-  enabled: false  # Set true for production
-  method: api_key  # or jwt, oauth
-  api_keys:
-    - name: admin
-      key: your-api-key-here
-      permissions: ["*"]
-    - name: readonly
-      key: readonly-key
-      permissions: ["read"]
-```
-
-### CORS Configuration
-
-```yaml
-cors:
-  enabled: true
-  origins:
-    - http://localhost:3000
-    - https://your-domain.com
-  methods: ["GET", "POST", "PUT", "DELETE"]
-  allow_credentials: true
-```
-
-### Rate Limiting
-
-```yaml
-rate_limiting:
-  enabled: true
-  
-  # Global limits
-  requests_per_minute: 60
-  requests_per_hour: 1000
-  
-  # Endpoint-specific
-  endpoints:
-    /api/chat:
-      requests_per_minute: 30
-    /api/generate:
-      requests_per_minute: 10
-```
-
----
-
-## Storage Configuration
-
-### File Storage
-
-```yaml
-storage:
-  # Local storage path
-  path: ./data
-  
-  # File limits
-  max_file_size: 100MB
-  max_total_storage: 10GB
-  
-  # Cleanup
-  auto_cleanup: true
-  cleanup_after_days: 30
-  
-  # Cloud storage (optional)
-  cloud:
-    enabled: false
-    provider: s3  # or gcs, azure
-    bucket: otto-files
-    region: us-east-1
-```
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `YOUTUBE_API_KEY` | — | YouTube Data API key |
+| `YOUTUBE_CLIENT_ID` | — | OAuth2 client ID |
+| `YOUTUBE_CLIENT_SECRET` | — | OAuth2 client secret |
 
 ### Database
 
-```yaml
-database:
-  # SQLite (default)
-  url: sqlite:///./data/otto.db
-  
-  # PostgreSQL
-  # url: postgresql://user:pass@localhost/otto
-  
-  # MySQL
-  # url: mysql://user:pass@localhost/otto
-  
-  # Connection pool
-  pool_size: 5
-  max_overflow: 10
-```
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DATABASE_URL` | `sqlite:///./data/otto.db` | Database connection string |
 
-### Vector Database (ChromaDB)
+Supported databases:
+- SQLite: `sqlite:///./data/otto.db` (default)
+- PostgreSQL: `postgresql://user:pass@localhost:5432/otto`
+- MySQL: `mysql://user:pass@localhost:3306/otto`
 
-```yaml
-chroma:
-  persist_directory: ./data/chroma
-  collection_name: otto_memory
-  
-  # Embedding settings
-  embedding_function: openai  # or sentence_transformers
-  embedding_model: text-embedding-3-small
-  
-  # Performance
-  anonymized_telemetry: false
-```
+### Cache
 
----
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `REDIS_URL` | — | Redis connection URL (e.g., `redis://localhost:6379`) |
 
-## Logging Configuration
+### Vector Store (ChromaDB)
 
-### Log Levels
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CHROMA_HOST` | `localhost` | ChromaDB host |
+| `CHROMA_PORT` | `8001` | ChromaDB port |
+| `CHROMA_PERSIST_DIRECTORY` | `./data/chroma` | Local persistence directory |
 
-| Level | When to Use |
-|-------|-------------|
-| DEBUG | Development, troubleshooting |
-| INFO | Production monitoring |
-| WARNING | Potential issues |
-| ERROR | Errors requiring attention |
-| CRITICAL | System failures |
+### Security
 
-### Configuration
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `JWT_SECRET_KEY` | — | Secret key for JWT token signing |
+| `JWT_ALGORITHM` | `HS256` | JWT signing algorithm |
+| `JWT_EXPIRE_MINUTES` | `1440` | Token expiry (minutes) |
+| `API_KEY_HEADER` | `X-API-Key` | API key header name |
 
-```yaml
-logging:
-  level: INFO
-  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-  
-  # File logging
-  file:
-    enabled: true
-    path: ./logs/otto.log
-    max_size: 10MB
-    backup_count: 5
-    
-  # Console logging
-  console:
-    enabled: true
-    colorize: true
-    
-  # External logging (optional)
-  sentry:
-    enabled: false
-    dsn: your-sentry-dsn
-```
+### Rate Limiting
 
----
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `RATE_LIMIT_PER_MINUTE` | `60` | Max requests per minute |
+| `RATE_LIMIT_PER_HOUR` | `1000` | Max requests per hour |
 
-## Docker Configuration
+### Voice
 
-### docker-compose.yml
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `VOICE_MODEL` | `whisper-1` | Speech-to-text model |
+| `TTS_MODEL` | `tts-1` | Text-to-speech model |
+| `TTS_VOICE_ID` | `alloy` | Default TTS voice |
+| `SAMPLE_RATE` | `16000` | Audio sample rate |
 
-```yaml
-version: '3.8'
+### WebSocket
 
-services:
-  otto:
-    build: .
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./data:/app/data
-      - ./.env:/app/.env
-    environment:
-      - HOST=0.0.0.0
-      - PORT=8000
-    restart: unless-stopped
-    
-  # Optional: Redis for caching
-  redis:
-    image: redis:alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis-data:/data
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `WS_HEARTBEAT_INTERVAL` | `30` | WebSocket heartbeat (seconds) |
+| `WS_MAX_CONNECTIONS` | `100` | Max concurrent WebSocket connections |
 
-volumes:
-  redis-data:
-```
+### Tool Execution
 
-### Environment Variables in Docker
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `MAX_TOOL_RETRIES` | `3` | Max retry attempts for failed tools |
+| `TOOL_TIMEOUT_SECONDS` | `300` | Tool execution timeout |
+| `PARALLEL_TOOL_LIMIT` | `5` | Max parallel tool executions |
 
-```bash
-# Run with env file
-docker run --env-file .env otto-chat
+### Memory
 
-# Or pass directly
-docker run \
-  -e OPENAI_API_KEY=sk-xxx \
-  -e ANTHROPIC_API_KEY=sk-ant-xxx \
-  otto-chat
-```
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `MEMORY_MAX_HISTORY` | `50` | Max conversation history entries |
+| `MEMORY_SIMILARITY_THRESHOLD` | `0.7` | Minimum similarity for memory recall |
+| `MEMORY_TOP_K` | `5` | Number of memories to retrieve |
+
+### Browser Automation
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PLAYWRIGHT_HEADLESS` | `true` | Run browser in headless mode |
+| `BROWSER_TIMEOUT` | `30000` | Browser operation timeout (ms) |
+| `SCREENSHOT_PATH` | `./data/screenshots` | Screenshot storage path |
+
+### File Storage
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `UPLOAD_DIR` | `./data/uploads` | File upload directory |
+| `MAX_UPLOAD_SIZE` | `52428800` | Max upload size in bytes (50MB) |
+| `ALLOWED_EXTENSIONS` | `*` | Allowed file extensions |
+
+### Monitoring
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PROMETHEUS_PORT` | `9090` | Prometheus metrics port |
+| `SENTRY_DSN` | — | Sentry error tracking DSN |
 
 ---
 
-## Production Configuration
+## Configuration Tips
 
-### Recommended Settings
-
+### Minimal Setup (Chat Only)
 ```env
-# Production .env
-DEBUG=false
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
+### Creative Production Setup
+```env
+ANTHROPIC_API_KEY=sk-ant-...
+REPLICATE_API_TOKEN=r8_...
+OPENAI_API_KEY=sk-...
+```
+
+### Full E-Commerce Setup
+```env
+ANTHROPIC_API_KEY=sk-ant-...
+REPLICATE_API_TOKEN=r8_...
+PRINTIFY_API_TOKEN=...
+PRINTIFY_SHOP_ID=...
+SHOPIFY_SHOP_NAME=my-store
+SHOPIFY_ACCESS_TOKEN=shpat_...
+SERPER_API_KEY=...
+```
+
+### Full Production Setup
+```env
+ANTHROPIC_API_KEY=sk-ant-...
+OPENAI_API_KEY=sk-...
+REPLICATE_API_TOKEN=r8_...
+ELEVENLABS_API_KEY=...
+SERPER_API_KEY=...
+PRINTIFY_API_TOKEN=...
+PRINTIFY_SHOP_ID=...
+DATABASE_URL=postgresql://otto:pass@localhost:5432/otto
+REDIS_URL=redis://localhost:6379
+JWT_SECRET_KEY=your-secure-random-key
 LOG_LEVEL=WARNING
-
-# Security
-SECRET_KEY=<generate-strong-key>
-CORS_ORIGINS=https://your-domain.com
-
-# Rate limiting
-RATE_LIMIT_ENABLED=true
-RATE_LIMIT_REQUESTS=30
-RATE_LIMIT_PERIOD=60
-
-# Performance
-MAX_CONCURRENT_TASKS=5
-CHROMA_SERVER_MEMORY_LIMIT=4G
+API_WORKERS=4
 ```
 
-### Reverse Proxy (nginx)
+---
 
-```nginx
-server {
-    listen 80;
-    server_name your-domain.com;
-    
-    location / {
-        proxy_pass http://localhost:8000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
-```
+## Settings Management
 
-### SSL/TLS
+### Via Web UI
+
+Navigate to **Settings** (⌘+, or sidebar) to configure:
+- API keys for all integrations
+- Connection testing (verify keys work)
+- Feature toggles
+- Theme selection
+
+### Via REST API
 
 ```bash
-# With Let's Encrypt
-certbot --nginx -d your-domain.com
+# Get current settings
+curl http://localhost:8000/api/settings
+
+# Update settings
+curl -X PUT http://localhost:8000/api/settings \
+  -H "Content-Type: application/json" \
+  -d '{"anthropic_api_key": "sk-ant-..."}'
+
+# Test a connection
+curl http://localhost:8000/api/connections/test/anthropic
+```
+
+### Via CLI
+
+```bash
+python scripts/otto_cli.py config set ANTHROPIC_API_KEY sk-ant-...
+python scripts/otto_cli.py config show
 ```

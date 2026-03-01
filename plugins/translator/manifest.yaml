@@ -1,0 +1,35 @@
+name: translator
+version: 1.0.0
+description: Translate text between languages, detect language, and batch translate
+author: Otto Examples
+type: tool
+icon: 🌐
+
+entry_point: main
+
+provides_tools:
+  - translate_text
+  - detect_language
+  - translate_file
+  - get_supported_languages
+
+settings_schema:
+  default_target_language:
+    type: string
+    description: Default target language code
+    default: en
+  
+  api_provider:
+    type: string
+    description: Translation API (google, deepl, libre)
+    default: libre
+  
+  deepl_api_key:
+    type: string
+    description: DeepL API key for better translations
+    required: false
+    secret: true
+
+dependencies:
+  - requests
+  - langdetect

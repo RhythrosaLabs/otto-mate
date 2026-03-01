@@ -10,9 +10,9 @@ import json
 from contextlib import asynccontextmanager
 from pathlib import Path
 from datetime import datetime
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Depends, Request
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Depends, Request, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, HTMLResponse, StreamingResponse
+from fastapi.responses import JSONResponse, HTMLResponse, StreamingResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
@@ -20,6 +20,7 @@ import os
 from dotenv import load_dotenv
 
 from ..core.agent_orchestrator import AgentOrchestrator
+from ..core.slash_commands import get_slash_processor
 from ..utils.config import get_settings
 from ..utils.logger import setup_logging
 
@@ -46,6 +47,17 @@ from .browser import router as browser_router
 from .intelligence import router as intelligence_router
 from .creative_platform import router as creative_platform_router
 from .plugins import router as plugins_router
+from .integrations import router as integrations_router
+from .whatsapp import router as whatsapp_router
+from .telegram import router as telegram_router
+from .discord import router as discord_router
+from .auth import router as auth_router
+from .setup import router as setup_router
+from .email_webhook import router as email_webhook_router
+from .ollama import router as ollama_router
+from .model_manager import router as model_manager_router
+from ..core.session_manager import router as sessions_router
+from .gateway_ws import router as gateway_router
 
 # Load environment variables
 load_dotenv()
@@ -167,11 +179,97 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"Creative Platform initialization skipped: {e}")
     
+    # Initialize Gateway and Channels
+    logger.info("Initializing Otto Gateway...")
+    try:
+        from ..core.gateway import OttoGateway
+        from ..core.channel_manager import ChannelManager
+        
+        gateway = OttoGateway(orchestrator)
+        
+        # Load channel config
+        channels_config = settings.dict().get("channels", {})
+        if channels_config:
+            channel_manager = ChannelManager(gateway, {"channels": channels_config})
+            await channel_manager.start_channels()
+            logger.info(f"✨ Gateway: {len(channel_manager.list_channels())} channels active")
+        else:
+            channel_manager = None
+            logger.info("✨ Gateway: Ready (no channels configured)")
+        
+        # Store in app.state
+        app.state.gateway = gateway
+        app.state.channel_manager = channel_manager
+    except Exception as e:
+        logger.warning(f"Gateway initialization skipped: {e}")
+        app.state.gateway = None
+        app.state.channel_manager = None
+    
+    # Initialize Voice Capabilities
+    logger.info("Initializing Voice Capabilities...")
+    try:
+        from ..core.voice import VoiceCapabilities, VoiceConfig
+        
+        voice_config = VoiceConfig(
+            enable_wake_word=settings.dict().get("enable_wake_word", False),
+            enable_talk_mode=settings.dict().get("enable_talk_mode", True),
+            wake_word=settings.dict().get("wake_word", "hey otto")
+        )
+        
+        # Agent callback for voice
+        async def voice_agent_callback(text: str) -> str:
+            if orchestrator:
+                response = await orchestrator.process_message(text, session_id="voice")
+                return response.get("message", "")
+            return "Sorry, I couldn't process that."
+        
+        voice = VoiceCapabilities(voice_config, voice_agent_callback)
+        
+        if voice_config.enable_wake_word or voice_config.enable_talk_mode:
+            await voice.start()
+            logger.info(f"✨ Voice: Wake={voice_config.enable_wake_word}, Talk={voice_config.enable_talk_mode}")
+        
+        app.state.voice = voice
+    except Exception as e:
+        logger.warning(f"Voice capabilities initialization skipped: {e}")
+        app.state.voice = None
+    
+    # Initialize Skills Registry
+    logger.info("Initializing Skills Registry...")
+    try:
+        from ..core.skills import SkillRegistry
+        from pathlib import Path
+        
+        skills_registry = SkillRegistry(Path("skills"))
+        await skills_registry.discover_skills()
+        logger.info(f"✨ Skills Registry: {len(skills_registry.list_skills())} skills loaded")
+        
+        app.state.skills_registry = skills_registry
+    except Exception as e:
+        logger.warning(f"Skills registry initialization skipped: {e}")
+        app.state.skills_registry = None
+    
+    # Store references in app.state for health checks
+    app.state.start_time = datetime.now()
+    app.state.orchestrator = orchestrator
+    
     yield
     
     # Cleanup
     logger.info("Shutting down...")
     task_scheduler.stop()
+    
+    # Shutdown channels
+    if hasattr(app.state, 'channel_manager') and app.state.channel_manager:
+        await app.state.channel_manager.stop_channels()
+    
+    # Shutdown voice
+    if hasattr(app.state, 'voice') and app.state.voice:
+        app.state.voice.stop()
+    
+    # Shutdown skills
+    if hasattr(app.state, 'skills_registry') and app.state.skills_registry:
+        await app.state.skills_registry.shutdown_all()
 
 
 # Create FastAPI app
@@ -205,6 +303,17 @@ app.include_router(browser_router)
 app.include_router(intelligence_router)
 app.include_router(creative_platform_router)
 app.include_router(plugins_router)
+app.include_router(integrations_router)
+app.include_router(gateway_router)
+app.include_router(whatsapp_router)
+app.include_router(telegram_router)
+app.include_router(discord_router)
+app.include_router(sessions_router)
+app.include_router(auth_router)
+app.include_router(setup_router)
+app.include_router(email_webhook_router)
+app.include_router(ollama_router)
+app.include_router(model_manager_router)
 
 # Include enhanced Printify router if available
 if printify_enhanced_router:
@@ -342,6 +451,7 @@ class ChatRequest(BaseModel):
     context: Optional[Dict[str, Any]] = None
     session_id: Optional[str] = None
     user_id: Optional[str] = "default"
+    local_mode: Optional[bool] = False
 
 
 class ChatResponse(BaseModel):
@@ -440,6 +550,13 @@ async def onboarding_page():
     return serve_html_page("onboarding.html")
 
 
+@app.get("/setup")
+async def setup_redirect():
+    """Redirect to the setup wizard."""
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/api/setup/")
+
+
 @app.get("/{page}.html", response_class=HTMLResponse)
 async def html_pages(page: str):
     """Serve HTML pages from web directory."""
@@ -461,10 +578,151 @@ async def api_root():
 
 @app.get("/health")
 async def health():
-    """Simple health check."""
+    """
+    Enhanced health check with system information.
+    
+    Returns:
+        - status: Overall health status (healthy, degraded, unhealthy)
+        - version: Otto version
+        - uptime: Server uptime
+        - services: Status of core services
+        - resources: System resource usage (if psutil available)
+    """
+    start_time = getattr(app.state, 'start_time', datetime.now())
+    uptime_seconds = (datetime.now() - start_time).total_seconds()
+    
+    # Check services
+    orchestrator_healthy = hasattr(app.state, 'orchestrator') and app.state.orchestrator is not None
+    
+    # Get tool count
+    tool_count = 0
+    try:
+        if orchestrator_healthy and hasattr(app.state.orchestrator, 'tool_registry'):
+            tools = app.state.orchestrator.tool_registry.list_tools()
+            tool_count = len(tools) if tools else 0
+    except:
+        pass
+    
+    # System resources (optional)
+    resources = {}
+    try:
+        import psutil
+        mem = psutil.virtual_memory()
+        resources = {
+            "cpu_percent": psutil.cpu_percent(interval=0.1),
+            "memory_percent": mem.percent,
+            "memory_available_gb": round(mem.available / (1024**3), 2)
+        }
+    except ImportError:
+        resources = {"note": "psutil not installed for detailed metrics"}
+    
+    # Determine overall status
+    status = "healthy"
+    if not orchestrator_healthy:
+        status = "degraded"
+    
     return {
-        "status": "healthy",
-        "timestamp": str(datetime.now())
+        "status": status,
+        "version": "2.0.0",
+        "codename": "Universal",
+        "timestamp": datetime.now().isoformat(),
+        "uptime_seconds": round(uptime_seconds, 2),
+        "uptime_human": f"{int(uptime_seconds // 3600)}h {int((uptime_seconds % 3600) // 60)}m",
+        "services": {
+            "orchestrator": "active" if orchestrator_healthy else "inactive",
+            "tools": f"{tool_count} registered"
+        },
+        "resources": resources,
+        "endpoints": {
+            "chat": "/chat",
+            "stream": "/chat/stream",
+            "docs": "/docs"
+        }
+    }
+
+
+@app.get("/health/detailed")
+async def health_detailed():
+    """
+    Detailed health check with all component statuses.
+    OpenClaw-style comprehensive health endpoint.
+    """
+    from ..core.slash_commands import get_slash_processor
+    
+    checks = {}
+    warnings = []
+    
+    # API check
+    checks["api"] = {"status": "healthy", "message": "API responding"}
+    
+    # Orchestrator check
+    orchestrator = getattr(app.state, 'orchestrator', None)
+    if orchestrator:
+        checks["orchestrator"] = {"status": "healthy", "message": "AI processing available"}
+    else:
+        checks["orchestrator"] = {"status": "unavailable", "message": "Orchestrator not initialized"}
+        warnings.append("Orchestrator not available")
+    
+    # Database/Storage check
+    data_dir = Path("data")
+    if data_dir.exists():
+        checks["storage"] = {"status": "healthy", "message": f"Data directory accessible"}
+    else:
+        checks["storage"] = {"status": "warning", "message": "Data directory missing"}
+        warnings.append("Data directory not found")
+    
+    # Memory check
+    try:
+        import psutil
+        mem = psutil.virtual_memory()
+        if mem.percent < 80:
+            checks["memory"] = {"status": "healthy", "usage_percent": mem.percent}
+        elif mem.percent < 95:
+            checks["memory"] = {"status": "warning", "usage_percent": mem.percent}
+            warnings.append(f"High memory usage: {mem.percent}%")
+        else:
+            checks["memory"] = {"status": "critical", "usage_percent": mem.percent}
+            warnings.append(f"Critical memory usage: {mem.percent}%")
+        
+        # Disk check  
+        disk = psutil.disk_usage('/')
+        if disk.percent < 80:
+            checks["disk"] = {"status": "healthy", "usage_percent": disk.percent}
+        elif disk.percent < 95:
+            checks["disk"] = {"status": "warning", "usage_percent": disk.percent}
+            warnings.append(f"High disk usage: {disk.percent}%")
+        else:
+            checks["disk"] = {"status": "critical", "usage_percent": disk.percent}
+    except ImportError:
+        checks["system"] = {"status": "unknown", "message": "psutil not installed"}
+    
+    # Tools check
+    try:
+        if orchestrator and hasattr(orchestrator, 'tool_registry'):
+            tools = orchestrator.tool_registry.list_tools()
+            checks["tools"] = {"status": "healthy", "count": len(tools) if tools else 0}
+        else:
+            checks["tools"] = {"status": "unavailable", "message": "Tool registry not initialized"}
+    except Exception as e:
+        checks["tools"] = {"status": "error", "message": str(e)}
+    
+    # Determine overall status
+    statuses = [c.get("status", "unknown") for c in checks.values()]
+    if "critical" in statuses:
+        overall = "unhealthy"
+    elif "error" in statuses or "unavailable" in statuses:
+        overall = "degraded"
+    elif "warning" in statuses:
+        overall = "warning"
+    else:
+        overall = "healthy"
+    
+    return {
+        "status": overall,
+        "timestamp": datetime.now().isoformat(),
+        "checks": checks,
+        "warnings": warnings,
+        "version": "2.0.0"
     }
 
 
@@ -498,6 +756,8 @@ async def chat(
     """
     Process a chat message (non-streaming).
     
+    Supports slash commands like /help, /status, /models, /tools, /reset.
+    
     Example:
         POST /chat
         {
@@ -507,6 +767,35 @@ async def chat(
         }
     """
     try:
+        message = request.message.strip()
+        session_id = request.session_id or "default"
+        
+        # Check for slash commands
+        if message.startswith('/'):
+            slash_processor = get_slash_processor(
+                orchestrator=otto,
+                tool_registry=otto.tool_registry if hasattr(otto, 'tool_registry') else None
+            )
+            command_result = await slash_processor.execute(message)
+            
+            if command_result.get("success"):
+                return ChatResponse(
+                    response=command_result.get("message", "Command executed"),
+                    type=command_result.get("type", "slash_command"),
+                    session_id=session_id
+                )
+            else:
+                # If slash command failed, it might be an unknown command
+                # Let the orchestrator handle it as a regular message
+                error = command_result.get("error", "")
+                if "Unknown command" not in error:
+                    return ChatResponse(
+                        response=f"Command error: {error}",
+                        type="error",
+                        session_id=session_id
+                    )
+        
+        # Regular message processing
         result = await otto.process(
             message=request.message,
             context=request.context,
@@ -535,7 +824,8 @@ async def chat_stream(
             async for chunk in otto.process_streaming(
                 message=request.message,
                 context=request.context,
-                session_id=request.session_id
+                session_id=request.session_id,
+                local_mode=request.local_mode or False
             ):
                 yield f"data: {json.dumps(chunk)}\n\n"
         except Exception as e:
@@ -969,6 +1259,175 @@ async def get_media_capabilities(media_type: Optional[str] = None):
         
     except Exception as e:
         return {"error": str(e)}
+
+
+# =========================================================================
+# Browser Proxy API - For embedding external sites in iframe
+# =========================================================================
+
+@app.get("/api/browser/proxy")
+async def browser_proxy(url: str):
+    """Proxy external websites to bypass X-Frame-Options restrictions."""
+    import httpx
+    
+    try:
+        async with httpx.AsyncClient(follow_redirects=True, timeout=30.0) as client:
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+            response = await client.get(url, headers=headers)
+            
+            # Modify the HTML to fix relative URLs
+            content = response.text
+            from urllib.parse import urljoin, urlparse
+            
+            base_url = f"{urlparse(url).scheme}://{urlparse(url).netloc}"
+            
+            # Inject base tag to fix relative URLs
+            if "<head>" in content.lower():
+                content = content.replace("<head>", f'<head><base href="{base_url}/">', 1)
+                content = content.replace("<HEAD>", f'<HEAD><base href="{base_url}/">', 1)
+            
+            return Response(
+                content=content,
+                media_type="text/html",
+                headers={"X-Frame-Options": "ALLOWALL"}
+            )
+    except Exception as e:
+        logger.error(f"Browser proxy error: {e}")
+        return Response(
+            content=f"<html><body><h1>Error loading page</h1><p>{str(e)}</p></body></html>",
+            media_type="text/html"
+        )
+
+
+@app.get("/api/browser/history")
+async def get_browser_history():
+    """Get browser history from backend."""
+    return {"success": True, "history": []}
+
+
+# =========================================================================
+# Import API - For contacts and schedule import
+# =========================================================================
+
+@app.post("/api/import/contacts")
+async def import_contacts(file: UploadFile = File(...)):
+    """Import contacts from spreadsheet (CSV, Excel)."""
+    import csv
+    import io
+    
+    try:
+        content = await file.read()
+        contacts = []
+        
+        if file.filename.endswith('.csv'):
+            # Parse CSV
+            text = content.decode('utf-8')
+            reader = csv.DictReader(io.StringIO(text))
+            for row in reader:
+                contact = {
+                    "name": row.get("name") or row.get("Name") or row.get("full_name") or "",
+                    "email": row.get("email") or row.get("Email") or row.get("e-mail") or "",
+                    "phone": row.get("phone") or row.get("Phone") or row.get("telephone") or "",
+                    "company": row.get("company") or row.get("Company") or row.get("organization") or "",
+                    "notes": row.get("notes") or row.get("Notes") or ""
+                }
+                if contact["name"] or contact["email"]:
+                    contacts.append(contact)
+        
+        elif file.filename.endswith(('.xlsx', '.xls')):
+            # Parse Excel
+            try:
+                import openpyxl
+                from io import BytesIO
+                
+                wb = openpyxl.load_workbook(BytesIO(content))
+                ws = wb.active
+                
+                headers = [cell.value for cell in ws[1]]
+                for row in ws.iter_rows(min_row=2, values_only=True):
+                    row_dict = dict(zip(headers, row))
+                    contact = {
+                        "name": row_dict.get("name") or row_dict.get("Name") or "",
+                        "email": row_dict.get("email") or row_dict.get("Email") or "",
+                        "phone": row_dict.get("phone") or row_dict.get("Phone") or "",
+                        "company": row_dict.get("company") or row_dict.get("Company") or "",
+                        "notes": row_dict.get("notes") or row_dict.get("Notes") or ""
+                    }
+                    if contact["name"] or contact["email"]:
+                        contacts.append(contact)
+            except ImportError:
+                return {"success": False, "error": "openpyxl not installed for Excel support"}
+        
+        return {
+            "success": True,
+            "imported": len(contacts),
+            "contacts": contacts
+        }
+        
+    except Exception as e:
+        logger.error(f"Contact import error: {e}")
+        return {"success": False, "error": str(e)}
+
+
+@app.post("/api/import/schedule")
+async def import_schedule(file: UploadFile = File(...)):
+    """Import schedule/calendar from spreadsheet (CSV, Excel)."""
+    import csv
+    import io
+    from datetime import datetime
+    
+    try:
+        content = await file.read()
+        events = []
+        
+        if file.filename.endswith('.csv'):
+            text = content.decode('utf-8')
+            reader = csv.DictReader(io.StringIO(text))
+            for row in reader:
+                event = {
+                    "title": row.get("title") or row.get("Title") or row.get("event") or row.get("Event") or "",
+                    "date": row.get("date") or row.get("Date") or row.get("scheduled_date") or "",
+                    "time": row.get("time") or row.get("Time") or row.get("scheduled_time") or "",
+                    "description": row.get("description") or row.get("Description") or row.get("notes") or "",
+                    "repeat": row.get("repeat") or row.get("Repeat") or "once"
+                }
+                if event["title"] and event["date"]:
+                    events.append(event)
+        
+        elif file.filename.endswith(('.xlsx', '.xls')):
+            try:
+                import openpyxl
+                from io import BytesIO
+                
+                wb = openpyxl.load_workbook(BytesIO(content))
+                ws = wb.active
+                
+                headers = [cell.value for cell in ws[1]]
+                for row in ws.iter_rows(min_row=2, values_only=True):
+                    row_dict = dict(zip(headers, row))
+                    event = {
+                        "title": row_dict.get("title") or row_dict.get("Title") or "",
+                        "date": str(row_dict.get("date") or row_dict.get("Date") or ""),
+                        "time": str(row_dict.get("time") or row_dict.get("Time") or ""),  
+                        "description": row_dict.get("description") or row_dict.get("Description") or "",
+                        "repeat": row_dict.get("repeat") or "once"
+                    }
+                    if event["title"] and event["date"]:
+                        events.append(event)
+            except ImportError:
+                return {"success": False, "error": "openpyxl not installed for Excel support"}
+        
+        return {
+            "success": True,
+            "imported": len(events),
+            "events": events
+        }
+        
+    except Exception as e:
+        logger.error(f"Schedule import error: {e}")
+        return {"success": False, "error": str(e)}
 
 
 @app.websocket("/ws")

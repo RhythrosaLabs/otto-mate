@@ -2,10 +2,15 @@
 Content Generation Tools
 ========================
 
-Tools for generating various types of content.
+Tools for generating various types of content with AI-powered image generation.
+Integrates with Replicate for stunning blog and email visuals.
 """
 
 import logging
+import re
+import asyncio
+import os
+import aiohttp
 from typing import Optional, Dict, Any, List
 from anthropic import Anthropic
 from .core import tool, ToolBase
@@ -14,11 +19,218 @@ logger = logging.getLogger(__name__)
 
 
 class ContentTools(ToolBase):
-    """AI-powered content generation tools."""
+    """AI-powered content generation tools with image generation capabilities."""
     
-    def __init__(self, anthropic_client: Anthropic):
+    def __init__(self, anthropic_client: Anthropic, replicate_token: Optional[str] = None):
         self.anthropic = anthropic_client
         self.model = "claude-sonnet-4-20250514"
+        
+        # Replicate for AI image generation
+        self.replicate_token = replicate_token or os.environ.get("REPLICATE_API_TOKEN")
+        self.replicate_base_url = "https://api.replicate.com/v1"
+        
+        # Image generation settings
+        self.image_model = "black-forest-labs/flux-1.1-pro"  # High quality for blogs
+        self.fast_image_model = "prunaai/flux-fast"  # Faster for bulk generation
+    
+    async def _generate_image(
+        self,
+        prompt: str,
+        aspect_ratio: str = "16:9",
+        fast_mode: bool = False
+    ) -> Optional[str]:
+        """
+        Generate an AI image using Replicate's Flux models.
+        
+        Args:
+            prompt: Image generation prompt
+            aspect_ratio: Output aspect ratio (16:9, 1:1, 4:5)
+            fast_mode: Use faster model for bulk generation
+        
+        Returns:
+            URL to generated image or None if failed
+        """
+        if not self.replicate_token:
+            logger.warning("No Replicate token - skipping image generation")
+            return None
+        
+        model = self.fast_image_model if fast_mode else self.image_model
+        headers = {
+            "Authorization": f"Token {self.replicate_token}",
+            "Content-Type": "application/json",
+            "Accept-Encoding": "identity, gzip, deflate"
+        }
+        
+        try:
+            async with aiohttp.ClientSession() as session:
+                # Create prediction
+                async with session.post(
+                    f"{self.replicate_base_url}/predictions",
+                    json={
+                        "version": model,
+                        "input": {
+                            "prompt": prompt,
+                            "aspect_ratio": aspect_ratio,
+                            "output_format": "webp",
+                            "output_quality": 90,
+                        }
+                    },
+                    headers=headers
+                ) as response:
+                    if response.status != 201:
+                        return None
+                    result = await response.json()
+                    prediction_id = result.get("id")
+                
+                # Poll for completion
+                for _ in range(60):
+                    await asyncio.sleep(1)
+                    async with session.get(
+                        f"{self.replicate_base_url}/predictions/{prediction_id}",
+                        headers=headers
+                    ) as poll_response:
+                        poll_result = await poll_response.json()
+                        status = poll_result.get("status")
+                        
+                        if status == "succeeded":
+                            output = poll_result.get("output")
+                            if isinstance(output, list) and output:
+                                return output[0]
+                            return output
+                        elif status in ("failed", "canceled"):
+                            return None
+                
+        except Exception as e:
+            logger.error(f"Image generation failed: {e}")
+        
+        return None
+    
+    async def _generate_blog_images(
+        self,
+        topic: str,
+        keywords: List[str],
+        num_images: int = 3,
+        industry: Optional[str] = None,
+        style: str = "professional photography"
+    ) -> List[Dict[str, str]]:
+        """
+        Generate AI images for a blog post.
+        
+        Args:
+            topic: Blog topic for context
+            keywords: SEO keywords to incorporate
+            num_images: Number of images to generate (default 3)
+            industry: Industry context
+            style: Visual style preference
+        
+        Returns:
+            List of dicts with 'url', 'alt', and 'position' keys
+        """
+        if not self.replicate_token:
+            return []
+        
+        # Generate diverse image prompts based on topic
+        keyword_str = ", ".join(keywords[:3]) if keywords else ""
+        industry_str = f" in {industry} context" if industry else ""
+        
+        image_prompts = [
+            {
+                "prompt": f"{topic}{industry_str}. {style}, hero image, stunning visual, editorial quality, perfect lighting, 8k",
+                "position": "hero",
+                "alt": f"{topic} - Hero image"
+            },
+            {
+                "prompt": f"Concept visualization of {keyword_str or topic}. Modern design, professional, infographic style, clean composition",
+                "position": "middle",
+                "alt": f"{topic} - Key concepts"
+            },
+            {
+                "prompt": f"{topic} lifestyle photography{industry_str}. Natural lighting, authentic, engaging, social media worthy",
+                "position": "end",
+                "alt": f"{topic} - Lifestyle shot"
+            }
+        ]
+        
+        results = []
+        for i, img_data in enumerate(image_prompts[:num_images]):
+            logger.info(f"Generating blog image {i+1}/{num_images}...")
+            url = await self._generate_image(
+                img_data["prompt"],
+                aspect_ratio="16:9" if i == 0 else "4:3",
+                fast_mode=True  # Use fast mode for efficiency
+            )
+            if url:
+                results.append({
+                    "url": url,
+                    "alt": img_data["alt"],
+                    "position": img_data["position"]
+                })
+            await asyncio.sleep(0.5)  # Rate limiting
+        
+        logger.info(f"✅ Generated {len(results)} blog images")
+        return results
+    
+    def _insert_images_into_blog(
+        self,
+        html_content: str,
+        images: List[Dict[str, str]]
+    ) -> str:
+        """
+        Insert AI-generated images into blog HTML at smart positions.
+        
+        Args:
+            html_content: Original blog HTML
+            images: List of image dicts with 'url', 'alt', 'position'
+        
+        Returns:
+            HTML content with images inserted
+        """
+        if not images:
+            return html_content
+        
+        # Find hero image position (after first h1 or at start)
+        hero_image = next((img for img in images if img["position"] == "hero"), None)
+        if hero_image:
+            hero_html = f'''
+<figure style="margin: 30px 0;">
+    <img src="{hero_image['url']}" alt="{hero_image['alt']}" 
+         style="width: 100%; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+</figure>
+'''
+            # Insert after first heading
+            h1_match = re.search(r'(</h1>)', html_content, re.IGNORECASE)
+            if h1_match:
+                html_content = html_content[:h1_match.end()] + hero_html + html_content[h1_match.end():]
+        
+        # Find middle image position (after ~40% of h2 tags)
+        middle_image = next((img for img in images if img["position"] == "middle"), None)
+        if middle_image:
+            middle_html = f'''
+<figure style="margin: 30px 0; text-align: center;">
+    <img src="{middle_image['url']}" alt="{middle_image['alt']}" 
+         style="max-width: 90%; border-radius: 8px;">
+</figure>
+'''
+            h2_matches = list(re.finditer(r'(</h2>)', html_content, re.IGNORECASE))
+            if len(h2_matches) >= 2:
+                insert_pos = h2_matches[len(h2_matches) // 2].end()
+                html_content = html_content[:insert_pos] + middle_html + html_content[insert_pos:]
+        
+        # Find end image position (before conclusion or CTA)
+        end_image = next((img for img in images if img["position"] == "end"), None)
+        if end_image:
+            end_html = f'''
+<figure style="margin: 30px 0; text-align: center;">
+    <img src="{end_image['url']}" alt="{end_image['alt']}" 
+         style="max-width: 85%; border-radius: 8px;">
+</figure>
+'''
+            # Insert before FAQ or conclusion
+            faq_match = re.search(r'(<h2[^>]*>.*?FAQ|<h2[^>]*>.*?Conclusion)', html_content, re.IGNORECASE)
+            if faq_match:
+                html_content = html_content[:faq_match.start()] + end_html + html_content[faq_match.start():]
+        
+        return html_content
     
     async def _generate(
         self,
@@ -93,7 +305,15 @@ Format the output clearly with sections."""
     
     @tool(
         name="generate_blog_post",
-        description="Generate a beautiful, SEO-optimized blog post with rich HTML formatting, product images, and store links. Ideal for direct Shopify publishing.",
+        description="""Generate a beautiful, SEO-optimized blog post with rich HTML formatting, AI-generated images, and store links.
+        
+Key Features:
+- Automatically generates 3 AI images (hero, middle, end) and inserts them at smart positions
+- Rich HTML styling with call-out boxes, quotes, and product showcases
+- SEO-optimized with meta descriptions and keyword placement
+- Ready for direct Shopify/WordPress publishing
+
+Example: generate_blog_post(topic="Best Coffee Brewing Methods", keywords=["coffee", "brewing"], industry="food & beverage")""",
         category="content"
     )
     async def generate_blog_post(
@@ -314,10 +534,26 @@ CONTENT REQUIREMENTS:
         meta_description = ""
         suggested_slug = ""
         if "meta description" in content.lower():
-            import re
             meta_match = re.search(r'meta description[:\s]*["\']?([^"\n]{50,160})["\']?', content, re.IGNORECASE)
             if meta_match:
                 meta_description = meta_match.group(1).strip()
+        
+        # Generate AI images for the blog if rich_html is enabled
+        generated_images = []
+        if rich_html and self.replicate_token:
+            logger.info("🎨 Generating AI images for blog post...")
+            generated_images = await self._generate_blog_images(
+                topic=topic,
+                keywords=keywords or [],
+                num_images=3,
+                industry=industry,
+                style="professional editorial photography"
+            )
+            
+            # Insert images into blog HTML
+            if generated_images:
+                content = self._insert_images_into_blog(content, generated_images)
+                logger.info(f"✅ Inserted {len(generated_images)} AI images into blog")
         
         return {
             "success": True,
@@ -332,7 +568,9 @@ CONTENT REQUIREMENTS:
             "ready_for_shopify": True,
             "product_name": product_name,
             "product_image_url": product_image_url,
-            "shopify_product_url": shopify_product_url
+            "shopify_product_url": shopify_product_url,
+            "ai_generated_images": [img["url"] for img in generated_images],
+            "images_inserted": len(generated_images)
         }
     
     @tool(
@@ -465,7 +703,16 @@ Format clearly by platform with all elements."""
     
     @tool(
         name="generate_email_campaign",
-        description="Generate email marketing content",
+        description="""Generate stunning HTML email marketing campaigns with AI-generated product images.
+        
+Creates professional email sequences with:
+- Beautiful responsive HTML templates
+- AI-generated product/hero images
+- Optimized subject lines and preview text
+- Clear CTAs and conversion-focused copy
+
+Example: generate_email_campaign(campaign_type="promotional", product_or_topic="Summer Sale - 30% Off",
+                                  product_image_url="https://example.com/product.jpg", rich_html=True)""",
         category="content"
     )
     async def generate_email_campaign(
@@ -474,10 +721,19 @@ Format clearly by platform with all elements."""
         product_or_topic: str,
         audience: str = "customers",
         num_emails: int = 3,
-        include_subject_lines: bool = True
+        include_subject_lines: bool = True,
+        # Enhanced parameters for AI images and rich HTML
+        rich_html: bool = True,
+        product_image_url: Optional[str] = None,
+        product_name: Optional[str] = None,
+        product_price: Optional[str] = None,
+        brand_name: Optional[str] = None,
+        brand_color: str = "#667eea",
+        cta_url: Optional[str] = None,
+        generate_ai_image: bool = True
     ) -> Dict[str, Any]:
         """
-        Generate email campaign content.
+        Generate email campaign content with optional AI images and rich HTML.
         
         Args:
             campaign_type: Type (welcome, promotional, newsletter, abandoned_cart, launch)
@@ -485,31 +741,135 @@ Format clearly by platform with all elements."""
             audience: Target audience
             num_emails: Number of emails in sequence
             include_subject_lines: Include subject line variants
+            rich_html: Output beautiful responsive HTML emails
+            product_image_url: Existing product image URL to include
+            product_name: Product name for context
+            product_price: Product price for promotions
+            brand_name: Brand name for header
+            brand_color: Primary brand color (hex)
+            cta_url: Call-to-action URL
+            generate_ai_image: Generate AI product image if none provided
         """
-        system_prompt = """You are an email marketing specialist. Create compelling email 
-        sequences that drive opens, clicks, and conversions while maintaining brand voice."""
+        # Generate AI image if requested and no image provided
+        ai_image_url = None
+        if generate_ai_image and not product_image_url and self.replicate_token:
+            logger.info("🎨 Generating AI image for email campaign...")
+            ai_image_url = await self._generate_image(
+                f"{product_or_topic}. Professional product photography, clean background, studio lighting, e-commerce style",
+                aspect_ratio="1:1",
+                fast_mode=True
+            )
+        
+        image_url = product_image_url or ai_image_url
+        
+        # Build HTML template instructions
+        html_template = ""
+        if rich_html:
+            html_template = f"""
+
+=== RICH HTML EMAIL FORMAT ===
+Output each email as responsive HTML with this structure:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <table cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto; background: white;">
+    <!-- Header with logo/brand -->
+    <tr>
+      <td style="background: linear-gradient(135deg, {brand_color} 0%, #764ba2 100%); padding: 30px; text-align: center;">
+        <h1 style="color: white; margin: 0; font-size: 24px;">{brand_name or 'Your Brand'}</h1>
+      </td>
+    </tr>
+    
+    <!-- Hero Image (if available) -->
+    {f'''<tr>
+      <td style="padding: 0;">
+        <img src="{image_url}" alt="Featured" style="width: 100%; display: block;">
+      </td>
+    </tr>''' if image_url else ''}
+    
+    <!-- Content -->
+    <tr>
+      <td style="padding: 40px 30px;">
+        <!-- Email body content here -->
+      </td>
+    </tr>
+    
+    <!-- CTA Button -->
+    <tr>
+      <td style="padding: 0 30px 40px; text-align: center;">
+        <a href="{cta_url or '#'}" style="display: inline-block; background: linear-gradient(135deg, {brand_color} 0%, #764ba2 100%); color: white; padding: 16px 40px; border-radius: 30px; text-decoration: none; font-weight: bold; font-size: 16px;">
+          Shop Now →
+        </a>
+      </td>
+    </tr>
+    
+    <!-- Footer -->
+    <tr>
+      <td style="background: #1a1a2e; padding: 30px; text-align: center; color: #888;">
+        <p style="margin: 0 0 10px;">© {brand_name or 'Your Brand'}. All rights reserved.</p>
+        <p style="margin: 0; font-size: 12px;">
+          <a href="#" style="color: #888;">Unsubscribe</a> | 
+          <a href="#" style="color: #888;">Privacy Policy</a>
+        </p>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+```
+
+Use this template structure for each email with appropriate content variations.
+"""
+        
+        system_prompt = f"""You are an email marketing specialist creating {campaign_type} emails.
+        
+Key principles:
+- Mobile-first responsive design
+- Clear value proposition above the fold
+- Single, focused call-to-action
+- Compelling subject lines (3 variants each with emoji)
+- Preview text that complements subject line
+- Personalization tokens where appropriate [FIRST_NAME]"""
         
         user_prompt = f"""Create a {num_emails}-email sequence for a {campaign_type} campaign.
 
 Topic/Product: {product_or_topic}
+{f'Product Name: {product_name}' if product_name else ''}
+{f'Product Price: {product_price}' if product_price else ''}
 Audience: {audience}
+{f'Product Image Available: Yes ({image_url})' if image_url else 'Product Image: Generate placeholder suggestion'}
 
 For each email include:
-1. {"3 subject line options" if include_subject_lines else "Subject line"}
-2. Preview text
-3. Email body (with clear structure)
-4. Call to action
-5. Suggested send timing
+1. {"3 subject line options (with emojis)" if include_subject_lines else "Subject line"}
+2. Preview text (40-90 chars, complements subject)
+3. Email body (clear structure, mobile-optimized)
+4. Primary CTA button text
+5. Best send timing (day + time + timezone)
+{html_template}
 
-Make each email build on the previous while standing alone."""
+Make each email build on the previous while standing alone.
+Email 1: Introduction/hook
+Email 2: Value/benefits focus
+Email 3: Urgency/final push"""
         
-        content = await self._generate(system_prompt, user_prompt, max_tokens=4096)
+        content = await self._generate(system_prompt, user_prompt, max_tokens=6000)
         
         return {
             "success": True,
             "campaign_type": campaign_type,
             "emails": content,
-            "num_emails": num_emails
+            "num_emails": num_emails,
+            "rich_html": rich_html,
+            "image_url": image_url,
+            "ai_image_generated": ai_image_url is not None,
+            "brand_color": brand_color,
+            "cta_url": cta_url
         }
     
     @tool(

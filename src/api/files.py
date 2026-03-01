@@ -603,6 +603,70 @@ async def list_captured_files_early(
     return {"files": files, "total": len(files), "limit": limit}
 
 
+@router.get("/download-all")
+async def download_all_files_as_zip(category: Optional[str] = None):
+    """
+    Download all files as a ZIP archive.
+    
+    Optionally filter by category: images, videos, audio, documents, code, 3d_models, mockups
+    """
+    import io
+    import zipfile
+    from datetime import datetime
+    
+    storage = get_file_storage()
+    
+    try:
+        # Get all files
+        files = storage.list_files(category=category)
+        
+        if not files:
+            raise HTTPException(status_code=404, detail="No files to download")
+        
+        # Create in-memory zip file
+        zip_buffer = io.BytesIO()
+        
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            for file_meta in files:
+                try:
+                    # FileMetadata is a dataclass — use attribute access
+                    file_id = file_meta.id if hasattr(file_meta, 'id') else file_meta.get('id')
+                    original_name = getattr(file_meta, 'original_name', None) or (file_meta.get('original_name') if isinstance(file_meta, dict) else file_id)
+                    file_category = getattr(file_meta, 'category', None) or (file_meta.get('category', 'other') if isinstance(file_meta, dict) else 'other')
+                    
+                    # Get file data
+                    data, metadata = await storage.retrieve(file_id)
+                    
+                    # Organize in folders by category
+                    zip_path = f"{file_category}/{original_name}"
+                    zip_file.writestr(zip_path, data)
+                    
+                except Exception as e:
+                    logger.warning(f"Skipping file in zip: {e}")
+                    continue
+        
+        zip_buffer.seek(0)
+        
+        # Generate filename with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        category_suffix = f"_{category}" if category else ""
+        filename = f"otto_files{category_suffix}_{timestamp}.zip"
+        
+        return StreamingResponse(
+            zip_buffer,
+            media_type="application/zip",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"'
+            }
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Download all failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to create zip archive")
+
+
 # ============================================================================
 # FILE BY ID ENDPOINTS (must come after specific routes)
 # ============================================================================

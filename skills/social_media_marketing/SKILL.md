@@ -29,18 +29,13 @@ Complete social media marketing automation including content creation, schedulin
 ```yaml
 name: Social Media Product Launch
 steps:
-  1. Analyze product and target audience
-  2. Research trending hashtags in niche
-  3. Create campaign strategy (content calendar)
-  4. Generate post copy for all platforms:
-     - Instagram: Visual-focused, hashtags
-     - Facebook: Community-focused, longer copy
-     - Twitter/X: Concise, trending topics
-     - TikTok: Video script concepts
-     - Pinterest: SEO-optimized descriptions
-  5. Create accompanying visuals
-  6. Schedule posts with optimal timing
-  7. Set up engagement monitoring
+  - Analyze product and target audience
+  - Research trending hashtags in niche
+  - Create campaign strategy (content calendar)
+  - "Generate post copy for all platforms: Instagram (Visual-focused, hashtags), Facebook (Community-focused, longer copy), Twitter/X (Concise, trending topics), TikTok (Video script concepts), Pinterest (SEO-optimized descriptions)"
+  - Create accompanying visuals
+  - Schedule posts with optimal timing
+  - Set up engagement monitoring
 
 success_criteria:
   - 7-14 posts created across platforms
@@ -54,13 +49,13 @@ success_criteria:
 ```yaml
 name: Automated Daily Posting
 steps:
-  1. Check trending topics in niche
-  2. Generate relevant content piece
-  3. Create accompanying image
-  4. Optimize for platform
-  5. Post to social media
-  6. Monitor early engagement
-  7. Respond to comments
+  - Check trending topics in niche
+  - Generate relevant content piece
+  - Create accompanying image
+  - Optimize for platform
+  - Post to social media
+  - Monitor early engagement
+  - Respond to comments
 
 success_criteria:
   - Post published on schedule
@@ -73,13 +68,13 @@ success_criteria:
 ```yaml
 name: Analyze Competitor Social Strategy
 steps:
-  1. Identify top competitors
-  2. Analyze their recent posts
-  3. Track engagement rates
-  4. Identify successful content types
-  5. Extract winning formulas
-  6. Generate improved versions
-  7. Create competitive strategy report
+  - Identify top competitors
+  - Analyze their recent posts
+  - Track engagement rates
+  - Identify successful content types
+  - Extract winning formulas
+  - Generate improved versions
+  - Create competitive strategy report
 
 success_criteria:
   - Comprehensive competitor data

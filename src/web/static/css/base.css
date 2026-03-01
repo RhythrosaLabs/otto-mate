@@ -1,0 +1,136 @@
+/**
+ * Otto Chat - Base Styles
+ * Reset, root variables, and core styling
+ */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    /* Modern Canva/Gemini inspired theme */
+    --bg: #000000;
+    --bg-secondary: #1a1a2e;
+    --bg-sidebar: #0d0d1a;
+    --bg-chat: #0f0f18;
+    --bg-card: #16161f;
+    --text: #e8eaed;
+    --text-muted: #9aa0a6;
+    --border: #2d2d45;
+    --accent: #8ab4f8;
+    --accent-purple: #a78bfa;
+    --accent-cyan: #60a5fa;
+    --accent-pink: #f472b6;
+    --accent-teal: #2dd4bf;
+    --accent-orange: #fb923c;
+    --accent-light: rgba(138, 180, 248, 0.1);
+    --selection-bg: rgba(167, 139, 250, 0.25);
+    --selection-border: rgba(167, 139, 250, 0.6);
+    --radius: 12px;
+    --sidebar-width: 280px;
+    
+    /* Colorful sidebar gradients */
+    --sidebar-gradient: linear-gradient(180deg, 
+        rgba(99, 102, 241, 0.08) 0%, 
+        rgba(139, 92, 246, 0.05) 30%,
+        rgba(236, 72, 153, 0.03) 60%,
+        rgba(6, 182, 212, 0.04) 100%);
+    --sidebar-glow: linear-gradient(135deg, 
+        rgba(99, 102, 241, 0.15) 0%, 
+        transparent 50%);
+    
+    /* Galactic gradient colors */
+    --glow-purple: rgba(167, 139, 250, 0.15);
+    --glow-blue: rgba(96, 165, 250, 0.1);
+    --glow-cyan: rgba(34, 211, 238, 0.05);
+}
+
+/* Body and HTML Base */
+html, body {
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+}
+
+/* Global scrollbar styling */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+/* Selection styling */
+::selection {
+    background: var(--selection-bg);
+}
+
+/* Links base */
+a {
+    color: var(--accent-cyan);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Button base */
+button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    background: none;
+}
+
+/* Input base */
+input, textarea, select {
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    outline: none;
+}
+
+input:focus, textarea:focus, select:focus {
+    border-color: var(--accent-purple);
+}
+
+/* Utility classes */
+.hidden { display: none !important; }
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.gap-1 { gap: 4px; }
+.gap-2 { gap: 8px; }
+.gap-3 { gap: 12px; }
+.gap-4 { gap: 16px; }
+.w-full { width: 100%; }
+.h-full { height: 100%; }
+.text-center { text-align: center; }
+.font-medium { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

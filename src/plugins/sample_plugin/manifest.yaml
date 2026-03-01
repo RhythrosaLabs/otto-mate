@@ -1,0 +1,26 @@
+name: sample_plugin
+version: 1.0.0
+description: A sample plugin demonstrating Otto's plugin system
+author: Otto Team
+type: tool
+
+entry_point: main
+
+provides_tools:
+  - greet_user
+  - calculate_expression
+  - format_text
+
+settings_schema:
+  greeting_prefix:
+    type: string
+    default: "Hello"
+    description: "Prefix for greetings"
+
+default_settings:
+  greeting_prefix: "Hello"
+
+tags:
+  - sample
+  - demo
+  - tutorial

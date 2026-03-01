@@ -1,0 +1,34 @@
+name: weather_fetcher
+version: 1.0.0
+description: Get current weather, forecasts, and weather alerts for any location
+author: Otto Examples
+type: tool
+icon: 🌤️
+
+entry_point: main
+
+provides_tools:
+  - get_current_weather
+  - get_forecast
+  - get_weather_alerts
+  - compare_weather
+
+settings_schema:
+  api_key:
+    type: string
+    description: OpenWeatherMap API key (free tier available)
+    required: false
+    secret: true
+  
+  default_units:
+    type: string
+    description: Temperature units (metric, imperial, kelvin)
+    default: metric
+  
+  cache_duration_minutes:
+    type: integer
+    description: How long to cache weather data
+    default: 15
+
+dependencies:
+  - requests

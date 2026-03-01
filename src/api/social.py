@@ -65,6 +65,44 @@ async def get_platforms():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/credentials")
+async def get_credentials_status():
+    """
+    Check which platforms have login credentials configured in .env
+    
+    Credentials are stored securely and only existence is reported, not values.
+    """
+    try:
+        from src.tools.social_poster import (
+            has_credentials, 
+            get_all_configured_platforms,
+            PLATFORM_CREDENTIALS
+        )
+        
+        status = {}
+        for platform in PLATFORM_CREDENTIALS.keys():
+            status[platform] = {
+                "configured": has_credentials(platform),
+                "env_vars": {
+                    "username": PLATFORM_CREDENTIALS[platform]["username_env"],
+                    "password": PLATFORM_CREDENTIALS[platform]["password_env"],
+                }
+            }
+        
+        configured = get_all_configured_platforms()
+        
+        return {
+            "success": True,
+            "total_platforms": len(PLATFORM_CREDENTIALS),
+            "configured_count": len(configured),
+            "configured_platforms": configured,
+            "status": status
+        }
+    except Exception as e:
+        logger.error(f"Failed to get credentials status: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.post("/post")
 async def post_to_platforms(request: PostRequest, background_tasks: BackgroundTasks):
     """

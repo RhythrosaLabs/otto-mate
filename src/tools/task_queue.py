@@ -203,3 +203,148 @@ class TaskQueueTools(ToolBase):
             "task_id": task_id,
             "status": "cancelled"
         }
+
+    @tool(
+        name="schedule_to_calendar",
+        description="Schedule a task to the calendar for a specific date and time. Use this when users ask to schedule social media posts, campaigns, or any tasks for later execution.",
+        category="task_queue"
+    )
+    async def schedule_to_calendar(
+        self,
+        title: str,
+        description: str,
+        scheduled_date: str,
+        scheduled_time: str = "09:00",
+        task_type: str = "general",
+        repeat: str = "once",
+        media_url: Optional[str] = None,
+        platforms: Optional[List[str]] = None
+    ) -> Dict[str, Any]:
+        """
+        Schedule a task to the calendar for a specific date and time.
+        
+        Args:
+            title: Short title for the task (shown in calendar)
+            description: Full task description/instructions
+            scheduled_date: Date in YYYY-MM-DD format
+            scheduled_time: Time in HH:MM format (24hr), default 09:00
+            task_type: Type of task - image, video, social_post, email, blog, general
+            repeat: once, daily, weekly, monthly
+            media_url: Optional URL to associated media file
+            platforms: Platforms to publish to (instagram, twitter, facebook, etc.)
+            
+        Returns:
+            Calendar entry confirmation with task_id and scheduled datetime
+        """
+        try:
+            # Parse and combine date/time
+            schedule_datetime = datetime.fromisoformat(f"{scheduled_date}T{scheduled_time}")
+            
+            # Create task in queue with scheduled status
+            result = self.queue_manager.queue_task(
+                description=description,
+                priority="normal",
+                schedule_for=schedule_datetime,
+                publish_to=platforms,
+                recurring=(repeat != "once"),
+                recurrence_pattern=repeat if repeat != "once" else None
+            )
+            
+            if result.get("success"):
+                task_id = result["task_id"]
+                
+                # Return comprehensive calendar entry data
+                return {
+                    "success": True,
+                    "message": f"✅ Scheduled '{title}' for {schedule_datetime.strftime('%B %d, %Y at %I:%M %p')}",
+                    "task_id": task_id,
+                    "calendar_entry": {
+                        "id": task_id,
+                        "title": title,
+                        "description": description,
+                        "scheduled_datetime": schedule_datetime.isoformat(),
+                        "scheduled_date": scheduled_date,
+                        "scheduled_time": scheduled_time,
+                        "type": task_type,
+                        "repeat": repeat,
+                        "media_url": media_url,
+                        "platforms": platforms,
+                        "status": "scheduled"
+                    }
+                }
+            else:
+                return result
+                
+        except ValueError as e:
+            return {
+                "success": False,
+                "error": f"Invalid date/time format: {str(e)}. Use YYYY-MM-DD for date and HH:MM for time."
+            }
+        except Exception as e:
+            logger.error(f"Failed to schedule task: {e}")
+            return {"success": False, "error": str(e)}
+
+    @tool(
+        name="get_scheduled_tasks",
+        description="Get all scheduled tasks from the calendar for a specific date range",
+        category="task_queue"
+    )
+    def get_scheduled_tasks(
+        self,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        task_type: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Get scheduled tasks from calendar.
+        
+        Args:
+            start_date: Start of date range (YYYY-MM-DD), defaults to today
+            end_date: End of date range (YYYY-MM-DD), defaults to 30 days from start
+            task_type: Filter by task type
+            
+        Returns:
+            List of scheduled tasks with dates
+        """
+        from ..core.task_queue_manager import TaskStatus
+        
+        # Default date range
+        if not start_date:
+            start_date = datetime.now().strftime("%Y-%m-%d")
+        if not end_date:
+            end_dt = datetime.fromisoformat(start_date) + timedelta(days=30)
+            end_date = end_dt.strftime("%Y-%m-%d")
+        
+        start_dt = datetime.fromisoformat(start_date)
+        end_dt = datetime.fromisoformat(end_date)
+        
+        scheduled = []
+        for task_id, task in self.queue_manager.tasks.items():
+            if task.status == TaskStatus.SCHEDULED and task.schedule_for:
+                if start_dt <= task.schedule_for <= end_dt:
+                    if task_type and task_type not in task.description.lower():
+                        continue
+                    scheduled.append({
+                        "id": task_id,
+                        "title": task.description[:50] + ("..." if len(task.description) > 50 else ""),
+                        "description": task.description,
+                        "scheduled_datetime": task.schedule_for.isoformat(),
+                        "status": task.status.value,
+                        "priority": task.priority,
+                        "recurring": task.recurring,
+                        "recurrence_pattern": task.recurrence_pattern
+                    })
+        
+        # Sort by scheduled time
+        scheduled.sort(key=lambda t: t["scheduled_datetime"])
+        
+        return {
+            "success": True,
+            "scheduled_tasks": scheduled,
+            "count": len(scheduled),
+            "date_range": {"start": start_date, "end": end_date}
+        }
+
+
+# Import timedelta for date calculations
+from datetime import timedelta
