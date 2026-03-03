@@ -14,6 +14,7 @@ ENHANCED with Platform Intelligence from research on:
 - Replicate (model selection intelligence)
 """
 
+import asyncio
 import logging
 import json
 import re
@@ -973,7 +974,8 @@ Now parse and create the optimal plan for: "{message}"
 Return ONLY valid JSON."""
 
         try:
-            response = self.anthropic.messages.create(
+            response = await asyncio.to_thread(
+                self.anthropic.messages.create,
                 model="claude-sonnet-4-20250514",
                 max_tokens=8192,  # Increased for complex plans
                 temperature=0.3,  # Slightly lower for more consistent parsing
@@ -1214,7 +1216,8 @@ Create a NEW plan that:
 Return valid JSON with same format as original plan."""
 
         try:
-            response = self.anthropic.messages.create(
+            response = await asyncio.to_thread(
+                self.anthropic.messages.create,
                 model="claude-sonnet-4-20250514",
                 max_tokens=2048,
                 messages=[{"role": "user", "content": prompt}]

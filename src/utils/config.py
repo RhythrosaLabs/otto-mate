@@ -5,9 +5,13 @@ Configuration Management
 Centralized configuration using Pydantic settings.
 """
 
+import secrets
 from pydantic_settings import BaseSettings
 from typing import Optional
 from functools import lru_cache
+
+# Generate a secure default JWT secret (overridden by .env in production)
+_DEFAULT_JWT_SECRET = secrets.token_urlsafe(32)
 
 
 class Settings(BaseSettings):
@@ -70,7 +74,7 @@ class Settings(BaseSettings):
     debug_mode: bool = False
     
     # Security
-    jwt_secret_key: str = "change-this-secret-key"
+    jwt_secret_key: str = _DEFAULT_JWT_SECRET
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 10080
     api_key_header: str = "X-API-Key"

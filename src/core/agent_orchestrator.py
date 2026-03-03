@@ -979,7 +979,8 @@ You have access to powerful capabilities inspired by leading platforms:
 - Promo video creation
 """
         
-        response = self.anthropic.messages.create(
+        response = await asyncio.to_thread(
+            self.anthropic.messages.create,
             model="claude-sonnet-4-20250514",
             max_tokens=2048,
             messages=[
@@ -1101,7 +1102,8 @@ Respond with SUBSTANCE. Every response must contain actual information, results,
         if code_content:
             code_instruction = f"\n\nCODE CREATED (include in response with markdown code blocks):\n{code_content}"
         
-        response = self.anthropic.messages.create(
+        response = await asyncio.to_thread(
+            self.anthropic.messages.create,
             model="claude-sonnet-4-20250514",
             max_tokens=4096,
             messages=[
