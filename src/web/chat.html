@@ -7362,6 +7362,97 @@
         .video-btn.secondary { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; }
 
         /* ══════════════════════════════════════════════════════════════
+           DOCUMENT EDITOR (Google Docs / Word-style)
+           ══════════════════════════════════════════════════════════════ */
+        .editor-doc-sidebar {
+            width: 85vw; max-width: 1200px; min-width: 700px;
+            border-left: 1px solid rgba(59, 130, 246, 0.2);
+            background: linear-gradient(180deg, #0f172a 0%, #1e1b4b 100%);
+            display: none; flex-direction: column; position: relative; overflow: hidden;
+        }
+        .editor-doc-sidebar.open { display: flex; }
+        .doc-layout { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+        .doc-header { padding: 8px 16px; background: rgba(59, 130, 246, 0.08); border-bottom: 1px solid rgba(59, 130, 246, 0.15); display: flex; align-items: center; gap: 12px; }
+        .doc-header h2 { font-size: 15px; font-weight: 700; color: #60a5fa; margin: 0; }
+        .doc-title-input { flex: 1; background: transparent; border: 1px solid transparent; border-radius: 4px; padding: 4px 10px; color: #e5e7eb; font-size: 16px; font-weight: 500; transition: border-color 0.2s; }
+        .doc-title-input:focus { border-color: rgba(59, 130, 246, 0.4); outline: none; background: rgba(59, 130, 246, 0.05); }
+        .doc-toolbar { padding: 4px 12px; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(59, 130, 246, 0.1); display: flex; align-items: center; gap: 2px; flex-wrap: wrap; }
+        .doc-tb-group { display: flex; align-items: center; gap: 1px; padding: 0 6px; border-right: 1px solid rgba(255,255,255,0.06); }
+        .doc-tb-group:last-child { border-right: none; }
+        .doc-tb-btn { width: 30px; height: 28px; border: none; border-radius: 4px; background: transparent; color: #d1d5db; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+        .doc-tb-btn:hover { background: rgba(59, 130, 246, 0.15); color: #93c5fd; }
+        .doc-tb-btn.active { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+        .doc-tb-select { background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 4px; color: #d1d5db; font-size: 11px; padding: 3px 6px; cursor: pointer; }
+        .doc-page-container { flex: 1; overflow-y: auto; display: flex; justify-content: center; padding: 30px; background: #374151; }
+        .doc-page { width: 816px; min-height: 1056px; background: #ffffff; color: #1f2937; padding: 96px 72px; font-family: 'Georgia', 'Times New Roman', serif; font-size: 14px; line-height: 1.8; box-shadow: 0 4px 40px rgba(0,0,0,0.4); border-radius: 2px; outline: none; overflow-wrap: break-word; white-space: pre-wrap; }
+        .doc-page:focus { outline: 2px solid rgba(59, 130, 246, 0.4); }
+        .doc-page h1, .doc-page h2, .doc-page h3 { font-family: 'Inter', sans-serif; color: #111827; }
+        .doc-page h1 { font-size: 26px; margin: 0 0 16px 0; }
+        .doc-page h2 { font-size: 20px; margin: 20px 0 12px 0; }
+        .doc-page h3 { font-size: 16px; margin: 16px 0 8px 0; }
+        .doc-page p { margin: 0 0 12px 0; }
+        .doc-page ul, .doc-page ol { margin: 0 0 12px 0; padding-left: 24px; }
+        .doc-page blockquote { border-left: 3px solid #3b82f6; margin: 12px 0; padding: 8px 16px; background: #f0f9ff; color: #374151; }
+        .doc-page table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+        .doc-page th, .doc-page td { border: 1px solid #d1d5db; padding: 8px 12px; text-align: left; }
+        .doc-page th { background: #f3f4f6; font-weight: 600; }
+        .doc-status-bar { padding: 4px 16px; background: rgba(59, 130, 246, 0.08); border-top: 1px solid rgba(59, 130, 246, 0.1); display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: #9ca3af; }
+        .doc-ai-bar { padding: 8px 16px; background: rgba(0,0,0,0.3); border-top: 1px solid rgba(59, 130, 246, 0.1); display: flex; gap: 8px; align-items: center; }
+        .doc-ai-input { flex: 1; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 6px; padding: 8px 12px; color: #e5e7eb; font-size: 13px; }
+        .doc-ai-input:focus { border-color: rgba(59, 130, 246, 0.5); outline: none; }
+        .doc-ai-btn { padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; white-space: nowrap; }
+        .doc-ai-btn:hover { filter: brightness(1.1); }
+        .doc-ai-btn.secondary { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+
+        /* ══════════════════════════════════════════════════════════════
+           SPREADSHEET EDITOR (Excel / Google Sheets-style)
+           ══════════════════════════════════════════════════════════════ */
+        .editor-sheet-sidebar {
+            width: 90vw; max-width: 1400px; min-width: 800px;
+            border-left: 1px solid rgba(16, 185, 129, 0.2);
+            background: linear-gradient(180deg, #0f1f17 0%, #0c1a12 100%);
+            display: none; flex-direction: column; position: relative; overflow: hidden;
+        }
+        .editor-sheet-sidebar.open { display: flex; }
+        .sheet-layout { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+        .sheet-header { padding: 8px 16px; background: rgba(16, 185, 129, 0.08); border-bottom: 1px solid rgba(16, 185, 129, 0.15); display: flex; align-items: center; gap: 12px; }
+        .sheet-header h2 { font-size: 15px; font-weight: 700; color: #34d399; margin: 0; }
+        .sheet-title-input { flex: 1; background: transparent; border: 1px solid transparent; border-radius: 4px; padding: 4px 10px; color: #e5e7eb; font-size: 14px; font-weight: 500; }
+        .sheet-title-input:focus { border-color: rgba(16, 185, 129, 0.4); outline: none; }
+        .sheet-toolbar { padding: 4px 8px; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(16, 185, 129, 0.1); display: flex; align-items: center; gap: 2px; flex-wrap: wrap; }
+        .sheet-formula-bar { padding: 4px 8px; background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(16, 185, 129, 0.08); display: flex; align-items: center; gap: 8px; }
+        .sheet-cell-ref { width: 70px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 3px; padding: 4px 8px; color: #34d399; font-size: 12px; font-weight: 600; text-align: center; }
+        .sheet-formula-input { flex: 1; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(16, 185, 129, 0.15); border-radius: 3px; padding: 4px 8px; color: #e5e7eb; font-size: 13px; font-family: 'Menlo', 'Consolas', monospace; }
+        .sheet-formula-input:focus { border-color: rgba(16, 185, 129, 0.5); outline: none; }
+        .sheet-tb-btn { width: 28px; height: 26px; border: none; border-radius: 3px; background: transparent; color: #9ca3af; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .sheet-tb-btn:hover { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .sheet-tb-btn.active { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .sheet-tb-select { background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 3px; color: #d1d5db; font-size: 11px; padding: 2px 6px; }
+        .sheet-tb-group { display: flex; align-items: center; gap: 1px; padding: 0 4px; border-right: 1px solid rgba(255,255,255,0.04); }
+        .sheet-grid-container { flex: 1; overflow: auto; position: relative; }
+        .sheet-grid { border-collapse: collapse; width: max-content; min-width: 100%; }
+        .sheet-grid th { position: sticky; top: 0; z-index: 2; background: rgba(16, 185, 129, 0.08); color: #9ca3af; font-size: 11px; font-weight: 500; padding: 4px 2px; border: 1px solid rgba(16, 185, 129, 0.1); min-width: 80px; text-align: center; user-select: none; }
+        .sheet-grid th.row-header { position: sticky; left: 0; z-index: 3; min-width: 40px; width: 40px; }
+        .sheet-grid th.corner { position: sticky; left: 0; top: 0; z-index: 4; }
+        .sheet-grid td { padding: 0; border: 1px solid rgba(16, 185, 129, 0.08); min-width: 80px; height: 24px; }
+        .sheet-grid td input { width: 100%; height: 100%; background: transparent; border: none; color: #e5e7eb; font-size: 12px; padding: 2px 6px; outline: none; font-family: 'Menlo', 'Consolas', monospace; }
+        .sheet-grid td input:focus { background: rgba(16, 185, 129, 0.05); box-shadow: inset 0 0 0 2px rgba(16, 185, 129, 0.4); }
+        .sheet-grid td.selected { box-shadow: inset 0 0 0 2px #34d399; }
+        .sheet-tabs-bar { padding: 4px 8px; background: rgba(0,0,0,0.3); border-top: 1px solid rgba(16, 185, 129, 0.1); display: flex; align-items: center; gap: 4px; }
+        .sheet-tab { padding: 4px 16px; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.1); border-radius: 4px 4px 0 0; color: #9ca3af; font-size: 11px; cursor: pointer; border-bottom: none; }
+        .sheet-tab.active { background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.3); }
+        .sheet-tab-add { width: 24px; height: 24px; border: 1px dashed rgba(16, 185, 129, 0.2); border-radius: 4px; background: transparent; color: #6b7280; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .sheet-tab-add:hover { border-color: #34d399; color: #34d399; }
+        .sheet-status-bar { padding: 4px 16px; background: rgba(16, 185, 129, 0.06); border-top: 1px solid rgba(16, 185, 129, 0.08); display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: #6b7280; }
+        .sheet-ai-bar { padding: 8px 16px; background: rgba(0,0,0,0.3); border-top: 1px solid rgba(16, 185, 129, 0.1); display: flex; gap: 8px; align-items: center; }
+        .sheet-ai-input { flex: 1; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 6px; padding: 8px 12px; color: #e5e7eb; font-size: 13px; }
+        .sheet-ai-input:focus { border-color: rgba(16, 185, 129, 0.5); outline: none; }
+        .sheet-ai-btn { padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: linear-gradient(135deg, #10b981, #059669); color: white; white-space: nowrap; }
+        .sheet-ai-btn:hover { filter: brightness(1.1); }
+        .sheet-ai-btn.secondary { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .sheet-chart-container { display: none; padding: 16px; background: rgba(0,0,0,0.2); border-top: 1px solid rgba(16, 185, 129, 0.1); max-height: 200px; }
+
+        /* ══════════════════════════════════════════════════════════════
            QUEUE/CALENDAR SIDEBAR
            ══════════════════════════════════════════════════════════════ */
         .queue-sidebar {
@@ -9059,6 +9150,8 @@
                 </div>
                 <button class="btn" onclick="toggleFiles()">📁 Files</button>
                 <button class="btn" onclick="toggleEditorV4()">✨ Editor</button>
+                <button class="btn" onclick="toggleEditorDoc()">📄 Doc</button>
+                <button class="btn" onclick="toggleEditorSheet()">📊 Sheet</button>
                 <button class="btn" onclick="toggleBrowser()">🌐 Browser</button>
                 <button class="btn" onclick="toggleQueue()">📋 Queue</button>
                 <button class="btn" onclick="toggleContacts()">👥 Contacts</button>
@@ -11061,6 +11154,8 @@ output = replicate.run(
                     <button class="editor-nav-tab" onclick="switchEditorMode('audio')" id="editorTabAudio">🎵 Audio</button>
                     <button class="editor-nav-tab" onclick="switchEditorMode('3d')" id="editorTab3D">🧊 3D</button>
                     <button class="editor-nav-tab" onclick="switchEditorMode('code')" id="editorTabCode">💻 Code</button>
+                    <button class="editor-nav-tab" onclick="switchEditorMode('document')" id="editorTabDocument">📄 Doc</button>
+                    <button class="editor-nav-tab" onclick="switchEditorMode('spreadsheet')" id="editorTabSpreadsheet">📊 Sheet</button>
                     <button class="close-btn" onclick="toggleEditorV4()" style="margin-left:auto;">×</button>
                 </div>
                 
@@ -11695,6 +11790,24 @@ if __name__ == '__main__':
                     </div>
                 </div>
                 
+                <!-- Document Mode (inside V4) -->
+                <div class="editor-panel-content" id="editorModeDocument" style="display:none; flex-direction:column; padding:16px;">
+                    <div style="text-align:center; padding:40px 20px; color:#9ca3af;">
+                        <div style="font-size:48px; margin-bottom:16px;">📄</div>
+                        <p style="margin-bottom:10px;">For the full Document Editor experience, use the standalone editor:</p>
+                        <button class="doc-ai-btn" onclick="toggleEditorV4(); toggleEditorDoc();" style="font-size:14px; padding:12px 24px;">📄 Open Document Editor</button>
+                    </div>
+                </div>
+                
+                <!-- Spreadsheet Mode (inside V4) -->
+                <div class="editor-panel-content" id="editorModeSpreadsheet" style="display:none; flex-direction:column; padding:16px;">
+                    <div style="text-align:center; padding:40px 20px; color:#9ca3af;">
+                        <div style="font-size:48px; margin-bottom:16px;">📊</div>
+                        <p style="margin-bottom:10px;">For the full Spreadsheet Editor experience, use the standalone editor:</p>
+                        <button class="sheet-ai-btn" onclick="toggleEditorV4(); toggleEditorSheet();" style="font-size:14px; padding:12px 24px;">📊 Open Spreadsheet Editor</button>
+                    </div>
+                </div>
+                
                 <!-- Fixed Bottom Generate Bar -->
                 <div class="ev4-generate-bar">
                     <div class="ev4-status" id="ev4Status">
@@ -12132,6 +12245,209 @@ if __name__ == '__main__':
                             <button class="video-btn secondary" onclick="videoExportFrame()">📷 Export Frame</button>
                             <button class="video-btn primary" onclick="videoExport()">🎬 Export Video</button>
                         </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Document Editor (Google Docs / Word-style) -->
+            <div class="editor-doc-sidebar" id="editorDocSidebar">
+                <div class="sidebar-resize-handle left" data-sidebar="editorDocSidebar" data-direction="left"></div>
+                <div class="doc-layout">
+                    <!-- Header -->
+                    <div class="doc-header">
+                        <h2>📄 Document</h2>
+                        <input type="text" class="doc-title-input" id="docTitle" value="Untitled Document" spellcheck="false">
+                        <button class="doc-ai-btn secondary" onclick="docExport()" title="Export">⬇️ Export</button>
+                        <button class="doc-ai-btn secondary" onclick="docShare()" title="Share">🔗 Share</button>
+                        <button class="close-btn" onclick="toggleEditorDoc()" style="color:#60a5fa;">×</button>
+                    </div>
+                    
+                    <!-- Toolbar -->
+                    <div class="doc-toolbar">
+                        <div class="doc-tb-group">
+                            <button class="doc-tb-btn" onclick="docFormat('undo')" title="Undo">↶</button>
+                            <button class="doc-tb-btn" onclick="docFormat('redo')" title="Redo">↷</button>
+                        </div>
+                        <div class="doc-tb-group">
+                            <select class="doc-tb-select" id="docFontFamily" onchange="docFormatFont('fontName', this.value)">
+                                <option value="Georgia">Georgia</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                                <option value="Arial">Arial</option>
+                                <option value="Helvetica">Helvetica</option>
+                                <option value="Verdana">Verdana</option>
+                                <option value="Courier New">Courier New</option>
+                                <option value="Inter">Inter</option>
+                            </select>
+                            <select class="doc-tb-select" id="docFontSize" onchange="docFormatFont('fontSize', this.value)">
+                                <option value="1">8</option>
+                                <option value="2">10</option>
+                                <option value="3" selected>12</option>
+                                <option value="4">14</option>
+                                <option value="5">18</option>
+                                <option value="6">24</option>
+                                <option value="7">36</option>
+                            </select>
+                        </div>
+                        <div class="doc-tb-group">
+                            <select class="doc-tb-select" id="docHeading" onchange="docFormatBlock(this.value)">
+                                <option value="p">Normal</option>
+                                <option value="h1">Heading 1</option>
+                                <option value="h2">Heading 2</option>
+                                <option value="h3">Heading 3</option>
+                                <option value="blockquote">Quote</option>
+                            </select>
+                        </div>
+                        <div class="doc-tb-group">
+                            <button class="doc-tb-btn" onclick="docFormat('bold')" title="Bold"><b>B</b></button>
+                            <button class="doc-tb-btn" onclick="docFormat('italic')" title="Italic"><i>I</i></button>
+                            <button class="doc-tb-btn" onclick="docFormat('underline')" title="Underline"><u>U</u></button>
+                            <button class="doc-tb-btn" onclick="docFormat('strikeThrough')" title="Strikethrough"><s>S</s></button>
+                        </div>
+                        <div class="doc-tb-group">
+                            <button class="doc-tb-btn" onclick="docFormat('justifyLeft')" title="Align Left">⫷</button>
+                            <button class="doc-tb-btn" onclick="docFormat('justifyCenter')" title="Center">☰</button>
+                            <button class="doc-tb-btn" onclick="docFormat('justifyRight')" title="Align Right">⫸</button>
+                            <button class="doc-tb-btn" onclick="docFormat('justifyFull')" title="Justify">☰</button>
+                        </div>
+                        <div class="doc-tb-group">
+                            <button class="doc-tb-btn" onclick="docFormat('insertUnorderedList')" title="Bullet List">•≡</button>
+                            <button class="doc-tb-btn" onclick="docFormat('insertOrderedList')" title="Numbered List">1.</button>
+                            <button class="doc-tb-btn" onclick="docFormat('indent')" title="Indent">→≡</button>
+                            <button class="doc-tb-btn" onclick="docFormat('outdent')" title="Outdent">←≡</button>
+                        </div>
+                        <div class="doc-tb-group">
+                            <button class="doc-tb-btn" onclick="docInsertLink()" title="Insert Link">🔗</button>
+                            <button class="doc-tb-btn" onclick="docInsertImage()" title="Insert Image">🖼️</button>
+                            <button class="doc-tb-btn" onclick="docInsertTable()" title="Insert Table">⊞</button>
+                            <button class="doc-tb-btn" onclick="docInsertHR()" title="Horizontal Rule">—</button>
+                        </div>
+                        <div class="doc-tb-group">
+                            <button class="doc-tb-btn" onclick="docFormat('removeFormat')" title="Clear Formatting">✕</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Page Area -->
+                    <div class="doc-page-container">
+                        <div class="doc-page" id="docPage" contenteditable="true" oninput="docUpdateStats()">
+                            <h1>Welcome to Document Editor</h1>
+                            <p>Start typing your document here. Use the toolbar above for formatting, or ask the AI assistant below for help writing, editing, or translating your content.</p>
+                            <p>Features include:</p>
+                            <ul>
+                                <li>Rich text formatting (bold, italic, headings, lists)</li>
+                                <li>AI-powered writing assistance</li>
+                                <li>Export to HTML, Markdown, or plain text</li>
+                                <li>Tables, links, and image support</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Status Bar -->
+                    <div class="doc-status-bar">
+                        <span id="docWordCount">Words: 0 | Characters: 0</span>
+                        <span id="docPageCount">Page 1</span>
+                    </div>
+                    
+                    <!-- AI Bar -->
+                    <div class="doc-ai-bar">
+                        <input type="text" class="doc-ai-input" id="docAIInput" placeholder="Ask AI: rewrite, summarize, translate, expand, check grammar...">
+                        <button class="doc-ai-btn secondary" onclick="docAI('summarize')">📋 Summarize</button>
+                        <button class="doc-ai-btn secondary" onclick="docAI('rewrite')">✏️ Rewrite</button>
+                        <button class="doc-ai-btn secondary" onclick="docAI('translate')">🌐 Translate</button>
+                        <button class="doc-ai-btn" onclick="docAI('custom')">✨ AI Assist</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Spreadsheet Editor (Excel / Google Sheets-style) -->
+            <div class="editor-sheet-sidebar" id="editorSheetSidebar">
+                <div class="sidebar-resize-handle left" data-sidebar="editorSheetSidebar" data-direction="left"></div>
+                <div class="sheet-layout">
+                    <!-- Header -->
+                    <div class="sheet-header">
+                        <h2>📊 Spreadsheet</h2>
+                        <input type="text" class="sheet-title-input" id="sheetTitle" value="Untitled Spreadsheet" spellcheck="false">
+                        <button class="sheet-ai-btn secondary" onclick="sheetImport()" title="Import CSV">📥 Import</button>
+                        <button class="sheet-ai-btn secondary" onclick="sheetExport()" title="Export">⬇️ Export</button>
+                        <button class="close-btn" onclick="toggleEditorSheet()" style="color:#34d399;">×</button>
+                    </div>
+                    
+                    <!-- Toolbar -->
+                    <div class="sheet-toolbar">
+                        <div class="sheet-tb-group">
+                            <button class="sheet-tb-btn" onclick="sheetAction('undo')" title="Undo">↶</button>
+                            <button class="sheet-tb-btn" onclick="sheetAction('redo')" title="Redo">↷</button>
+                        </div>
+                        <div class="sheet-tb-group">
+                            <button class="sheet-tb-btn" onclick="sheetFormat('bold')" title="Bold"><b>B</b></button>
+                            <button class="sheet-tb-btn" onclick="sheetFormat('italic')" title="Italic"><i>I</i></button>
+                            <button class="sheet-tb-btn" onclick="sheetFormat('underline')" title="Underline"><u>U</u></button>
+                        </div>
+                        <div class="sheet-tb-group">
+                            <button class="sheet-tb-btn" onclick="sheetAlign('left')" title="Align Left">⫷</button>
+                            <button class="sheet-tb-btn" onclick="sheetAlign('center')" title="Center">☰</button>
+                            <button class="sheet-tb-btn" onclick="sheetAlign('right')" title="Right">⫸</button>
+                        </div>
+                        <div class="sheet-tb-group">
+                            <select class="sheet-tb-select" onchange="sheetNumberFormat(this.value)" title="Number Format">
+                                <option value="auto">Auto</option>
+                                <option value="number">Number</option>
+                                <option value="currency">Currency $</option>
+                                <option value="percent">Percent %</option>
+                                <option value="date">Date</option>
+                                <option value="text">Text</option>
+                            </select>
+                        </div>
+                        <div class="sheet-tb-group">
+                            <button class="sheet-tb-btn" onclick="sheetAction('addRow')" title="Add Row">+↓</button>
+                            <button class="sheet-tb-btn" onclick="sheetAction('addCol')" title="Add Column">+→</button>
+                            <button class="sheet-tb-btn" onclick="sheetAction('deleteRow')" title="Delete Row">−↓</button>
+                            <button class="sheet-tb-btn" onclick="sheetAction('deleteCol')" title="Delete Column">−→</button>
+                        </div>
+                        <div class="sheet-tb-group">
+                            <button class="sheet-tb-btn" onclick="sheetAction('sort')" title="Sort A→Z">↕️</button>
+                            <button class="sheet-tb-btn" onclick="sheetAction('filter')" title="Filter">🔍</button>
+                            <button class="sheet-tb-btn" onclick="sheetAction('chart')" title="Insert Chart">📊</button>
+                            <button class="sheet-tb-btn" onclick="sheetAction('freeze')" title="Freeze Row/Col">❄️</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Formula Bar -->
+                    <div class="sheet-formula-bar">
+                        <input type="text" class="sheet-cell-ref" id="sheetCellRef" value="A1" readonly>
+                        <span style="color:#6b7280;font-size:12px;">𝑓𝑥</span>
+                        <input type="text" class="sheet-formula-input" id="sheetFormulaInput" placeholder="Enter value or formula (=SUM, =AVERAGE, =IF...)" onkeydown="if(event.key==='Enter'){sheetApplyFormula();}">
+                    </div>
+                    
+                    <!-- Grid -->
+                    <div class="sheet-grid-container" id="sheetGridContainer">
+                        <table class="sheet-grid" id="sheetGrid">
+                            <!-- Generated by JS -->
+                        </table>
+                    </div>
+                    
+                    <!-- Sheet Tabs -->
+                    <div class="sheet-tabs-bar">
+                        <button class="sheet-tab active" onclick="sheetSwitchTab(0, this)">Sheet 1</button>
+                        <button class="sheet-tab-add" onclick="sheetAddTab()" title="Add Sheet">+</button>
+                    </div>
+                    
+                    <!-- Chart Area (hidden by default) -->
+                    <div class="sheet-chart-container" id="sheetChartArea">
+                        <canvas id="sheetChartCanvas" width="600" height="180"></canvas>
+                    </div>
+                    
+                    <!-- Status Bar -->
+                    <div class="sheet-status-bar">
+                        <span id="sheetStats">Ready</span>
+                        <span id="sheetSelectionInfo">Sum: 0 | Avg: 0 | Count: 0</span>
+                    </div>
+                    
+                    <!-- AI Bar -->
+                    <div class="sheet-ai-bar">
+                        <input type="text" class="sheet-ai-input" id="sheetAIInput" placeholder="Ask AI: generate formula, analyze data, create chart, clean data...">
+                        <button class="sheet-ai-btn secondary" onclick="sheetAI('formula')">🔢 Formula</button>
+                        <button class="sheet-ai-btn secondary" onclick="sheetAI('analyze')">📈 Analyze</button>
+                        <button class="sheet-ai-btn" onclick="sheetAI('custom')">✨ AI Assist</button>
                     </div>
                 </div>
             </div>
@@ -14818,6 +15134,28 @@ if __name__ == '__main__':
             }
         }
         
+        // Editor Doc - Google Docs / Word-style Document Editor
+        function toggleEditorDoc() {
+            const sidebar = document.getElementById('editorDocSidebar');
+            const wasOpen = sidebar && sidebar.classList.contains('open');
+            closeAllEditorSidebars();
+            if (!wasOpen && sidebar) {
+                sidebar.classList.add('open');
+                docUpdateStats();
+            }
+        }
+        
+        // Editor Sheet - Excel / Google Sheets-style Spreadsheet
+        function toggleEditorSheet() {
+            const sidebar = document.getElementById('editorSheetSidebar');
+            const wasOpen = sidebar && sidebar.classList.contains('open');
+            closeAllEditorSidebars();
+            if (!wasOpen && sidebar) {
+                sidebar.classList.add('open');
+                if (!sheetInitialized) sheetInit();
+            }
+        }
+        
         // Helper to close all sidebars before opening an editor
         function closeAllEditorSidebars() {
             document.getElementById('filesSidebar').classList.remove('open');
@@ -14837,6 +15175,10 @@ if __name__ == '__main__':
             if (edaw) edaw.classList.remove('open');
             if (ecode) ecode.classList.remove('open');
             if (evideo) evideo.classList.remove('open');
+            const edoc = document.getElementById('editorDocSidebar');
+            const esheet = document.getElementById('editorSheetSidebar');
+            if (edoc) edoc.classList.remove('open');
+            if (esheet) esheet.classList.remove('open');
         }
         
         // Editor mode switching (tabs inside editor)
@@ -14851,7 +15193,9 @@ if __name__ == '__main__':
                 'video': 'editorTabVideo',
                 'audio': 'editorTabAudio',
                 '3d': 'editorTab3D',
-                'code': 'editorTabCode'
+                'code': 'editorTabCode',
+                'document': 'editorTabDocument',
+                'spreadsheet': 'editorTabSpreadsheet'
             };
             const activeTab = document.getElementById(tabIds[mode]);
             if (activeTab) activeTab.classList.add('active');
@@ -14862,7 +15206,9 @@ if __name__ == '__main__':
                 'video': 'editorModeVideo',
                 'audio': 'editorModeAudio',
                 '3d': 'editorMode3D',
-                'code': 'editorModeCode'
+                'code': 'editorModeCode',
+                'document': 'editorModeDocument',
+                'spreadsheet': 'editorModeSpreadsheet'
             };
             
             // Hide all panels first
@@ -16206,6 +16552,785 @@ if __name__ == '__main__':
         function e3dViewFront() { showNotification('Front view', 'info'); }
         function e3dViewSide() { showNotification('Side view', 'info'); }
         function e3dViewPersp() { showNotification('Perspective view', 'info'); }
+
+        // ========================================
+        // DOCUMENT EDITOR - Google Docs / Word-style
+        // ========================================
+        
+        function docFormat(command) {
+            document.execCommand(command, false, null);
+            const page = document.getElementById('docPage');
+            if (page) page.focus();
+        }
+        
+        function docFormatFont(command, value) {
+            document.execCommand(command, false, value);
+            const page = document.getElementById('docPage');
+            if (page) page.focus();
+        }
+        
+        function docFormatBlock(tag) {
+            document.execCommand('formatBlock', false, tag);
+            const page = document.getElementById('docPage');
+            if (page) page.focus();
+        }
+        
+        function docInsertLink() {
+            const url = prompt('Enter URL:', 'https://');
+            if (url) {
+                document.execCommand('createLink', false, url);
+            }
+        }
+        
+        function docInsertImage() {
+            const url = prompt('Enter image URL:');
+            if (url) {
+                document.execCommand('insertImage', false, url);
+            }
+        }
+        
+        function docInsertTable() {
+            const rows = parseInt(prompt('Number of rows:', '3')) || 3;
+            const cols = parseInt(prompt('Number of columns:', '3')) || 3;
+            let html = '<table style="border-collapse:collapse;width:100%;margin:12px 0;">';
+            for (let r = 0; r < rows; r++) {
+                html += '<tr>';
+                for (let c = 0; c < cols; c++) {
+                    const tag = r === 0 ? 'th' : 'td';
+                    html += `<${tag} style="border:1px solid #d1d5db;padding:8px 12px;">${r === 0 ? 'Header ' + (c+1) : ''}</${tag}>`;
+                }
+                html += '</tr>';
+            }
+            html += '</table>';
+            document.execCommand('insertHTML', false, html);
+        }
+        
+        function docInsertHR() {
+            document.execCommand('insertHTML', false, '<hr style="border:none;border-top:1px solid #d1d5db;margin:16px 0;">');
+        }
+        
+        function docUpdateStats() {
+            const page = document.getElementById('docPage');
+            if (!page) return;
+            const text = page.innerText || '';
+            const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+            const chars = text.length;
+            const wordCountEl = document.getElementById('docWordCount');
+            if (wordCountEl) wordCountEl.textContent = `Words: ${words} | Characters: ${chars}`;
+            // Estimate pages
+            const pageCountEl = document.getElementById('docPageCount');
+            if (pageCountEl) pageCountEl.textContent = `~${Math.max(1, Math.ceil(words / 300))} page(s)`;
+        }
+        
+        function docExport() {
+            const page = document.getElementById('docPage');
+            const title = document.getElementById('docTitle')?.value || 'Document';
+            if (!page) return;
+            
+            const format = prompt('Export format: html, markdown, or text', 'html');
+            let content, filename, mimeType;
+            
+            if (format === 'markdown' || format === 'md') {
+                // Simple HTML to Markdown conversion
+                content = page.innerHTML
+                    .replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n\n')
+                    .replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n\n')
+                    .replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1\n\n')
+                    .replace(/<strong>(.*?)<\/strong>/gi, '**$1**')
+                    .replace(/<b>(.*?)<\/b>/gi, '**$1**')
+                    .replace(/<em>(.*?)<\/em>/gi, '*$1*')
+                    .replace(/<i>(.*?)<\/i>/gi, '*$1*')
+                    .replace(/<li>(.*?)<\/li>/gi, '- $1\n')
+                    .replace(/<br\s*\/?>/gi, '\n')
+                    .replace(/<p[^>]*>(.*?)<\/p>/gi, '$1\n\n')
+                    .replace(/<[^>]+>/g, '').trim();
+                filename = title + '.md';
+                mimeType = 'text/markdown';
+            } else if (format === 'text' || format === 'txt') {
+                content = page.innerText;
+                filename = title + '.txt';
+                mimeType = 'text/plain';
+            } else {
+                content = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title><style>body{font-family:Georgia,serif;max-width:816px;margin:40px auto;padding:20px;line-height:1.8;color:#1f2937;}h1,h2,h3{font-family:sans-serif;}table{border-collapse:collapse;width:100%;}th,td{border:1px solid #d1d5db;padding:8px 12px;}th{background:#f3f4f6;}</style></head><body>${page.innerHTML}</body></html>`;
+                filename = title + '.html';
+                mimeType = 'text/html';
+            }
+            
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = filename; a.click();
+            URL.revokeObjectURL(url);
+            showNotification(`Exported as ${filename}`, 'success');
+        }
+        
+        function docShare() {
+            const page = document.getElementById('docPage');
+            if (page) {
+                navigator.clipboard.writeText(page.innerText).then(() => {
+                    showNotification('Document text copied to clipboard', 'success');
+                }).catch(() => showNotification('Could not copy', 'error'));
+            }
+        }
+        
+        async function docAI(action) {
+            const page = document.getElementById('docPage');
+            const aiInput = document.getElementById('docAIInput');
+            if (!page) return;
+            
+            const selectedText = window.getSelection().toString();
+            const text = selectedText || page.innerText;
+            
+            if (!text.trim() && action !== 'custom') {
+                showNotification('Write some text first, or select text to process', 'warning');
+                return;
+            }
+            
+            let instruction = '';
+            switch(action) {
+                case 'summarize': instruction = 'Summarize the following text concisely'; break;
+                case 'rewrite': instruction = 'Rewrite and improve the following text while keeping the same meaning'; break;
+                case 'translate': 
+                    const lang = prompt('Translate to which language?', 'Spanish');
+                    instruction = `Translate the following text to ${lang}`; 
+                    break;
+                case 'custom':
+                    instruction = aiInput ? aiInput.value : '';
+                    if (!instruction) { showNotification('Enter an AI instruction', 'warning'); return; }
+                    break;
+            }
+            
+            showNotification('AI processing document...', 'info');
+            try {
+                const res = await fetch('/api/media/edit', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        file_url: 'inline:text:' + text.substring(0, 10000), 
+                        instruction: instruction, 
+                        media_type: 'text' 
+                    })
+                });
+                const data = await res.json();
+                if (data.success && data.output_text) {
+                    if (selectedText && window.getSelection().rangeCount > 0) {
+                        // Replace selected text
+                        const range = window.getSelection().getRangeAt(0);
+                        range.deleteContents();
+                        const div = document.createElement('div');
+                        div.innerHTML = data.output_text.replace(/\n/g, '<br>');
+                        range.insertNode(div);
+                    } else {
+                        // Append result after current content
+                        page.innerHTML += '<hr style="border:none;border-top:1px solid #d1d5db;margin:16px 0;"><div style="background:#f0f9ff;padding:12px;border-radius:6px;border-left:3px solid #3b82f6;margin:12px 0;"><strong>AI Result:</strong><br>' + data.output_text.replace(/\n/g, '<br>') + '</div>';
+                    }
+                    docUpdateStats();
+                    showNotification('AI processing complete!', 'success');
+                } else {
+                    showNotification(data.error || 'AI processing failed', 'error');
+                }
+            } catch(e) {
+                showNotification('Error: ' + e.message, 'error');
+            }
+            if (aiInput) aiInput.value = '';
+        }
+        
+        // ========================================
+        // SPREADSHEET EDITOR - Excel / Sheets-style
+        // ========================================
+        
+        let sheetInitialized = false;
+        let sheetData = []; // 2D array of cell values
+        let sheetMeta = []; // 2D array of cell metadata (format, style, etc.)
+        let sheetRows = 50;
+        let sheetCols = 26;
+        let sheetSelectedCell = { row: 0, col: 0 };
+        let sheetSheets = [{ name: 'Sheet 1', data: null }];
+        let sheetCurrentSheet = 0;
+        
+        function sheetInit() {
+            sheetData = Array.from({ length: sheetRows }, () => Array(sheetCols).fill(''));
+            sheetMeta = Array.from({ length: sheetRows }, () => Array(sheetCols).fill(null));
+            sheetRenderGrid();
+            sheetInitialized = true;
+        }
+        
+        function sheetColName(idx) {
+            let name = '';
+            while (idx >= 0) {
+                name = String.fromCharCode(65 + (idx % 26)) + name;
+                idx = Math.floor(idx / 26) - 1;
+            }
+            return name;
+        }
+        
+        function sheetRenderGrid() {
+            const grid = document.getElementById('sheetGrid');
+            if (!grid) return;
+            
+            let html = '<thead><tr><th class="row-header corner"></th>';
+            for (let c = 0; c < sheetCols; c++) {
+                html += `<th onclick="sheetSelectCol(${c})">${sheetColName(c)}</th>`;
+            }
+            html += '</tr></thead><tbody>';
+            
+            for (let r = 0; r < sheetRows; r++) {
+                html += `<tr><th class="row-header" onclick="sheetSelectRow(${r})">${r + 1}</th>`;
+                for (let c = 0; c < sheetCols; c++) {
+                    const val = sheetData[r][c] || '';
+                    const display = sheetEvaluateCell(val);
+                    const isSelected = (r === sheetSelectedCell.row && c === sheetSelectedCell.col);
+                    html += `<td${isSelected ? ' class="selected"' : ''}>
+                        <input value="${sheetEscapeHTML(display)}" 
+                            onfocus="sheetSelectCell(${r},${c})" 
+                            onblur="sheetUpdateCell(${r},${c},this.value)"
+                            onkeydown="sheetCellKeydown(event,${r},${c})"
+                            ${isSelected ? 'autofocus' : ''}>
+                    </td>`;
+                }
+                html += '</tr>';
+            }
+            html += '</tbody>';
+            grid.innerHTML = html;
+        }
+        
+        function sheetEscapeHTML(str) {
+            return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+        }
+        
+        function sheetSelectCell(row, col) {
+            sheetSelectedCell = { row, col };
+            const ref = document.getElementById('sheetCellRef');
+            const formula = document.getElementById('sheetFormulaInput');
+            if (ref) ref.value = sheetColName(col) + (row + 1);
+            if (formula) formula.value = sheetData[row][col] || '';
+            // Highlight
+            document.querySelectorAll('.sheet-grid td').forEach(td => td.classList.remove('selected'));
+            const grid = document.getElementById('sheetGrid');
+            if (grid) {
+                const cell = grid.rows[row + 1]?.cells[col + 1];
+                if (cell) cell.classList.add('selected');
+            }
+            sheetUpdateSelectionInfo();
+        }
+        
+        function sheetUpdateCell(row, col, value) {
+            sheetData[row][col] = value;
+            sheetUpdateSelectionInfo();
+        }
+        
+        function sheetCellKeydown(e, row, col) {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const nextCol = e.shiftKey ? Math.max(0, col - 1) : Math.min(sheetCols - 1, col + 1);
+                sheetSelectCell(row, nextCol);
+                const grid = document.getElementById('sheetGrid');
+                const input = grid?.rows[row + 1]?.cells[nextCol + 1]?.querySelector('input');
+                if (input) input.focus();
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                const nextRow = e.shiftKey ? Math.max(0, row - 1) : Math.min(sheetRows - 1, row + 1);
+                sheetSelectCell(nextRow, col);
+                const grid = document.getElementById('sheetGrid');
+                const input = grid?.rows[nextRow + 1]?.cells[col + 1]?.querySelector('input');
+                if (input) input.focus();
+            }
+        }
+        
+        function sheetApplyFormula() {
+            const formula = document.getElementById('sheetFormulaInput');
+            if (!formula) return;
+            const { row, col } = sheetSelectedCell;
+            sheetData[row][col] = formula.value;
+            // Update the cell in grid
+            const grid = document.getElementById('sheetGrid');
+            const input = grid?.rows[row + 1]?.cells[col + 1]?.querySelector('input');
+            if (input) input.value = sheetEvaluateCell(formula.value);
+        }
+        
+        function sheetEvaluateCell(value) {
+            if (!value || typeof value !== 'string' || !value.startsWith('=')) return value;
+            
+            try {
+                const formula = value.substring(1).toUpperCase();
+                
+                // SUM(A1:A10)
+                const sumMatch = formula.match(/^SUM\(([A-Z]+)(\d+):([A-Z]+)(\d+)\)$/);
+                if (sumMatch) {
+                    const c1 = sumMatch[1].charCodeAt(0) - 65, r1 = parseInt(sumMatch[2]) - 1;
+                    const c2 = sumMatch[3].charCodeAt(0) - 65, r2 = parseInt(sumMatch[4]) - 1;
+                    let sum = 0;
+                    for (let r = r1; r <= r2; r++) for (let c = c1; c <= c2; c++) {
+                        const v = parseFloat(sheetData[r]?.[c]);
+                        if (!isNaN(v)) sum += v;
+                    }
+                    return sum;
+                }
+                
+                // AVERAGE(A1:A10)
+                const avgMatch = formula.match(/^AVERAGE\(([A-Z]+)(\d+):([A-Z]+)(\d+)\)$/);
+                if (avgMatch) {
+                    const c1 = avgMatch[1].charCodeAt(0) - 65, r1 = parseInt(avgMatch[2]) - 1;
+                    const c2 = avgMatch[3].charCodeAt(0) - 65, r2 = parseInt(avgMatch[4]) - 1;
+                    let sum = 0, count = 0;
+                    for (let r = r1; r <= r2; r++) for (let c = c1; c <= c2; c++) {
+                        const v = parseFloat(sheetData[r]?.[c]);
+                        if (!isNaN(v)) { sum += v; count++; }
+                    }
+                    return count > 0 ? (sum / count).toFixed(2) : 0;
+                }
+                
+                // COUNT(A1:A10)
+                const countMatch = formula.match(/^COUNT\(([A-Z]+)(\d+):([A-Z]+)(\d+)\)$/);
+                if (countMatch) {
+                    const c1 = countMatch[1].charCodeAt(0) - 65, r1 = parseInt(countMatch[2]) - 1;
+                    const c2 = countMatch[3].charCodeAt(0) - 65, r2 = parseInt(countMatch[4]) - 1;
+                    let count = 0;
+                    for (let r = r1; r <= r2; r++) for (let c = c1; c <= c2; c++) {
+                        if (sheetData[r]?.[c] !== '' && sheetData[r]?.[c] != null) count++;
+                    }
+                    return count;
+                }
+                
+                // MAX(A1:A10)
+                const maxMatch = formula.match(/^MAX\(([A-Z]+)(\d+):([A-Z]+)(\d+)\)$/);
+                if (maxMatch) {
+                    const c1 = maxMatch[1].charCodeAt(0) - 65, r1 = parseInt(maxMatch[2]) - 1;
+                    const c2 = maxMatch[3].charCodeAt(0) - 65, r2 = parseInt(maxMatch[4]) - 1;
+                    let max = -Infinity;
+                    for (let r = r1; r <= r2; r++) for (let c = c1; c <= c2; c++) {
+                        const v = parseFloat(sheetData[r]?.[c]);
+                        if (!isNaN(v) && v > max) max = v;
+                    }
+                    return max === -Infinity ? 0 : max;
+                }
+                
+                // MIN(A1:A10)
+                const minMatch = formula.match(/^MIN\(([A-Z]+)(\d+):([A-Z]+)(\d+)\)$/);
+                if (minMatch) {
+                    const c1 = minMatch[1].charCodeAt(0) - 65, r1 = parseInt(minMatch[2]) - 1;
+                    const c2 = minMatch[3].charCodeAt(0) - 65, r2 = parseInt(minMatch[4]) - 1;
+                    let min = Infinity;
+                    for (let r = r1; r <= r2; r++) for (let c = c1; c <= c2; c++) {
+                        const v = parseFloat(sheetData[r]?.[c]);
+                        if (!isNaN(v) && v < min) min = v;
+                    }
+                    return min === Infinity ? 0 : min;
+                }
+                
+                // IF(condition, true_val, false_val) — simple version
+                const ifMatch = formula.match(/^IF\(([^,]+),([^,]+),([^)]+)\)$/);
+                if (ifMatch) {
+                    // Resolve cell references
+                    const resolveRef = (ref) => {
+                        const m = ref.trim().match(/^([A-Z]+)(\d+)$/);
+                        if (m) {
+                            const c = m[1].charCodeAt(0) - 65;
+                            const r = parseInt(m[2]) - 1;
+                            return parseFloat(sheetData[r]?.[c]) || 0;
+                        }
+                        return parseFloat(ref) || 0;
+                    };
+                    const cond = ifMatch[1].trim();
+                    // Simple comparison: A1>10
+                    const compMatch = cond.match(/^([A-Z]+\d+|[\d.]+)\s*(>|<|>=|<=|==|!=)\s*([A-Z]+\d+|[\d.]+)$/);
+                    if (compMatch) {
+                        const left = resolveRef(compMatch[1]);
+                        const right = resolveRef(compMatch[3]);
+                        let result = false;
+                        switch(compMatch[2]) {
+                            case '>': result = left > right; break;
+                            case '<': result = left < right; break;
+                            case '>=': result = left >= right; break;
+                            case '<=': result = left <= right; break;
+                            case '==': result = left == right; break;
+                            case '!=': result = left != right; break;
+                        }
+                        return result ? ifMatch[2].trim().replace(/"/g, '') : ifMatch[3].trim().replace(/"/g, '');
+                    }
+                }
+                
+                // Simple cell reference: =A1
+                const cellRef = formula.match(/^([A-Z]+)(\d+)$/);
+                if (cellRef) {
+                    const c = cellRef[1].charCodeAt(0) - 65;
+                    const r = parseInt(cellRef[2]) - 1;
+                    return sheetData[r]?.[c] || '';
+                }
+                
+                // Simple arithmetic: =A1+B1, =A1*2
+                const arithMatch = formula.match(/^([A-Z]+\d+|[\d.]+)\s*([+\-*/])\s*([A-Z]+\d+|[\d.]+)$/);
+                if (arithMatch) {
+                    const resolveVal = (ref) => {
+                        const m = ref.match(/^([A-Z]+)(\d+)$/);
+                        if (m) return parseFloat(sheetData[parseInt(m[2])-1]?.[m[1].charCodeAt(0)-65]) || 0;
+                        return parseFloat(ref) || 0;
+                    };
+                    const a = resolveVal(arithMatch[1]), b = resolveVal(arithMatch[3]);
+                    switch(arithMatch[2]) {
+                        case '+': return a + b;
+                        case '-': return a - b;
+                        case '*': return a * b;
+                        case '/': return b !== 0 ? (a / b).toFixed(4) : '#DIV/0!';
+                    }
+                }
+                
+                return value; // Can't evaluate, return raw
+            } catch(e) {
+                return '#ERROR!';
+            }
+        }
+        
+        function sheetUpdateSelectionInfo() {
+            const info = document.getElementById('sheetSelectionInfo');
+            if (!info) return;
+            // Calculate stats for all numeric values
+            let sum = 0, count = 0, numCount = 0;
+            for (let r = 0; r < sheetRows; r++) {
+                for (let c = 0; c < sheetCols; c++) {
+                    if (sheetData[r][c] !== '' && sheetData[r][c] != null) {
+                        count++;
+                        const v = parseFloat(sheetData[r][c]);
+                        if (!isNaN(v)) { sum += v; numCount++; }
+                    }
+                }
+            }
+            info.textContent = `Sum: ${sum.toFixed(2)} | Avg: ${numCount > 0 ? (sum/numCount).toFixed(2) : 0} | Count: ${count}`;
+        }
+        
+        function sheetSelectRow(row) {
+            sheetSelectCell(row, 0);
+            showNotification(`Row ${row + 1} selected`, 'info');
+        }
+        
+        function sheetSelectCol(col) {
+            sheetSelectCell(0, col);
+            showNotification(`Column ${sheetColName(col)} selected`, 'info');
+        }
+        
+        function sheetFormat(type) {
+            const { row, col } = sheetSelectedCell;
+            if (!sheetMeta[row][col]) sheetMeta[row][col] = {};
+            sheetMeta[row][col][type] = !sheetMeta[row][col][type];
+            showNotification(`${type} toggled for ${sheetColName(col)}${row+1}`, 'info');
+        }
+        
+        function sheetAlign(direction) {
+            const { row, col } = sheetSelectedCell;
+            const grid = document.getElementById('sheetGrid');
+            const input = grid?.rows[row + 1]?.cells[col + 1]?.querySelector('input');
+            if (input) input.style.textAlign = direction;
+        }
+        
+        function sheetNumberFormat(format) {
+            const { row, col } = sheetSelectedCell;
+            const val = parseFloat(sheetData[row][col]);
+            if (isNaN(val)) return;
+            const grid = document.getElementById('sheetGrid');
+            const input = grid?.rows[row + 1]?.cells[col + 1]?.querySelector('input');
+            if (!input) return;
+            switch(format) {
+                case 'currency': input.value = '$' + val.toFixed(2); break;
+                case 'percent': input.value = (val * 100).toFixed(1) + '%'; break;
+                case 'number': input.value = val.toLocaleString(); break;
+                default: input.value = val;
+            }
+        }
+        
+        function sheetAction(action) {
+            switch(action) {
+                case 'addRow':
+                    sheetRows++;
+                    sheetData.push(Array(sheetCols).fill(''));
+                    sheetMeta.push(Array(sheetCols).fill(null));
+                    sheetRenderGrid();
+                    showNotification('Row added', 'success');
+                    break;
+                case 'addCol':
+                    sheetCols++;
+                    sheetData.forEach(row => row.push(''));
+                    sheetMeta.forEach(row => row.push(null));
+                    sheetRenderGrid();
+                    showNotification('Column added', 'success');
+                    break;
+                case 'deleteRow':
+                    if (sheetRows > 1) {
+                        sheetData.splice(sheetSelectedCell.row, 1);
+                        sheetMeta.splice(sheetSelectedCell.row, 1);
+                        sheetRows--;
+                        sheetRenderGrid();
+                        showNotification('Row deleted', 'success');
+                    }
+                    break;
+                case 'deleteCol':
+                    if (sheetCols > 1) {
+                        sheetData.forEach(row => row.splice(sheetSelectedCell.col, 1));
+                        sheetMeta.forEach(row => row.splice(sheetSelectedCell.col, 1));
+                        sheetCols--;
+                        sheetRenderGrid();
+                        showNotification('Column deleted', 'success');
+                    }
+                    break;
+                case 'sort':
+                    const col = sheetSelectedCell.col;
+                    const header = sheetData[0].slice();
+                    const body = sheetData.slice(1).filter(r => r.some(c => c !== ''));
+                    body.sort((a, b) => {
+                        const va = parseFloat(a[col]), vb = parseFloat(b[col]);
+                        if (!isNaN(va) && !isNaN(vb)) return va - vb;
+                        return String(a[col]).localeCompare(String(b[col]));
+                    });
+                    sheetData = [header, ...body];
+                    while (sheetData.length < sheetRows) sheetData.push(Array(sheetCols).fill(''));
+                    sheetRenderGrid();
+                    showNotification(`Sorted by column ${sheetColName(col)}`, 'success');
+                    break;
+                case 'filter':
+                    const filterVal = prompt('Filter: show rows containing:');
+                    if (filterVal) {
+                        const grid = document.getElementById('sheetGrid');
+                        if (!grid) return;
+                        for (let r = 1; r < grid.rows.length; r++) {
+                            const rowText = Array.from(grid.rows[r].cells).map(c => c.textContent).join(' ').toLowerCase();
+                            grid.rows[r].style.display = rowText.includes(filterVal.toLowerCase()) ? '' : 'none';
+                        }
+                        showNotification(`Filtered by "${filterVal}"`, 'success');
+                    }
+                    break;
+                case 'chart':
+                    sheetDrawChart();
+                    break;
+                case 'freeze':
+                    showNotification('First row frozen as header', 'info');
+                    break;
+                case 'undo': showNotification('Undo', 'info'); break;
+                case 'redo': showNotification('Redo', 'info'); break;
+            }
+        }
+        
+        function sheetDrawChart() {
+            const chartArea = document.getElementById('sheetChartArea');
+            const canvas = document.getElementById('sheetChartCanvas');
+            if (!chartArea || !canvas) return;
+            
+            chartArea.style.display = chartArea.style.display === 'none' ? 'block' : 'none';
+            if (chartArea.style.display === 'none') return;
+            
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Collect numeric data from selected column
+            const col = sheetSelectedCell.col;
+            const values = [];
+            const labels = [];
+            for (let r = 1; r < sheetRows; r++) {
+                const v = parseFloat(sheetData[r][col]);
+                if (!isNaN(v)) {
+                    values.push(v);
+                    labels.push(sheetData[r][0] || `Row ${r+1}`);
+                }
+            }
+            
+            if (values.length === 0) {
+                ctx.fillStyle = '#9ca3af';
+                ctx.font = '14px sans-serif';
+                ctx.fillText('No numeric data in selected column', 20, 90);
+                return;
+            }
+            
+            const max = Math.max(...values);
+            const barWidth = Math.min(40, (canvas.width - 60) / values.length - 4);
+            const chartHeight = canvas.height - 40;
+            
+            values.forEach((v, i) => {
+                const barHeight = (v / max) * (chartHeight - 20);
+                const x = 40 + i * (barWidth + 4);
+                const y = chartHeight - barHeight;
+                
+                ctx.fillStyle = `hsl(${160 + i * 30}, 70%, 50%)`;
+                ctx.fillRect(x, y, barWidth, barHeight);
+                
+                ctx.fillStyle = '#d1d5db';
+                ctx.font = '10px sans-serif';
+                ctx.fillText(v.toString(), x, y - 4);
+                ctx.save();
+                ctx.translate(x + barWidth/2, chartHeight + 4);
+                ctx.rotate(Math.PI / 4);
+                ctx.fillText(labels[i].substring(0, 8), 0, 0);
+                ctx.restore();
+            });
+        }
+        
+        function sheetSwitchTab(index, el) {
+            sheetCurrentSheet = index;
+            document.querySelectorAll('.sheet-tab').forEach(t => t.classList.remove('active'));
+            if (el) el.classList.add('active');
+            showNotification(`Switched to ${sheetSheets[index]?.name || 'Sheet'}`, 'info');
+        }
+        
+        function sheetAddTab() {
+            const name = 'Sheet ' + (sheetSheets.length + 1);
+            sheetSheets.push({ name, data: null });
+            const bar = document.querySelector('.sheet-tabs-bar');
+            if (bar) {
+                const btn = document.createElement('button');
+                btn.className = 'sheet-tab';
+                btn.textContent = name;
+                btn.onclick = () => sheetSwitchTab(sheetSheets.length - 1, btn);
+                bar.insertBefore(btn, bar.querySelector('.sheet-tab-add'));
+            }
+            showNotification(`Added ${name}`, 'success');
+        }
+        
+        function sheetImport() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.csv,.tsv,.txt';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const text = await file.text();
+                const delimiter = file.name.endsWith('.tsv') ? '\t' : ',';
+                const rows = text.trim().split('\n').map(line => {
+                    // Handle quoted CSV
+                    const cells = [];
+                    let current = '', inQuotes = false;
+                    for (const ch of line) {
+                        if (ch === '"') { inQuotes = !inQuotes; continue; }
+                        if (ch === delimiter && !inQuotes) { cells.push(current.trim()); current = ''; continue; }
+                        current += ch;
+                    }
+                    cells.push(current.trim());
+                    return cells;
+                });
+                
+                // Resize grid if needed
+                if (rows.length > sheetRows) { sheetRows = rows.length + 10; }
+                const maxCols = Math.max(...rows.map(r => r.length));
+                if (maxCols > sheetCols) { sheetCols = maxCols; }
+                
+                // Reset and fill
+                sheetData = Array.from({ length: sheetRows }, () => Array(sheetCols).fill(''));
+                sheetMeta = Array.from({ length: sheetRows }, () => Array(sheetCols).fill(null));
+                rows.forEach((row, r) => { row.forEach((val, c) => { sheetData[r][c] = val; }); });
+                
+                sheetRenderGrid();
+                document.getElementById('sheetTitle').value = file.name.replace(/\.[^.]+$/, '');
+                showNotification(`Imported ${rows.length} rows from ${file.name}`, 'success');
+            };
+            input.click();
+        }
+        
+        function sheetExport() {
+            const title = document.getElementById('sheetTitle')?.value || 'spreadsheet';
+            const format = prompt('Export format: csv or tsv', 'csv');
+            const delimiter = (format === 'tsv') ? '\t' : ',';
+            
+            // Find last row/col with data
+            let lastRow = 0, lastCol = 0;
+            for (let r = 0; r < sheetRows; r++) for (let c = 0; c < sheetCols; c++) {
+                if (sheetData[r][c] !== '' && sheetData[r][c] != null) { lastRow = r; lastCol = Math.max(lastCol, c); }
+            }
+            
+            let csv = '';
+            for (let r = 0; r <= lastRow; r++) {
+                const row = [];
+                for (let c = 0; c <= lastCol; c++) {
+                    let val = String(sheetData[r][c] || '');
+                    if (val.includes(delimiter) || val.includes('"') || val.includes('\n')) {
+                        val = '"' + val.replace(/"/g, '""') + '"';
+                    }
+                    row.push(val);
+                }
+                csv += row.join(delimiter) + '\n';
+            }
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = title + '.' + (format || 'csv'); a.click();
+            URL.revokeObjectURL(url);
+            showNotification(`Exported to ${title}.${format || 'csv'}`, 'success');
+        }
+        
+        async function sheetAI(action) {
+            const aiInput = document.getElementById('sheetAIInput');
+            const { row, col } = sheetSelectedCell;
+            
+            // Collect current spreadsheet data context
+            let dataContext = '';
+            let lastRow = 0, lastCol = 0;
+            for (let r = 0; r < sheetRows; r++) for (let c = 0; c < sheetCols; c++) {
+                if (sheetData[r][c] !== '' && sheetData[r][c] != null) { lastRow = r; lastCol = Math.max(lastCol, c); }
+            }
+            for (let r = 0; r <= Math.min(lastRow, 20); r++) {
+                const vals = [];
+                for (let c = 0; c <= lastCol; c++) vals.push(sheetData[r][c] || '');
+                dataContext += vals.join(',') + '\n';
+            }
+            
+            let instruction = '';
+            switch(action) {
+                case 'formula':
+                    instruction = `Given this spreadsheet data:\n${dataContext}\nCurrent cell: ${sheetColName(col)}${row+1}. Generate a spreadsheet formula. Return ONLY the formula starting with =. ${aiInput?.value || 'Suggest a useful formula for this data.'}`;
+                    break;
+                case 'analyze':
+                    instruction = `Analyze this spreadsheet data and provide key insights, trends, and summary statistics:\n${dataContext}`;
+                    break;
+                case 'custom':
+                    instruction = aiInput?.value || '';
+                    if (!instruction) { showNotification('Enter an instruction', 'warning'); return; }
+                    instruction = `Working with spreadsheet data:\n${dataContext}\n\nUser request: ${instruction}`;
+                    break;
+            }
+            
+            showNotification('AI analyzing spreadsheet...', 'info');
+            try {
+                const res = await fetch('/api/media/edit', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        file_url: 'inline:spreadsheet:' + dataContext.substring(0, 8000),
+                        instruction: instruction,
+                        media_type: 'text'
+                    })
+                });
+                const data = await res.json();
+                if (data.success && data.output_text) {
+                    const output = data.output_text.trim();
+                    // If it looks like a formula, put it in the selected cell
+                    if (output.startsWith('=') && output.split('\n').length === 1) {
+                        sheetData[row][col] = output;
+                        const grid = document.getElementById('sheetGrid');
+                        const input = grid?.rows[row + 1]?.cells[col + 1]?.querySelector('input');
+                        if (input) input.value = sheetEvaluateCell(output);
+                        const formulaInput = document.getElementById('sheetFormulaInput');
+                        if (formulaInput) formulaInput.value = output;
+                        showNotification('Formula applied: ' + output, 'success');
+                    } else if (output.includes(',') && output.includes('\n')) {
+                        // Looks like CSV data - offer to import
+                        if (confirm('AI generated data. Insert into spreadsheet?')) {
+                            const rows = output.trim().split('\n').map(r => r.split(','));
+                            rows.forEach((rowData, ri) => {
+                                rowData.forEach((val, ci) => {
+                                    if (row + ri < sheetRows && col + ci < sheetCols) {
+                                        sheetData[row + ri][col + ci] = val.trim();
+                                    }
+                                });
+                            });
+                            sheetRenderGrid();
+                            showNotification('Data inserted!', 'success');
+                        }
+                    } else {
+                        // Show analysis as notification
+                        alert('AI Analysis:\n\n' + output);
+                    }
+                } else {
+                    showNotification(data.error || 'AI processing failed', 'error');
+                }
+            } catch(e) {
+                showNotification('Error: ' + e.message, 'error');
+            }
+            if (aiInput) aiInput.value = '';
+        }
 
         // Queue/Calendar System
         let queueTasks = [];
