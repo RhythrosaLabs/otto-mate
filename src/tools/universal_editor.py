@@ -693,6 +693,15 @@ TASK_KEYWORDS = {
     "outpaint": ("image", "outpaint"),
     "transform": ("image", "image_to_image"),
     "change style": ("image", "image_to_image"),
+    "generate image": ("image", "image_to_image"),
+    "create image": ("image", "image_to_image"),
+    "generate a": ("image", "image_to_image"),
+    "create a": ("image", "image_to_image"),
+    "draw": ("image", "image_to_image"),
+    "paint": ("image", "image_to_image"),
+    "make image": ("image", "image_to_image"),
+    "generate video": ("video", "text_to_video"),
+    "create video": ("video", "text_to_video"),
     
     # Image adjustments (brightness, contrast, etc.)
     "brighter": ("image", "adjust"),
@@ -879,6 +888,19 @@ class UniversalEditor:
                 elif type_hint in ("3d", "model"):
                     return MediaType.THREE_D
         
+        # Handle generate: prefix (generate:model_name)
+        if file_path.startswith("generate:"):
+            model_hint = file_path.split(":", 1)[1].lower() if ":" in file_path else ""
+            if any(v in model_hint for v in ("video", "kling", "runway", "luma", "pika", "cogvideo")):
+                return MediaType.VIDEO
+            elif any(a in model_hint for a in ("audio", "music", "bark", "xtts", "audiogen")):
+                return MediaType.AUDIO
+            elif any(t in model_hint for t in ("3d", "tripo", "meshy", "shap", "point-e")):
+                return MediaType.THREE_D
+            elif any(c in model_hint for c in ("code", "assist")):
+                return MediaType.CODE
+            return MediaType.IMAGE  # Default for generation is image
+        
         ext = Path(file_path).suffix.lower()
         
         image_exts = {'.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.tiff', '.svg'}
@@ -937,6 +959,18 @@ class UniversalEditor:
             if "background" in instruction_lower:
                 if "remove_background" in models:
                     return type_str, "remove_background", models["remove_background"]
+            
+            # For image type, prefer image_to_image (supports prompt-based generation) as default
+            if type_str == "image" and "image_to_image" in models:
+                return type_str, "image_to_image", models["image_to_image"]
+            
+            # For video type, prefer text_to_video as default for generation
+            if type_str == "video" and "text_to_video" in models:
+                return type_str, "text_to_video", models["text_to_video"]
+            
+            # For audio type, prefer music_generation as default
+            if type_str == "audio" and "music_generation" in models:
+                return type_str, "music_generation", models["music_generation"]
             
             # Default to first available model for type
             first_task = list(models.keys())[0]
@@ -1328,6 +1362,63 @@ class UniversalEditor:
             # Text-to-speech, music generation - use instruction as input
             self._update_status("generating", 0.15, f"🎵 Generating {task_name.replace('_', ' ')}...")
             input_data = {input_key: instruction}
+            
+            # Add extra params if specified
+            if model_info.get("extra_params"):
+                input_data.update(model_info["extra_params"])
+            
+            try:
+                result = await self.call_replicate(
+                    model=model_info["model"],
+                    input_data=input_data
+                )
+                
+                output = result.get("output")
+                output_path = self._extract_output_url(output)
+                
+                return {
+                    "success": True,
+                    "media_type": detected_type,
+                    "task": task_name,
+                    "model": model_info["model"],
+                    "output_url": output_path,
+                    "instruction": instruction,
+                    "metrics": result.get("metrics", {})
+                }
+            except Exception as e:
+                logger.error(f"Generation failed: {e}")
+                return {"success": False, "error": str(e), "task": task_name}
+        
+        # Handle inline content for non-text tasks (inline:type:content)
+        if file_path.startswith("inline:") and detected_type not in ("text", "code"):
+            # For non-text inline content, treat as generation using the instruction
+            self._update_status("generating", 0.15, f"✨ Generating from inline content...")
+            input_data = {"prompt": instruction}
+            if model_info.get("extra_params"):
+                input_data.update(model_info["extra_params"])
+            try:
+                result = await self.call_replicate(model=model_info["model"], input_data=input_data)
+                output = result.get("output")
+                output_path = self._extract_output_url(output)
+                return {
+                    "success": True, "media_type": detected_type, "task": task_name,
+                    "model": model_info["model"], "output_url": output_path,
+                    "instruction": instruction, "metrics": result.get("metrics", {})
+                }
+            except Exception as e:
+                logger.error(f"Inline generation failed: {e}")
+                return {"success": False, "error": str(e), "task": task_name}
+        
+        # Handle generation requests (no input file, pure generation from prompt)
+        if file_path.startswith("generate:") or file_path.startswith("code:"):
+            self._update_status("generating", 0.15, f"✨ Generating {task_name.replace('_', ' ')}...")
+            
+            # For generation, use instruction as prompt
+            input_data = {}
+            if model_info.get("requires_text") or "prompt" in input_key.lower():
+                input_data[input_key] = instruction
+            else:
+                input_data["prompt"] = instruction
             
             # Add extra params if specified
             if model_info.get("extra_params"):
