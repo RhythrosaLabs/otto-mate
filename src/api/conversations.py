@@ -54,6 +54,19 @@ async def list_conversations(limit: int = 50, project_id: Optional[str] = None):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/conversations/statistics")
+async def get_conversation_statistics():
+    """
+    Get statistics about stored conversations.
+    """
+    try:
+        manager = get_chat_history_manager()
+        return manager.get_statistics()
+    except Exception as e:
+        logger.error(f"Error getting statistics: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/conversations/{conversation_id}")
 async def get_conversation(conversation_id: str):
     """
@@ -232,19 +245,6 @@ async def export_conversation(conversation_id: str, format: str = "markdown"):
         raise
     except Exception as e:
         logger.error(f"Error exporting conversation: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/conversations/statistics")
-async def get_conversation_statistics():
-    """
-    Get statistics about stored conversations.
-    """
-    try:
-        manager = get_chat_history_manager()
-        return manager.get_statistics()
-    except Exception as e:
-        logger.error(f"Error getting statistics: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

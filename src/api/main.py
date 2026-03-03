@@ -12,7 +12,7 @@ from pathlib import Path
 from datetime import datetime
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Depends, Request, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, HTMLResponse, StreamingResponse, Response
+from fastapi.responses import JSONResponse, HTMLResponse, StreamingResponse, Response, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
@@ -99,7 +99,7 @@ async def lifespan(app: FastAPI):
         anthropic_api_key=settings.anthropic_api_key,
         openai_api_key=settings.openai_api_key,
         config={
-            **settings.dict(),
+            **settings.model_dump(),
             # Ensure API keys are passed with their expected names
             "printify_api_key": settings.printify_api_key or settings.printify_api_token,
             "printify_shop_id": settings.printify_shop_id,
@@ -188,7 +188,7 @@ async def lifespan(app: FastAPI):
         gateway = OttoGateway(orchestrator)
         
         # Load channel config
-        channels_config = settings.dict().get("channels", {})
+        channels_config = settings.model_dump().get("channels", {})
         if channels_config:
             channel_manager = ChannelManager(gateway, {"channels": channels_config})
             await channel_manager.start_channels()
@@ -211,9 +211,9 @@ async def lifespan(app: FastAPI):
         from ..core.voice import VoiceCapabilities, VoiceConfig
         
         voice_config = VoiceConfig(
-            enable_wake_word=settings.dict().get("enable_wake_word", False),
-            enable_talk_mode=settings.dict().get("enable_talk_mode", True),
-            wake_word=settings.dict().get("wake_word", "hey otto")
+            enable_wake_word=settings.model_dump().get("enable_wake_word", False),
+            enable_talk_mode=settings.model_dump().get("enable_talk_mode", True),
+            wake_word=settings.model_dump().get("wake_word", "hey otto")
         )
         
         # Agent callback for voice
@@ -233,21 +233,6 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"Voice capabilities initialization skipped: {e}")
         app.state.voice = None
-    
-    # Initialize Skills Registry
-    logger.info("Initializing Skills Registry...")
-    try:
-        from ..core.skills import SkillRegistry
-        from pathlib import Path
-        
-        skills_registry = SkillRegistry(Path("skills"))
-        await skills_registry.discover_skills()
-        logger.info(f"✨ Skills Registry: {len(skills_registry.list_skills())} skills loaded")
-        
-        app.state.skills_registry = skills_registry
-    except Exception as e:
-        logger.warning(f"Skills registry initialization skipped: {e}")
-        app.state.skills_registry = None
     
     # Store references in app.state for health checks
     app.state.start_time = datetime.now()
@@ -320,10 +305,11 @@ if printify_enhanced_router:
     app.include_router(printify_enhanced_router)
 
 # Add CORS middleware
+settings = get_settings()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure properly in production
-    allow_credentials=True,
+    allow_origins=settings.cors_origins.split(",") if settings.cors_origins and settings.cors_origins != "*" else ["*"],
+    allow_credentials=settings.cors_origins != "*" if settings.cors_origins else False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -332,8 +318,6 @@ app.add_middleware(
 # =====================
 # Root-level Upload Endpoint (convenience alias)
 # =====================
-
-from fastapi import UploadFile, File
 
 @app.post("/upload")
 async def upload_file_root(file: UploadFile = File(...)):
@@ -350,9 +334,6 @@ async def upload_file_root(file: UploadFile = File(...)):
 # =====================
 # The frontend uses /task_queue but the backend API is at /api/tasks.
 # These endpoints bridge the gap so the sidebar queue works.
-
-import json as _json
-from datetime import datetime as _dt
 
 @app.get("/task_queue")
 async def get_task_queue_compat():
@@ -415,7 +396,7 @@ async def add_task_queue_compat(request: Request):
         return {"success": True, "task_id": task.id if hasattr(task, 'id') else str(task)}
     except Exception as e:
         logger.warning(f"Task queue compat POST failed: {e}")
-        return {"success": True}  # Don't break frontend
+        return {"success": False, "error": str(e)}  # Report failure to frontend
 
 @app.delete("/task_queue/{task_id}")
 async def delete_task_queue_compat(task_id: str):
@@ -498,7 +479,6 @@ def is_first_run() -> bool:
 @app.get("/", response_class=HTMLResponse)
 async def root():
     """Serve the web chat interface, or redirect to onboarding if first run."""
-    from fastapi.responses import RedirectResponse, Response
     
     # Check if first run
     if is_first_run():
@@ -527,9 +507,8 @@ async def root():
     """
 
 
-def serve_html_page(filename: str) -> str:
+def serve_html_page(filename: str) -> Response:
     """Generic HTML page server."""
-    from fastapi.responses import Response
     web_path = Path(__file__).parent.parent / "web" / filename
     if web_path.exists():
         return Response(
@@ -541,7 +520,7 @@ def serve_html_page(filename: str) -> str:
                 "Expires": "0"
             }
         )
-    return f"<html><body><h1>{filename} not found</h1></body></html>"
+    return HTMLResponse(content=f"<html><body><h1>{filename} not found</h1></body></html>", status_code=404)
 
 
 @app.get("/onboarding", response_class=HTMLResponse)
@@ -553,7 +532,6 @@ async def onboarding_page():
 @app.get("/setup")
 async def setup_redirect():
     """Redirect to the setup wizard."""
-    from fastapi.responses import RedirectResponse
     return RedirectResponse(url="/api/setup/")
 
 
@@ -600,7 +578,7 @@ async def health():
         if orchestrator_healthy and hasattr(app.state.orchestrator, 'tool_registry'):
             tools = app.state.orchestrator.tool_registry.list_tools()
             tool_count = len(tools) if tools else 0
-    except:
+    except Exception:
         pass
     
     # System resources (optional)
@@ -832,7 +810,6 @@ async def chat_stream(
             logger.error(f"Streaming error: {e}", exc_info=True)
             yield f"data: {{\"error\": \"{str(e)}\", \"type\": \"error\"}}\n\n"
     
-    from fastapi.responses import StreamingResponse
     return StreamingResponse(generate(), media_type="text/event-stream")
 
 
@@ -1043,6 +1020,12 @@ async def get_file_tree(dir: Optional[str] = None):
         else:
             target = project_root
         
+        # Security: ensure target is within project root
+        try:
+            target.resolve().relative_to(project_root.resolve())
+        except ValueError:
+            return {"files": [], "error": "Access denied: path outside project"}
+        
         if not target.exists():
             return {"files": [], "error": "Directory not found"}
         
@@ -1090,7 +1073,10 @@ async def get_file_content(path: str):
         file_path = project_root / path
         
         # Security: ensure path is within project
-        file_path.resolve().relative_to(project_root.resolve())
+        try:
+            file_path.resolve().relative_to(project_root.resolve())
+        except ValueError:
+            return {"content": None, "error": "Access denied: path outside project"}
         
         if not file_path.exists():
             return {"content": None, "error": "File not found"}
@@ -1269,8 +1255,39 @@ async def get_media_capabilities(media_type: Optional[str] = None):
 async def browser_proxy(url: str):
     """Proxy external websites to bypass X-Frame-Options restrictions."""
     import httpx
+    from urllib.parse import urlparse
+    import ipaddress
     
     try:
+        # Validate URL scheme
+        parsed = urlparse(url)
+        if parsed.scheme not in ("http", "https"):
+            return Response(
+                content="<html><body><h1>Invalid URL scheme</h1></body></html>",
+                media_type="text/html",
+                status_code=400
+            )
+        
+        # Block private/internal IPs to prevent SSRF
+        import socket
+        try:
+            hostname = parsed.hostname
+            if hostname:
+                resolved_ip = socket.gethostbyname(hostname)
+                ip = ipaddress.ip_address(resolved_ip)
+                if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved:
+                    return Response(
+                        content="<html><body><h1>Access denied</h1><p>Cannot proxy to internal addresses.</p></body></html>",
+                        media_type="text/html",
+                        status_code=403
+                    )
+        except (socket.gaierror, ValueError):
+            return Response(
+                content="<html><body><h1>Invalid hostname</h1></body></html>",
+                media_type="text/html",
+                status_code=400
+            )
+        
         async with httpx.AsyncClient(follow_redirects=True, timeout=30.0) as client:
             headers = {
                 "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
@@ -1454,7 +1471,7 @@ async def websocket_endpoint(websocket: WebSocket):
             if message_type == "chat":
                 # Process chat message
                 result = await otto.process(
-                    message=data["message"],
+                    message=data.get("message", ""),
                     context=data.get("context"),
                     session_id=session_id
                 )
@@ -1468,7 +1485,11 @@ async def websocket_endpoint(websocket: WebSocket):
             elif message_type == "voice":
                 # Process voice (audio should be base64)
                 import base64
-                audio_data = base64.b64decode(data["audio"])
+                audio_b64 = data.get("audio")
+                if not audio_b64:
+                    await websocket.send_json({"type": "error", "error": "Missing audio data"})
+                    continue
+                audio_data = base64.b64decode(audio_b64)
                 
                 result = await otto.process_voice(
                     audio_data=audio_data,
@@ -1497,7 +1518,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 "type": "error",
                 "error": str(e)
             })
-        except:
+        except Exception:
             pass
 
 

@@ -6,7 +6,7 @@ Tools for interacting with the task queue management system.
 
 import logging
 from typing import Optional, Dict, Any, List
-from datetime import datetime
+from datetime import datetime, timedelta
 from .core import tool, ToolBase
 from ..core.task_queue_manager import get_task_queue_manager
 
@@ -320,15 +320,15 @@ class TaskQueueTools(ToolBase):
         
         scheduled = []
         for task_id, task in self.queue_manager.tasks.items():
-            if task.status == TaskStatus.SCHEDULED and task.schedule_for:
-                if start_dt <= task.schedule_for <= end_dt:
+            if task.status == TaskStatus.SCHEDULED and task.scheduled_for:
+                if start_dt <= task.scheduled_for <= end_dt:
                     if task_type and task_type not in task.description.lower():
                         continue
                     scheduled.append({
                         "id": task_id,
                         "title": task.description[:50] + ("..." if len(task.description) > 50 else ""),
                         "description": task.description,
-                        "scheduled_datetime": task.schedule_for.isoformat(),
+                        "scheduled_datetime": task.scheduled_for.isoformat(),
                         "status": task.status.value,
                         "priority": task.priority,
                         "recurring": task.recurring,
@@ -344,7 +344,3 @@ class TaskQueueTools(ToolBase):
             "count": len(scheduled),
             "date_range": {"start": start_date, "end": end_date}
         }
-
-
-# Import timedelta for date calculations
-from datetime import timedelta

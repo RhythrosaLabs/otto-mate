@@ -538,11 +538,17 @@ Be helpful, accurate, and autonomous. When you need to do something, do it - don
         }
         
         # Store in memory
-        self.memory.store(
-            session_id=session.session_id,
-            key="conversation_context",
-            value=context
-        )
+        try:
+            await self.memory.store_knowledge(
+                content=str(context),
+                metadata={
+                    "session_id": session.session_id,
+                    "key": "conversation_context",
+                    "type": "conversation_update"
+                }
+            )
+        except Exception as e:
+            logger.warning(f"Failed to store memory: {e}")
     
     async def execute_task(
         self,

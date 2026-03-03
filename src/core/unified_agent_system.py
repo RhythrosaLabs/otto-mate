@@ -25,7 +25,7 @@ from typing import Any, AsyncIterator, Callable, Dict, List, Optional, Union, Li
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from anthropic import Anthropic
+from anthropic import Anthropic, AsyncAnthropic
 
 from .agent_health_monitor import get_health_monitor
 from .error_recovery import get_recovery_manager
@@ -234,6 +234,8 @@ class IntelligentAgent:
     ):
         self.config = config
         self.anthropic = anthropic_client
+        # Create async client for use in async methods
+        self.async_anthropic = AsyncAnthropic(api_key=anthropic_client.api_key)
         self.tool_registry = tool_registry
         self.memory_agent = memory_agent or MemoryAgent()
         
@@ -376,7 +378,7 @@ Think carefully about:
 
 Respond with a detailed plan in JSON format."""
 
-        response = await self.anthropic.messages.create(
+        response = await self.async_anthropic.messages.create(
             model=self.config.model,
             max_tokens=2048,
             temperature=self.config.temperature,
@@ -511,7 +513,7 @@ Options:
 
 Think step by step and decide the optimal next action."""
 
-        response = await self.anthropic.messages.create(
+        response = await self.async_anthropic.messages.create(
             model=self.config.model,
             max_tokens=1024,
             temperature=self.config.temperature,
@@ -610,7 +612,7 @@ Result: {result}
 Does this result successfully accomplish the goal?
 Respond with YES or NO and explain why."""
 
-        response = await self.anthropic.messages.create(
+        response = await self.async_anthropic.messages.create(
             model=self.config.model,
             max_tokens=512,
             temperature=0.3,
@@ -634,7 +636,7 @@ Previous result: {result}
 What went wrong and how can you fix it?
 Create a corrected approach."""
 
-        response = await self.anthropic.messages.create(
+        response = await self.async_anthropic.messages.create(
             model=self.config.model,
             max_tokens=1024,
             temperature=self.config.temperature,
@@ -725,6 +727,7 @@ class AgentCrew:
     ):
         self.name = name
         self.anthropic = anthropic_client
+        self.async_anthropic = AsyncAnthropic(api_key=anthropic_client.api_key)
         self.tool_registry = tool_registry
         self.agents: Dict[str, IntelligentAgent] = {}
         self.memory = MemoryAgent()

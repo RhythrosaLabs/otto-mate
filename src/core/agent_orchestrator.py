@@ -279,6 +279,7 @@ class AgentOrchestrator:
             # === CORE AUTONOMOUS TOOLS ===
             
             # Universal Replicate - access to ANY AI model
+            replicate = None
             if "replicate" in enabled_ext_ids and self.config.get("replicate_api_token"):
                 replicate = ReplicateUniversal(api_token=self.config["replicate_api_token"])
                 self.tool_registry.register_tool_class(replicate)
@@ -430,7 +431,7 @@ class AgentOrchestrator:
                         )
                     
                     promo_video = PromoVideoService(
-                        replicate_api=replicate if 'replicate' in dir() else None,
+                        replicate_api=replicate if replicate is not None else None,
                         anthropic_client=self.anthropic,
                         printify_tools=printify_tools
                     )
@@ -856,7 +857,8 @@ class AgentOrchestrator:
             result = await self.execution_agent.execute_tool(
                 tool_name=tool_name,
                 parameters=parameters,
-                tool_registry=self.tool_registry
+                tool_registry=self.tool_registry,
+                context=context or {}
             )
             
             results.append({

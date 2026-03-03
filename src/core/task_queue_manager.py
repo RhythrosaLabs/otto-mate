@@ -97,8 +97,10 @@ class TaskQueueManager:
         try:
             # Use super planning agent to create execution plan
             plan = await planning_agent.create_plan(
-                objective=task.description,
-                context=task.context
+                context={
+                    "message": task.description,
+                    **(task.context or {})
+                }
             )
             
             # Convert plan steps to TaskStep objects
@@ -179,7 +181,9 @@ class TaskQueueManager:
                 # Execute step using execution agent
                 result = await execution_agent.execute_tool(
                     tool_name=step.tool_name,
-                    parameters=step.parameters
+                    parameters=step.parameters,
+                    tool_registry=execution_agent.tool_registry if hasattr(execution_agent, 'tool_registry') else {},
+                    context={"task_id": task.id, "step": step.name}
                 )
                 
                 step.result = result

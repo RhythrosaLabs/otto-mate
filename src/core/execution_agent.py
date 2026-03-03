@@ -824,7 +824,8 @@ class ExecutionAgent:
                     parameters=parameters,
                     tool_registry=tool_registry,
                     context=context,
-                    step_data=step_data
+                    step_data=step_data,
+                    max_retries=1  # Don't nest retries - _execute_with_retry handles retry logic
                 )
                 
                 if result.get("success"):
