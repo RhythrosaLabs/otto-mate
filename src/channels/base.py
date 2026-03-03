@@ -30,9 +30,7 @@ class ChannelMessage:
     sender_name: str
     content: str
     timestamp: str
-    chat
-
-_id: str
+    chat_id: str
     chat_name: Optional[str] = None
     is_group: bool = False
     reply_to: Optional[str] = None
