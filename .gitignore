@@ -57,8 +57,27 @@ data/files/temp/
 # External repos
 useful repos/
 
-# Secrets
+# Secrets & credentials
 *.pem
 *.key
 *.crt
 client_secret*.json
+*.p12
+*.pfx
+*.jks
+credentials.json
+token.json
+service_account.json
+*_secret*.json
+
+# Node
+node_modules/
+package-lock.json
+yarn.lock
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*.orig
+*.rej
