@@ -15918,14 +15918,36 @@ if __name__ == '__main__':
             const canvas = document.getElementById('ev4Canvas');
             if (canvas) {
                 if (ev4CompareMode && ev4UndoStack.length > 1) {
-                    // Show split view with original and current
-                    canvas.style.background = 'linear-gradient(90deg, rgba(0,0,0,0.3) 50%, transparent 50%)';
+                    // Show real split view: left half = original, right half = current
+                    const originalState = ev4UndoStack[0];
+                    const currentState = canvas.innerHTML;
+                    canvas.style.position = 'relative';
+                    canvas.innerHTML = `
+                        <div style="display:flex;width:100%;height:100%;overflow:hidden;">
+                            <div style="width:50%;overflow:hidden;border-right:2px solid #6366f1;position:relative;">
+                                <div style="position:absolute;top:4px;left:4px;background:rgba(0,0,0,0.6);color:#fff;font-size:10px;padding:2px 6px;border-radius:4px;z-index:1;">Before</div>
+                                ${originalState}
+                            </div>
+                            <div style="width:50%;overflow:hidden;position:relative;">
+                                <div style="position:absolute;top:4px;left:4px;background:rgba(0,0,0,0.6);color:#fff;font-size:10px;padding:2px 6px;border-radius:4px;z-index:1;">After</div>
+                                ${currentState}
+                            </div>
+                        </div>`;
+                    // Scale images to fit
+                    canvas.querySelectorAll('img').forEach(img => {
+                        img.style.maxWidth = '100%'; img.style.maxHeight = '100%'; img.style.objectFit = 'contain';
+                    });
                     ev4Log('Compare mode ON — showing before/after split', 'info');
-                    showNotification('Compare mode ON', 'info');
-                } else {
+                    showNotification('Compare mode ON — drag divider to compare', 'info');
+                } else if (!ev4CompareMode && ev4UndoStack.length > 0) {
+                    // Restore current state
+                    canvas.innerHTML = ev4UndoStack[ev4UndoIndex] || '';
                     canvas.style.background = '';
                     ev4Log('Compare mode OFF', 'info');
                     showNotification('Compare mode OFF', 'info');
+                } else {
+                    ev4CompareMode = false;
+                    showNotification('Nothing to compare — generate or edit something first', 'info');
                 }
             }
         }
@@ -15978,11 +16000,16 @@ if __name__ == '__main__':
         
         function ev4GroupLayers() {
             if (ev4Layers.length < 2) { showNotification('Add more layers to group', 'warning'); return; }
-            const group = { id: ev4Layers.length + 1, name: 'Group ' + Math.ceil(ev4Layers.length / 2), visible: true, locked: false };
+            // Group all current ungrouped layers into a new group
+            const groupId = ev4Layers.length + 1;
+            const groupName = 'Group ' + Math.ceil(groupId / 2);
+            const childLayers = ev4Layers.filter(l => !l.isGroup && !l.groupId);
+            childLayers.forEach(l => l.groupId = groupId);
+            const group = { id: groupId, name: groupName, visible: true, locked: false, isGroup: true, children: childLayers.map(l => l.id) };
             ev4Layers.push(group);
             ev4RenderLayers();
-            ev4Log('Layers grouped', 'info');
-            showNotification('Layers grouped', 'success');
+            ev4Log(`Grouped ${childLayers.length} layers into ${groupName}`, 'info');
+            showNotification(`Grouped ${childLayers.length} layers`, 'success');
         }
         function ev4ToggleLayerVisibility(id) {
             const layer = ev4Layers.find(l => l.id === id);
@@ -17016,7 +17043,17 @@ if __name__ == '__main__':
         function videoSkipForward() { videoPosition += 1; videoUpdatePlayhead(); showNotification('Skip forward', 'info'); }
         function videoSwitchMedia(tab) {
             document.querySelectorAll('.video-media-tabs button').forEach(b => b.classList.remove('active'));
-            if (event && event.target) event.target.classList.add('active');
+            if (event && event.target) {
+                const btn = event.target.closest('button') || event.target;
+                btn.classList.add('active');
+            }
+            // Filter media grid items by type
+            const grid = document.querySelector('.video-media-grid, .video-clips-grid');
+            if (grid) {
+                grid.querySelectorAll('[data-media-type]').forEach(item => {
+                    item.style.display = (tab === 'all' || item.dataset.mediaType === tab) ? '' : 'none';
+                });
+            }
             showNotification(`Showing ${tab}`, 'info');
         }
         async function videoAI(action) {
@@ -17039,8 +17076,16 @@ if __name__ == '__main__':
             } catch(e) { showNotification('Error: ' + e.message, 'error'); }
         }
         function videoTool(tool) {
+            videoCurrentTool = tool;
             document.querySelectorAll('.video-tool').forEach(b => b.classList.remove('active'));
-            if (event && event.target) event.target.classList.add('active');
+            if (event && event.target) {
+                const btn = event.target.closest('.video-tool') || event.target;
+                btn.classList.add('active');
+            }
+            // Set cursor based on tool
+            const cursors = { select: 'default', razor: 'crosshair', ripple: 'col-resize', slip: 'grab', slide: 'move', zoom: 'zoom-in' };
+            const timeline = document.getElementById('videoTimeline');
+            if (timeline) timeline.style.cursor = cursors[tool] || 'default';
             showNotification(`${tool} tool selected`, 'info');
         }
         
@@ -18417,7 +18462,10 @@ if __name__ == '__main__':
         function selectCalendarDate(year, month, day) {
             document.getElementById('scheduleDate').value = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             document.querySelectorAll('.calendar-day').forEach(d => d.classList.remove('selected'));
-            event.target.classList.add('selected');
+            if (event && event.target) {
+                const dayEl = event.target.closest('.calendar-day') || event.target;
+                dayEl.classList.add('selected');
+            }
         }
         
         async function scheduleTask() {
