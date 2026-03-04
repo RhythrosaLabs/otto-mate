@@ -7364,13 +7364,7 @@
         /* ══════════════════════════════════════════════════════════════
            DOCUMENT EDITOR (Google Docs / Word-style)
            ══════════════════════════════════════════════════════════════ */
-        .editor-doc-sidebar {
-            width: 85vw; max-width: 1200px; min-width: 700px;
-            border-left: 1px solid rgba(59, 130, 246, 0.2);
-            background: linear-gradient(180deg, #0f172a 0%, #1e1b4b 100%);
-            display: none; flex-direction: column; position: relative; overflow: hidden;
-        }
-        .editor-doc-sidebar.open { display: flex; }
+        /* Document editor styles (inside V4 panel) */
         .doc-layout { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
         .doc-header { padding: 8px 16px; background: rgba(59, 130, 246, 0.08); border-bottom: 1px solid rgba(59, 130, 246, 0.15); display: flex; align-items: center; gap: 12px; }
         .doc-header h2 { font-size: 15px; font-weight: 700; color: #60a5fa; margin: 0; }
@@ -7407,13 +7401,7 @@
         /* ══════════════════════════════════════════════════════════════
            SPREADSHEET EDITOR (Excel / Google Sheets-style)
            ══════════════════════════════════════════════════════════════ */
-        .editor-sheet-sidebar {
-            width: 90vw; max-width: 1400px; min-width: 800px;
-            border-left: 1px solid rgba(16, 185, 129, 0.2);
-            background: linear-gradient(180deg, #0f1f17 0%, #0c1a12 100%);
-            display: none; flex-direction: column; position: relative; overflow: hidden;
-        }
-        .editor-sheet-sidebar.open { display: flex; }
+        /* Spreadsheet editor styles (inside V4 panel) */
         .sheet-layout { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
         .sheet-header { padding: 8px 16px; background: rgba(16, 185, 129, 0.08); border-bottom: 1px solid rgba(16, 185, 129, 0.15); display: flex; align-items: center; gap: 12px; }
         .sheet-header h2 { font-size: 15px; font-weight: 700; color: #34d399; margin: 0; }
@@ -9150,8 +9138,6 @@
                 </div>
                 <button class="btn" onclick="toggleFiles()">📁 Files</button>
                 <button class="btn" onclick="toggleEditorV4()">✨ Editor</button>
-                <button class="btn" onclick="toggleEditorDoc()">📄 Doc</button>
-                <button class="btn" onclick="toggleEditorSheet()">📊 Sheet</button>
                 <button class="btn" onclick="toggleBrowser()">🌐 Browser</button>
                 <button class="btn" onclick="toggleQueue()">📋 Queue</button>
                 <button class="btn" onclick="toggleContacts()">👥 Contacts</button>
@@ -11791,20 +11777,188 @@ if __name__ == '__main__':
                 </div>
                 
                 <!-- Document Mode (inside V4) -->
-                <div class="editor-panel-content" id="editorModeDocument" style="display:none; flex-direction:column; padding:16px;">
-                    <div style="text-align:center; padding:40px 20px; color:#9ca3af;">
-                        <div style="font-size:48px; margin-bottom:16px;">📄</div>
-                        <p style="margin-bottom:10px;">For the full Document Editor experience, use the standalone editor:</p>
-                        <button class="doc-ai-btn" onclick="toggleEditorV4(); toggleEditorDoc();" style="font-size:14px; padding:12px 24px;">📄 Open Document Editor</button>
+                <div class="editor-panel-content" id="editorModeDocument" style="display:none; flex-direction:column;">
+                    <div class="doc-layout">
+                        <!-- Header -->
+                        <div class="doc-header">
+                            <h2>📄 Document</h2>
+                            <input type="text" class="doc-title-input" id="docTitle" value="Untitled Document" spellcheck="false">
+                            <button class="doc-ai-btn secondary" onclick="docExport()" title="Export">⬇️ Export</button>
+                            <button class="doc-ai-btn secondary" onclick="docShare()" title="Share">🔗 Share</button>
+                        </div>
+                        <!-- Toolbar -->
+                        <div class="doc-toolbar">
+                            <div class="doc-tb-group">
+                                <button class="doc-tb-btn" onclick="docFormat('undo')" title="Undo">↶</button>
+                                <button class="doc-tb-btn" onclick="docFormat('redo')" title="Redo">↷</button>
+                            </div>
+                            <div class="doc-tb-group">
+                                <select class="doc-tb-select" id="docFontFamily" onchange="docFormatFont('fontName', this.value)">
+                                    <option value="Georgia">Georgia</option>
+                                    <option value="Times New Roman">Times New Roman</option>
+                                    <option value="Arial">Arial</option>
+                                    <option value="Helvetica">Helvetica</option>
+                                    <option value="Verdana">Verdana</option>
+                                    <option value="Courier New">Courier New</option>
+                                    <option value="Inter">Inter</option>
+                                </select>
+                                <select class="doc-tb-select" id="docFontSize" onchange="docFormatFont('fontSize', this.value)">
+                                    <option value="1">8</option>
+                                    <option value="2">10</option>
+                                    <option value="3" selected>12</option>
+                                    <option value="4">14</option>
+                                    <option value="5">18</option>
+                                    <option value="6">24</option>
+                                    <option value="7">36</option>
+                                </select>
+                            </div>
+                            <div class="doc-tb-group">
+                                <select class="doc-tb-select" id="docHeading" onchange="docFormatBlock(this.value)">
+                                    <option value="p">Normal</option>
+                                    <option value="h1">Heading 1</option>
+                                    <option value="h2">Heading 2</option>
+                                    <option value="h3">Heading 3</option>
+                                    <option value="blockquote">Quote</option>
+                                </select>
+                            </div>
+                            <div class="doc-tb-group">
+                                <button class="doc-tb-btn" onclick="docFormat('bold')" title="Bold"><b>B</b></button>
+                                <button class="doc-tb-btn" onclick="docFormat('italic')" title="Italic"><i>I</i></button>
+                                <button class="doc-tb-btn" onclick="docFormat('underline')" title="Underline"><u>U</u></button>
+                                <button class="doc-tb-btn" onclick="docFormat('strikeThrough')" title="Strikethrough"><s>S</s></button>
+                            </div>
+                            <div class="doc-tb-group">
+                                <button class="doc-tb-btn" onclick="docFormat('justifyLeft')" title="Align Left">⫷</button>
+                                <button class="doc-tb-btn" onclick="docFormat('justifyCenter')" title="Center">☰</button>
+                                <button class="doc-tb-btn" onclick="docFormat('justifyRight')" title="Align Right">⫸</button>
+                                <button class="doc-tb-btn" onclick="docFormat('justifyFull')" title="Justify">☰</button>
+                            </div>
+                            <div class="doc-tb-group">
+                                <button class="doc-tb-btn" onclick="docFormat('insertUnorderedList')" title="Bullet List">•≡</button>
+                                <button class="doc-tb-btn" onclick="docFormat('insertOrderedList')" title="Numbered List">1.</button>
+                                <button class="doc-tb-btn" onclick="docFormat('indent')" title="Indent">→≡</button>
+                                <button class="doc-tb-btn" onclick="docFormat('outdent')" title="Outdent">←≡</button>
+                            </div>
+                            <div class="doc-tb-group">
+                                <button class="doc-tb-btn" onclick="docInsertLink()" title="Insert Link">🔗</button>
+                                <button class="doc-tb-btn" onclick="docInsertImage()" title="Insert Image">🖼️</button>
+                                <button class="doc-tb-btn" onclick="docInsertTable()" title="Insert Table">⊞</button>
+                                <button class="doc-tb-btn" onclick="docInsertHR()" title="Horizontal Rule">—</button>
+                            </div>
+                            <div class="doc-tb-group">
+                                <button class="doc-tb-btn" onclick="docFormat('removeFormat')" title="Clear Formatting">✕</button>
+                            </div>
+                        </div>
+                        <!-- Page Area -->
+                        <div class="doc-page-container">
+                            <div class="doc-page" id="docPage" contenteditable="true" oninput="docUpdateStats()">
+                                <h1>Welcome to Document Editor</h1>
+                                <p>Start typing your document here. Use the toolbar above for formatting, or ask the AI assistant below for help writing, editing, or translating your content.</p>
+                                <p>Features include:</p>
+                                <ul>
+                                    <li>Rich text formatting (bold, italic, headings, lists)</li>
+                                    <li>AI-powered writing assistance</li>
+                                    <li>Export to HTML, Markdown, or plain text</li>
+                                    <li>Tables, links, and image support</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <!-- Status Bar -->
+                        <div class="doc-status-bar">
+                            <span id="docWordCount">Words: 0 | Characters: 0</span>
+                            <span id="docPageCount">Page 1</span>
+                        </div>
+                        <!-- AI Bar -->
+                        <div class="doc-ai-bar">
+                            <input type="text" class="doc-ai-input" id="docAIInput" placeholder="Ask AI: rewrite, summarize, translate, expand, check grammar...">
+                            <button class="doc-ai-btn secondary" onclick="docAI('summarize')">📋 Summarize</button>
+                            <button class="doc-ai-btn secondary" onclick="docAI('rewrite')">✏️ Rewrite</button>
+                            <button class="doc-ai-btn secondary" onclick="docAI('translate')">🌐 Translate</button>
+                            <button class="doc-ai-btn" onclick="docAI('custom')">✨ AI Assist</button>
+                        </div>
                     </div>
                 </div>
                 
                 <!-- Spreadsheet Mode (inside V4) -->
-                <div class="editor-panel-content" id="editorModeSpreadsheet" style="display:none; flex-direction:column; padding:16px;">
-                    <div style="text-align:center; padding:40px 20px; color:#9ca3af;">
-                        <div style="font-size:48px; margin-bottom:16px;">📊</div>
-                        <p style="margin-bottom:10px;">For the full Spreadsheet Editor experience, use the standalone editor:</p>
-                        <button class="sheet-ai-btn" onclick="toggleEditorV4(); toggleEditorSheet();" style="font-size:14px; padding:12px 24px;">📊 Open Spreadsheet Editor</button>
+                <div class="editor-panel-content" id="editorModeSpreadsheet" style="display:none; flex-direction:column;">
+                    <div class="sheet-layout">
+                        <!-- Header -->
+                        <div class="sheet-header">
+                            <h2>📊 Spreadsheet</h2>
+                            <input type="text" class="sheet-title-input" id="sheetTitle" value="Untitled Spreadsheet" spellcheck="false">
+                            <button class="sheet-ai-btn secondary" onclick="sheetImport()" title="Import CSV">📥 Import</button>
+                            <button class="sheet-ai-btn secondary" onclick="sheetExport()" title="Export">⬇️ Export</button>
+                        </div>
+                        <!-- Toolbar -->
+                        <div class="sheet-toolbar">
+                            <div class="sheet-tb-group">
+                                <button class="sheet-tb-btn" onclick="sheetAction('undo')" title="Undo">↶</button>
+                                <button class="sheet-tb-btn" onclick="sheetAction('redo')" title="Redo">↷</button>
+                            </div>
+                            <div class="sheet-tb-group">
+                                <button class="sheet-tb-btn" onclick="sheetFormat('bold')" title="Bold"><b>B</b></button>
+                                <button class="sheet-tb-btn" onclick="sheetFormat('italic')" title="Italic"><i>I</i></button>
+                                <button class="sheet-tb-btn" onclick="sheetFormat('underline')" title="Underline"><u>U</u></button>
+                            </div>
+                            <div class="sheet-tb-group">
+                                <button class="sheet-tb-btn" onclick="sheetAlign('left')" title="Align Left">⫷</button>
+                                <button class="sheet-tb-btn" onclick="sheetAlign('center')" title="Center">☰</button>
+                                <button class="sheet-tb-btn" onclick="sheetAlign('right')" title="Right">⫸</button>
+                            </div>
+                            <div class="sheet-tb-group">
+                                <select class="sheet-tb-select" onchange="sheetNumberFormat(this.value)" title="Number Format">
+                                    <option value="auto">Auto</option>
+                                    <option value="number">Number</option>
+                                    <option value="currency">Currency $</option>
+                                    <option value="percent">Percent %</option>
+                                    <option value="date">Date</option>
+                                    <option value="text">Text</option>
+                                </select>
+                            </div>
+                            <div class="sheet-tb-group">
+                                <button class="sheet-tb-btn" onclick="sheetAction('addRow')" title="Add Row">+↓</button>
+                                <button class="sheet-tb-btn" onclick="sheetAction('addCol')" title="Add Column">+→</button>
+                                <button class="sheet-tb-btn" onclick="sheetAction('deleteRow')" title="Delete Row">−↓</button>
+                                <button class="sheet-tb-btn" onclick="sheetAction('deleteCol')" title="Delete Column">−→</button>
+                            </div>
+                            <div class="sheet-tb-group">
+                                <button class="sheet-tb-btn" onclick="sheetAction('sort')" title="Sort A→Z">↕️</button>
+                                <button class="sheet-tb-btn" onclick="sheetAction('filter')" title="Filter">🔍</button>
+                                <button class="sheet-tb-btn" onclick="sheetAction('chart')" title="Insert Chart">📊</button>
+                                <button class="sheet-tb-btn" onclick="sheetAction('freeze')" title="Freeze Row/Col">❄️</button>
+                            </div>
+                        </div>
+                        <!-- Formula Bar -->
+                        <div class="sheet-formula-bar">
+                            <input type="text" class="sheet-cell-ref" id="sheetCellRef" value="A1" readonly>
+                            <span style="color:#6b7280;font-size:12px;">𝑓𝑥</span>
+                            <input type="text" class="sheet-formula-input" id="sheetFormulaInput" placeholder="Enter value or formula (=SUM, =AVERAGE, =IF...)" onkeydown="if(event.key==='Enter'){sheetApplyFormula();}">
+                        </div>
+                        <!-- Grid -->
+                        <div class="sheet-grid-container" id="sheetGridContainer">
+                            <table class="sheet-grid" id="sheetGrid"></table>
+                        </div>
+                        <!-- Sheet Tabs -->
+                        <div class="sheet-tabs-bar">
+                            <button class="sheet-tab active" onclick="sheetSwitchTab(0, this)">Sheet 1</button>
+                            <button class="sheet-tab-add" onclick="sheetAddTab()" title="Add Sheet">+</button>
+                        </div>
+                        <!-- Chart Area -->
+                        <div class="sheet-chart-container" id="sheetChartArea">
+                            <canvas id="sheetChartCanvas" width="600" height="180"></canvas>
+                        </div>
+                        <!-- Status Bar -->
+                        <div class="sheet-status-bar">
+                            <span id="sheetStats">Ready</span>
+                            <span id="sheetSelectionInfo">Sum: 0 | Avg: 0 | Count: 0</span>
+                        </div>
+                        <!-- AI Bar -->
+                        <div class="sheet-ai-bar">
+                            <input type="text" class="sheet-ai-input" id="sheetAIInput" placeholder="Ask AI: generate formula, analyze data, create chart, clean data...">
+                            <button class="sheet-ai-btn secondary" onclick="sheetAI('formula')">🔢 Formula</button>
+                            <button class="sheet-ai-btn secondary" onclick="sheetAI('analyze')">📈 Analyze</button>
+                            <button class="sheet-ai-btn" onclick="sheetAI('custom')">✨ AI Assist</button>
+                        </div>
                     </div>
                 </div>
                 
@@ -12249,208 +12403,6 @@ if __name__ == '__main__':
                 </div>
             </div>
             
-            <!-- Document Editor (Google Docs / Word-style) -->
-            <div class="editor-doc-sidebar" id="editorDocSidebar">
-                <div class="sidebar-resize-handle left" data-sidebar="editorDocSidebar" data-direction="left"></div>
-                <div class="doc-layout">
-                    <!-- Header -->
-                    <div class="doc-header">
-                        <h2>📄 Document</h2>
-                        <input type="text" class="doc-title-input" id="docTitle" value="Untitled Document" spellcheck="false">
-                        <button class="doc-ai-btn secondary" onclick="docExport()" title="Export">⬇️ Export</button>
-                        <button class="doc-ai-btn secondary" onclick="docShare()" title="Share">🔗 Share</button>
-                        <button class="close-btn" onclick="toggleEditorDoc()" style="color:#60a5fa;">×</button>
-                    </div>
-                    
-                    <!-- Toolbar -->
-                    <div class="doc-toolbar">
-                        <div class="doc-tb-group">
-                            <button class="doc-tb-btn" onclick="docFormat('undo')" title="Undo">↶</button>
-                            <button class="doc-tb-btn" onclick="docFormat('redo')" title="Redo">↷</button>
-                        </div>
-                        <div class="doc-tb-group">
-                            <select class="doc-tb-select" id="docFontFamily" onchange="docFormatFont('fontName', this.value)">
-                                <option value="Georgia">Georgia</option>
-                                <option value="Times New Roman">Times New Roman</option>
-                                <option value="Arial">Arial</option>
-                                <option value="Helvetica">Helvetica</option>
-                                <option value="Verdana">Verdana</option>
-                                <option value="Courier New">Courier New</option>
-                                <option value="Inter">Inter</option>
-                            </select>
-                            <select class="doc-tb-select" id="docFontSize" onchange="docFormatFont('fontSize', this.value)">
-                                <option value="1">8</option>
-                                <option value="2">10</option>
-                                <option value="3" selected>12</option>
-                                <option value="4">14</option>
-                                <option value="5">18</option>
-                                <option value="6">24</option>
-                                <option value="7">36</option>
-                            </select>
-                        </div>
-                        <div class="doc-tb-group">
-                            <select class="doc-tb-select" id="docHeading" onchange="docFormatBlock(this.value)">
-                                <option value="p">Normal</option>
-                                <option value="h1">Heading 1</option>
-                                <option value="h2">Heading 2</option>
-                                <option value="h3">Heading 3</option>
-                                <option value="blockquote">Quote</option>
-                            </select>
-                        </div>
-                        <div class="doc-tb-group">
-                            <button class="doc-tb-btn" onclick="docFormat('bold')" title="Bold"><b>B</b></button>
-                            <button class="doc-tb-btn" onclick="docFormat('italic')" title="Italic"><i>I</i></button>
-                            <button class="doc-tb-btn" onclick="docFormat('underline')" title="Underline"><u>U</u></button>
-                            <button class="doc-tb-btn" onclick="docFormat('strikeThrough')" title="Strikethrough"><s>S</s></button>
-                        </div>
-                        <div class="doc-tb-group">
-                            <button class="doc-tb-btn" onclick="docFormat('justifyLeft')" title="Align Left">⫷</button>
-                            <button class="doc-tb-btn" onclick="docFormat('justifyCenter')" title="Center">☰</button>
-                            <button class="doc-tb-btn" onclick="docFormat('justifyRight')" title="Align Right">⫸</button>
-                            <button class="doc-tb-btn" onclick="docFormat('justifyFull')" title="Justify">☰</button>
-                        </div>
-                        <div class="doc-tb-group">
-                            <button class="doc-tb-btn" onclick="docFormat('insertUnorderedList')" title="Bullet List">•≡</button>
-                            <button class="doc-tb-btn" onclick="docFormat('insertOrderedList')" title="Numbered List">1.</button>
-                            <button class="doc-tb-btn" onclick="docFormat('indent')" title="Indent">→≡</button>
-                            <button class="doc-tb-btn" onclick="docFormat('outdent')" title="Outdent">←≡</button>
-                        </div>
-                        <div class="doc-tb-group">
-                            <button class="doc-tb-btn" onclick="docInsertLink()" title="Insert Link">🔗</button>
-                            <button class="doc-tb-btn" onclick="docInsertImage()" title="Insert Image">🖼️</button>
-                            <button class="doc-tb-btn" onclick="docInsertTable()" title="Insert Table">⊞</button>
-                            <button class="doc-tb-btn" onclick="docInsertHR()" title="Horizontal Rule">—</button>
-                        </div>
-                        <div class="doc-tb-group">
-                            <button class="doc-tb-btn" onclick="docFormat('removeFormat')" title="Clear Formatting">✕</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Page Area -->
-                    <div class="doc-page-container">
-                        <div class="doc-page" id="docPage" contenteditable="true" oninput="docUpdateStats()">
-                            <h1>Welcome to Document Editor</h1>
-                            <p>Start typing your document here. Use the toolbar above for formatting, or ask the AI assistant below for help writing, editing, or translating your content.</p>
-                            <p>Features include:</p>
-                            <ul>
-                                <li>Rich text formatting (bold, italic, headings, lists)</li>
-                                <li>AI-powered writing assistance</li>
-                                <li>Export to HTML, Markdown, or plain text</li>
-                                <li>Tables, links, and image support</li>
-                            </ul>
-                        </div>
-                    </div>
-                    
-                    <!-- Status Bar -->
-                    <div class="doc-status-bar">
-                        <span id="docWordCount">Words: 0 | Characters: 0</span>
-                        <span id="docPageCount">Page 1</span>
-                    </div>
-                    
-                    <!-- AI Bar -->
-                    <div class="doc-ai-bar">
-                        <input type="text" class="doc-ai-input" id="docAIInput" placeholder="Ask AI: rewrite, summarize, translate, expand, check grammar...">
-                        <button class="doc-ai-btn secondary" onclick="docAI('summarize')">📋 Summarize</button>
-                        <button class="doc-ai-btn secondary" onclick="docAI('rewrite')">✏️ Rewrite</button>
-                        <button class="doc-ai-btn secondary" onclick="docAI('translate')">🌐 Translate</button>
-                        <button class="doc-ai-btn" onclick="docAI('custom')">✨ AI Assist</button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Spreadsheet Editor (Excel / Google Sheets-style) -->
-            <div class="editor-sheet-sidebar" id="editorSheetSidebar">
-                <div class="sidebar-resize-handle left" data-sidebar="editorSheetSidebar" data-direction="left"></div>
-                <div class="sheet-layout">
-                    <!-- Header -->
-                    <div class="sheet-header">
-                        <h2>📊 Spreadsheet</h2>
-                        <input type="text" class="sheet-title-input" id="sheetTitle" value="Untitled Spreadsheet" spellcheck="false">
-                        <button class="sheet-ai-btn secondary" onclick="sheetImport()" title="Import CSV">📥 Import</button>
-                        <button class="sheet-ai-btn secondary" onclick="sheetExport()" title="Export">⬇️ Export</button>
-                        <button class="close-btn" onclick="toggleEditorSheet()" style="color:#34d399;">×</button>
-                    </div>
-                    
-                    <!-- Toolbar -->
-                    <div class="sheet-toolbar">
-                        <div class="sheet-tb-group">
-                            <button class="sheet-tb-btn" onclick="sheetAction('undo')" title="Undo">↶</button>
-                            <button class="sheet-tb-btn" onclick="sheetAction('redo')" title="Redo">↷</button>
-                        </div>
-                        <div class="sheet-tb-group">
-                            <button class="sheet-tb-btn" onclick="sheetFormat('bold')" title="Bold"><b>B</b></button>
-                            <button class="sheet-tb-btn" onclick="sheetFormat('italic')" title="Italic"><i>I</i></button>
-                            <button class="sheet-tb-btn" onclick="sheetFormat('underline')" title="Underline"><u>U</u></button>
-                        </div>
-                        <div class="sheet-tb-group">
-                            <button class="sheet-tb-btn" onclick="sheetAlign('left')" title="Align Left">⫷</button>
-                            <button class="sheet-tb-btn" onclick="sheetAlign('center')" title="Center">☰</button>
-                            <button class="sheet-tb-btn" onclick="sheetAlign('right')" title="Right">⫸</button>
-                        </div>
-                        <div class="sheet-tb-group">
-                            <select class="sheet-tb-select" onchange="sheetNumberFormat(this.value)" title="Number Format">
-                                <option value="auto">Auto</option>
-                                <option value="number">Number</option>
-                                <option value="currency">Currency $</option>
-                                <option value="percent">Percent %</option>
-                                <option value="date">Date</option>
-                                <option value="text">Text</option>
-                            </select>
-                        </div>
-                        <div class="sheet-tb-group">
-                            <button class="sheet-tb-btn" onclick="sheetAction('addRow')" title="Add Row">+↓</button>
-                            <button class="sheet-tb-btn" onclick="sheetAction('addCol')" title="Add Column">+→</button>
-                            <button class="sheet-tb-btn" onclick="sheetAction('deleteRow')" title="Delete Row">−↓</button>
-                            <button class="sheet-tb-btn" onclick="sheetAction('deleteCol')" title="Delete Column">−→</button>
-                        </div>
-                        <div class="sheet-tb-group">
-                            <button class="sheet-tb-btn" onclick="sheetAction('sort')" title="Sort A→Z">↕️</button>
-                            <button class="sheet-tb-btn" onclick="sheetAction('filter')" title="Filter">🔍</button>
-                            <button class="sheet-tb-btn" onclick="sheetAction('chart')" title="Insert Chart">📊</button>
-                            <button class="sheet-tb-btn" onclick="sheetAction('freeze')" title="Freeze Row/Col">❄️</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Formula Bar -->
-                    <div class="sheet-formula-bar">
-                        <input type="text" class="sheet-cell-ref" id="sheetCellRef" value="A1" readonly>
-                        <span style="color:#6b7280;font-size:12px;">𝑓𝑥</span>
-                        <input type="text" class="sheet-formula-input" id="sheetFormulaInput" placeholder="Enter value or formula (=SUM, =AVERAGE, =IF...)" onkeydown="if(event.key==='Enter'){sheetApplyFormula();}">
-                    </div>
-                    
-                    <!-- Grid -->
-                    <div class="sheet-grid-container" id="sheetGridContainer">
-                        <table class="sheet-grid" id="sheetGrid">
-                            <!-- Generated by JS -->
-                        </table>
-                    </div>
-                    
-                    <!-- Sheet Tabs -->
-                    <div class="sheet-tabs-bar">
-                        <button class="sheet-tab active" onclick="sheetSwitchTab(0, this)">Sheet 1</button>
-                        <button class="sheet-tab-add" onclick="sheetAddTab()" title="Add Sheet">+</button>
-                    </div>
-                    
-                    <!-- Chart Area (hidden by default) -->
-                    <div class="sheet-chart-container" id="sheetChartArea">
-                        <canvas id="sheetChartCanvas" width="600" height="180"></canvas>
-                    </div>
-                    
-                    <!-- Status Bar -->
-                    <div class="sheet-status-bar">
-                        <span id="sheetStats">Ready</span>
-                        <span id="sheetSelectionInfo">Sum: 0 | Avg: 0 | Count: 0</span>
-                    </div>
-                    
-                    <!-- AI Bar -->
-                    <div class="sheet-ai-bar">
-                        <input type="text" class="sheet-ai-input" id="sheetAIInput" placeholder="Ask AI: generate formula, analyze data, create chart, clean data...">
-                        <button class="sheet-ai-btn secondary" onclick="sheetAI('formula')">🔢 Formula</button>
-                        <button class="sheet-ai-btn secondary" onclick="sheetAI('analyze')">📈 Analyze</button>
-                        <button class="sheet-ai-btn" onclick="sheetAI('custom')">✨ AI Assist</button>
-                    </div>
-                </div>
-            </div>
             
             <!-- Queue/Calendar Sidebar -->
             <div class="queue-sidebar" id="queueSidebar">
@@ -15134,26 +15086,22 @@ if __name__ == '__main__':
             }
         }
         
-        // Editor Doc - Google Docs / Word-style Document Editor
+        // Editor Doc - opens V4 editor in document mode
         function toggleEditorDoc() {
-            const sidebar = document.getElementById('editorDocSidebar');
-            const wasOpen = sidebar && sidebar.classList.contains('open');
-            closeAllEditorSidebars();
-            if (!wasOpen && sidebar) {
-                sidebar.classList.add('open');
-                docUpdateStats();
-            }
+            const v4 = document.getElementById('editorV4Sidebar');
+            const isV4Open = v4 && v4.classList.contains('open');
+            if (!isV4Open) toggleEditorV4();
+            switchEditorMode('document');
+            docUpdateStats();
         }
         
-        // Editor Sheet - Excel / Google Sheets-style Spreadsheet
+        // Editor Sheet - opens V4 editor in spreadsheet mode
         function toggleEditorSheet() {
-            const sidebar = document.getElementById('editorSheetSidebar');
-            const wasOpen = sidebar && sidebar.classList.contains('open');
-            closeAllEditorSidebars();
-            if (!wasOpen && sidebar) {
-                sidebar.classList.add('open');
-                if (!sheetInitialized) sheetInit();
-            }
+            const v4 = document.getElementById('editorV4Sidebar');
+            const isV4Open = v4 && v4.classList.contains('open');
+            if (!isV4Open) toggleEditorV4();
+            switchEditorMode('spreadsheet');
+            if (!sheetInitialized) sheetInit();
         }
         
         // Helper to close all sidebars before opening an editor
@@ -15175,10 +15123,7 @@ if __name__ == '__main__':
             if (edaw) edaw.classList.remove('open');
             if (ecode) ecode.classList.remove('open');
             if (evideo) evideo.classList.remove('open');
-            const edoc = document.getElementById('editorDocSidebar');
-            const esheet = document.getElementById('editorSheetSidebar');
-            if (edoc) edoc.classList.remove('open');
-            if (esheet) esheet.classList.remove('open');
+
         }
         
         // Editor mode switching (tabs inside editor)
@@ -15224,7 +15169,15 @@ if __name__ == '__main__':
             // Hide/show bottom generate bar (only for image mode)
             const generateBar = document.querySelector('.ev4-generate-bar');
             if (generateBar) {
-                generateBar.style.display = mode === 'image' ? 'flex' : 'none';
+                generateBar.style.display = (mode === 'image') ? 'flex' : 'none';
+            }
+            
+            // Initialize spreadsheet when switching to it
+            if (mode === 'spreadsheet' && !sheetInitialized) {
+                sheetInit();
+            }
+            if (mode === 'document') {
+                docUpdateStats();
             }
         }
         
