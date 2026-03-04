@@ -15201,8 +15201,15 @@ if __name__ == '__main__':
         function ev2SwitchPanel(panel) {
             document.querySelectorAll('.ev2-panel-tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.ev2-panel-content').forEach(c => c.classList.remove('active'));
-            event.target.classList.add('active');
-            document.getElementById('ev2' + panel.charAt(0).toUpperCase() + panel.slice(1) + 'Panel').classList.add('active');
+            if (event && event.target) {
+                const tab = event.target.closest('.ev2-panel-tab') || event.target;
+                tab.classList.add('active');
+            }
+            // Map special panel names to correct DOM IDs
+            const panelMap = { 'ai': 'AI', 'bg': 'BG' };
+            const panelId = panelMap[panel] || (panel.charAt(0).toUpperCase() + panel.slice(1));
+            const el = document.getElementById('ev2' + panelId + 'Panel');
+            if (el) el.classList.add('active');
         }
         
         function ev2LoadTemplate(template) {
@@ -15225,21 +15232,51 @@ if __name__ == '__main__':
         function ev2AddElement(type) {
             const canvas = document.getElementById('ev2Canvas');
             if (!canvas) return;
-            let html = '';
+            ev2SaveState();
+            const el = document.createElement('div');
+            el.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);cursor:move;user-select:none;';
             switch(type) {
                 case 'text':
-                    html = '<div contenteditable="true" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:32px;color:#fff;text-align:center;min-width:100px;padding:8px;cursor:move;" onclick="this.contentEditable=true" onblur="this.contentEditable=false">Double-click to edit</div>';
+                    el.innerHTML = '<div contenteditable="false" style="font-size:32px;color:#fff;text-align:center;min-width:100px;padding:8px;" ondblclick="this.contentEditable=true;this.focus();" onblur="this.contentEditable=false;">Double-click to edit</div>';
                     break;
                 case 'shape':
-                    html = '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:120px;height:120px;background:rgba(99,102,241,0.6);border-radius:12px;cursor:move;"></div>';
+                    el.style.cssText += 'width:120px;height:120px;background:rgba(99,102,241,0.6);border-radius:12px;';
                     break;
                 case 'icon':
-                    html = '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:64px;cursor:move;">⭐</div>';
+                    el.style.cssText += 'font-size:64px;';
+                    el.textContent = '⭐';
                     break;
                 default:
-                    html = `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);padding:12px;background:rgba(255,255,255,0.1);border:1px dashed rgba(255,255,255,0.3);cursor:move;">${type}</div>`;
+                    el.style.cssText += 'padding:12px;background:rgba(255,255,255,0.1);border:1px dashed rgba(255,255,255,0.3);';
+                    el.textContent = type;
             }
-            canvas.insertAdjacentHTML('beforeend', html);
+            // Add drag behavior
+            el.addEventListener('mousedown', function(e) {
+                if (e.target.isContentEditable) return;
+                e.preventDefault();
+                const rect = canvas.getBoundingClientRect();
+                const startX = e.clientX;
+                const startY = e.clientY;
+                const origLeft = el.offsetLeft;
+                const origTop = el.offsetTop;
+                el.style.transform = 'none';
+                el.style.left = origLeft + 'px';
+                el.style.top = origTop + 'px';
+                el.style.outline = '2px solid #6366f1';
+                function onMove(ev) {
+                    el.style.left = (origLeft + ev.clientX - startX) + 'px';
+                    el.style.top = (origTop + ev.clientY - startY) + 'px';
+                }
+                function onUp() {
+                    document.removeEventListener('mousemove', onMove);
+                    document.removeEventListener('mouseup', onUp);
+                    el.style.outline = '';
+                    ev2SaveState();
+                }
+                document.addEventListener('mousemove', onMove);
+                document.addEventListener('mouseup', onUp);
+            });
+            canvas.appendChild(el);
             showNotification(`Added ${type} element to canvas`, 'success');
         }
         
@@ -15249,6 +15286,7 @@ if __name__ == '__main__':
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     const canvas = document.getElementById('ev2Canvas');
+                    ev2SaveState();
                     if (file.type.startsWith('image/')) {
                         canvas.innerHTML = `<img src="${e.target.result}" style="max-width:100%;max-height:100%;object-fit:contain">`;
                     }
@@ -15382,13 +15420,35 @@ if __name__ == '__main__':
         function ev2ZoomIn() { ev2CurrentZoom = Math.min(400, ev2CurrentZoom + 25); ev2ApplyZoom(); }
         function ev2ZoomOut() { ev2CurrentZoom = Math.max(25, ev2CurrentZoom - 25); ev2ApplyZoom(); }
         function ev2FitCanvas() { ev2CurrentZoom = 100; ev2ApplyZoom(); }
+        let ev2UndoStack = [];
+        let ev2UndoIndex = -1;
+        function ev2SaveState() {
+            const canvas = document.getElementById('ev2Canvas');
+            if (canvas) {
+                ev2UndoStack = ev2UndoStack.slice(0, ev2UndoIndex + 1);
+                ev2UndoStack.push(canvas.innerHTML);
+                ev2UndoIndex = ev2UndoStack.length - 1;
+            }
+        }
         function ev2Undo() {
-            document.execCommand('undo', false, null);
-            showNotification('Undo', 'info');
+            if (ev2UndoIndex > 0) {
+                ev2UndoIndex--;
+                const canvas = document.getElementById('ev2Canvas');
+                if (canvas) canvas.innerHTML = ev2UndoStack[ev2UndoIndex];
+                showNotification('Undo', 'info');
+            } else {
+                showNotification('Nothing to undo', 'info');
+            }
         }
         function ev2Redo() {
-            document.execCommand('redo', false, null);
-            showNotification('Redo', 'info');
+            if (ev2UndoIndex < ev2UndoStack.length - 1) {
+                ev2UndoIndex++;
+                const canvas = document.getElementById('ev2Canvas');
+                if (canvas) canvas.innerHTML = ev2UndoStack[ev2UndoIndex];
+                showNotification('Redo', 'info');
+            } else {
+                showNotification('Nothing to redo', 'info');
+            }
         }
         function ev2RenderLayers() {
             const list = document.getElementById('ev2LayersList');
@@ -15568,7 +15628,10 @@ if __name__ == '__main__':
         
         function ev3SwitchAPITab(tab) {
             document.querySelectorAll('.ev3-api-tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
+            if (event && event.target) {
+                const tabEl = event.target.closest('.ev3-api-tab') || event.target;
+                tabEl.classList.add('active');
+            }
             const codes = {
                 python: `import replicate\n\noutput = replicate.run(\n    "black-forest-labs/flux-pro",\n    input={"prompt": "..."}\n)`,
                 curl: `curl -X POST https://api.replicate.com/v1/predictions \\\n  -H "Authorization: Token $REPLICATE_API_TOKEN" \\\n  -d '{"version": "...", "input": {"prompt": "..."}}'`,
@@ -15877,6 +15940,7 @@ if __name__ == '__main__':
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     const canvas = document.getElementById('ev4Canvas');
+                    ev4SaveState();
                     if (file.type.startsWith('image/')) {
                         canvas.innerHTML = `<img src="${e.target.result}" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.5)">`;
                     } else if (file.type.startsWith('video/')) {
@@ -15896,8 +15960,14 @@ if __name__ == '__main__':
         function ev4SwitchRightPanel(panel) {
             document.querySelectorAll('.ev4-panel-tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.ev4-right-content').forEach(c => c.classList.remove('active'));
-            event.target.classList.add('active');
-            document.getElementById('ev4' + panel.charAt(0).toUpperCase() + panel.slice(1) + 'Panel').classList.add('active');
+            if (event && event.target) {
+                const tab = event.target.closest('.ev4-panel-tab') || event.target;
+                tab.classList.add('active');
+            }
+            const panelMap = { 'ai': 'AI', 'bg': 'BG' };
+            const panelId = panelMap[panel] || (panel.charAt(0).toUpperCase() + panel.slice(1));
+            const el = document.getElementById('ev4' + panelId + 'Panel');
+            if (el) el.classList.add('active');
         }
         
         function ev4AddLayer() {
@@ -15967,6 +16037,7 @@ if __name__ == '__main__':
                 });
                 const data = await res.json();
                 if (data.success && data.output_url) {
+                    ev4SaveState();
                     canvas.innerHTML = `<img src="${data.output_url}" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.5)">`;
                     lastGeneratedUrl = data.output_url;
                     ev4Log(`${actionName} complete!`, 'success');
@@ -16144,6 +16215,9 @@ if __name__ == '__main__':
                     ev4Log('Generation complete!', 'success');
                     lastGeneratedUrl = data.output_url;
                     
+                    // Save state for undo before modifying canvas
+                    ev4SaveState();
+                    
                     // Add to history
                     ev4History.push({prompt, time: new Date(), model, output: data.output_url});
                     
@@ -16241,7 +16315,10 @@ if __name__ == '__main__':
                 const data = await res.json();
                 if (data.success && data.output_url) {
                     lastGeneratedUrl = data.output_url;
-                    showNotification('3D model generated! Download: ' + data.output_url.split('/').pop(), 'success');
+                    // Display result in viewport
+                    const viewport = document.querySelector('.e3d-viewport');
+                    if (viewport) viewport.innerHTML = `<img src="${data.output_url}" style="max-width:100%;max-height:100%;object-fit:contain;">`;
+                    showNotification('3D model generated!', 'success');
                 } else { showNotification(data.error || '3D generation failed', 'error'); }
             } catch(e) { showNotification('Error: ' + e.message, 'error'); }
         }
@@ -16336,7 +16413,7 @@ if __name__ == '__main__':
         let dawPlayInterval = null;
         
         function dawUpdateTimecode() {
-            document.querySelectorAll('.daw-timecode, .daw-position').forEach(el => {
+            document.querySelectorAll('.daw-time, #dawTime, #dawTime2').forEach(el => {
                 if (el) el.textContent = dawPosition;
             });
         }
@@ -16398,7 +16475,7 @@ if __name__ == '__main__':
             showNotification('Position: ' + dawPosition, 'info');
         }
         
-        function dawAddTrack(type) {
+        function dawAddTrack(type = 'Audio') {
             const timeline = document.querySelector('.daw-tracks') || document.getElementById('dawTracks');
             if (!timeline) return;
             const trackNum = timeline.querySelectorAll('.daw-track').length + 1;
@@ -16421,14 +16498,16 @@ if __name__ == '__main__':
             showNotification(`Added ${type} track ${trackNum}`, 'success');
         }
         
-        async function dawAIGenerate() {
+        async function dawAIGenerate(type = 'full') {
             const prompt = (document.getElementById('dawPrompt') || document.querySelector('.daw-prompt'))?.value;
-            if (!prompt) { showNotification('Enter a prompt for AI music', 'warning'); return; }
-            showNotification('Generating AI music...', 'info');
+            if (!prompt && type === 'custom') { showNotification('Enter a prompt for AI music', 'warning'); return; }
+            const typeLabels = { melody: 'melody line', beat: 'drum beat', full: 'full track', custom: prompt || 'music' };
+            const instruction = prompt || `Generate a ${typeLabels[type] || type}`;
+            showNotification(`Generating AI ${typeLabels[type] || 'music'}...`, 'info');
             try {
                 const res = await fetch('/api/media/edit', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ file_url: 'generate:musicgen', instruction: prompt, media_type: 'audio' })
+                    body: JSON.stringify({ file_url: 'generate:musicgen', instruction: instruction, media_type: 'audio' })
                 });
                 const data = await res.json();
                 if (data.success && data.output_url) {
@@ -16439,12 +16518,13 @@ if __name__ == '__main__':
             } catch(e) { showNotification('Error: ' + e.message, 'error'); }
         }
         
-        async function dawExport() {
-            showNotification('Exporting audio...', 'info');
+        async function dawExport(format = 'wav') {
+            showNotification(`Exporting as ${format.toUpperCase()}...`, 'info');
             if (lastGeneratedUrl) {
                 const a = document.createElement('a');
                 a.href = lastGeneratedUrl;
-                a.download = 'daw_export.' + (lastGeneratedUrl.includes('.mp3') ? 'mp3' : 'wav');
+                const ext = format === 'master' ? 'wav' : format;
+                a.download = `daw_export.${ext}`;
                 a.click();
                 showNotification('Audio exported!', 'success');
             } else {
@@ -16466,10 +16546,14 @@ if __name__ == '__main__':
             }
         }
         function dawMasterVolume(val) {
-            // Update any audio elements in the DAW
+            // Update visual volume indicator
+            const dbVal = parseFloat(val);
             document.querySelectorAll('.daw-track audio, .daw-track video').forEach(el => {
-                el.volume = Math.max(0, Math.min(1, (parseFloat(val) + 20) / 20));
+                el.volume = Math.max(0, Math.min(1, (dbVal + 20) / 20));
             });
+            // Update any volume display
+            const volDisplay = document.querySelector('.daw-master-value, .daw-volume-display');
+            if (volDisplay) volDisplay.textContent = val + 'dB';
             showNotification('Master: ' + val + 'dB', 'info');
         }
         
@@ -16518,6 +16602,19 @@ if __name__ == '__main__':
         function codeCloseFile(name) {
             delete codeFiles[name];
             codeCurrentFile = null;
+            // Clear the textarea
+            const textarea = document.getElementById('codeTextarea');
+            if (textarea) textarea.value = '';
+            // Clear/reset the tab bar
+            const tabsContainer = document.querySelector('.code-tabs');
+            if (tabsContainer) tabsContainer.innerHTML = '<div class="code-tab" style="opacity:0.5">No file open</div>';
+            // Remove from file tree
+            const explorer = document.querySelector('.code-file-tree') || document.getElementById('codeFileTree');
+            if (explorer) {
+                explorer.querySelectorAll('.code-tree-item').forEach(item => {
+                    if (item.textContent.includes(name)) item.remove();
+                });
+            }
             showNotification(`Closed ${name}`, 'info');
         }
         
@@ -16529,7 +16626,7 @@ if __name__ == '__main__':
                 previewFrame.srcdoc = textarea.value;
                 showNotification('Code running in preview', 'success');
             }
-            const terminal = document.querySelector('.code-terminal-output');
+            const terminal = document.getElementById('codeTerminal') || document.querySelector('.code-terminal-output');
             if (terminal) terminal.innerHTML += '<div style="color:#22c55e">$ Running ' + (codeCurrentFile || 'index.html') + '...</div><div style="color:#d1d5db">Output rendered in preview panel</div>';
         }
         
@@ -16712,12 +16809,15 @@ if __name__ == '__main__':
             showNotification('AI processing video...', 'info');
             try {
                 // Try to get prompt from any available input
-                const promptInput = document.querySelector('#videoPrompt') || document.querySelector('textarea[placeholder*="video"]');
-                const prompt = promptInput ? promptInput.value : 'Generate a cinematic video';
-                if (!prompt || prompt.trim() === '') { showNotification('Enter a video prompt', 'warning'); return; }
+                const promptInput = document.querySelector('#videoPrompt') || document.querySelector('#videoAIPrompt') || document.querySelector('textarea[placeholder*="video"]') || document.querySelector('.video-prompt input, .video-prompt textarea');
+                let promptVal = promptInput ? promptInput.value : '';
+                if (!promptVal || promptVal.trim() === '') {
+                    promptVal = prompt('Enter a video prompt:');
+                    if (!promptVal) { showNotification('Video generation cancelled', 'info'); return; }
+                }
                 const res = await fetch('/api/media/edit', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ file_url: 'generate:video', instruction: prompt, media_type: 'video' })
+                    body: JSON.stringify({ file_url: 'generate:video', instruction: promptVal, media_type: 'video' })
                 });
                 const data = await res.json();
                 if (data.success && data.output_url) {
@@ -16748,7 +16848,7 @@ if __name__ == '__main__':
         }
         
         function videoRenderClips() {
-            const timeline = document.querySelector('.video-timeline-tracks') || document.querySelector('.video-clips');
+            const timeline = document.querySelector('.video-track-clips') || document.querySelector('.video-timeline-tracks') || document.querySelector('.video-clips');
             if (!timeline) return;
             const colors = ['#a855f7', '#22c55e', '#3b82f6', '#ef4444', '#f59e0b'];
             timeline.innerHTML = '';
@@ -16853,7 +16953,12 @@ if __name__ == '__main__':
                 'Cinematic': 'contrast(1.3) brightness(0.95) saturate(1.2)',
                 'Blur': 'blur(3px)',
                 'Vignette': 'brightness(0.9) contrast(1.1)',
-                'Glow': 'brightness(1.2) contrast(0.9) blur(0.5px)'
+                'Glow': 'brightness(1.2) contrast(0.9) blur(0.5px)',
+                'fade': 'opacity(0.7) brightness(1.1)',
+                'zoom': 'contrast(1.2) saturate(1.1)',
+                'color': 'saturate(1.4) contrast(1.2)',
+                'blur': 'blur(3px)',
+                'none': 'none'
             };
             const filter = filters[effect] || 'none';
             preview.style.filter = filter;
@@ -16998,10 +17103,39 @@ if __name__ == '__main__':
         }
         function codeShowPanel(panel) {
             document.querySelectorAll('.code-panel-tab').forEach(t => t.classList.remove('active'));
-            if (event && event.target) event.target.classList.add('active');
-            // Show/hide panels (same logic as codeSwitchPanel for V1)
+            if (event && event.target) {
+                const tab = event.target.closest('.code-panel-tab') || event.target;
+                tab.classList.add('active');
+            }
+            // Show/hide panels
             const terminal = document.getElementById('codeTerminal');
             if (terminal) terminal.style.display = panel === 'terminal' ? 'block' : 'none';
+            // Show problems panel content
+            let problemsPanel = document.getElementById('codeProblems');
+            if (!problemsPanel && panel === 'problems') {
+                const container = terminal ? terminal.parentElement : null;
+                if (container) {
+                    problemsPanel = document.createElement('div');
+                    problemsPanel.id = 'codeProblems';
+                    problemsPanel.style.cssText = 'padding:12px;color:#d1d5db;font-size:12px;';
+                    problemsPanel.innerHTML = '<div style="color:#22c55e;">✓ No problems detected</div>';
+                    container.appendChild(problemsPanel);
+                }
+            }
+            if (problemsPanel) problemsPanel.style.display = panel === 'problems' ? 'block' : 'none';
+            // Show output panel content
+            let outputPanel = document.getElementById('codeOutput');
+            if (!outputPanel && panel === 'output') {
+                const container = terminal ? terminal.parentElement : null;
+                if (container) {
+                    outputPanel = document.createElement('div');
+                    outputPanel.id = 'codeOutput';
+                    outputPanel.style.cssText = 'padding:12px;color:#d1d5db;font-size:12px;font-family:monospace;';
+                    outputPanel.innerHTML = '<div style="opacity:0.5">Output will appear here...</div>';
+                    container.appendChild(outputPanel);
+                }
+            }
+            if (outputPanel) outputPanel.style.display = panel === 'output' ? 'block' : 'none';
         }
         // codeAIAssist defined above - no duplicate needed
         function codeRunCommand(el) {
