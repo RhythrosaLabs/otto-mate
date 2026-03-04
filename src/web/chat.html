@@ -15371,9 +15371,17 @@ if __name__ == '__main__':
             }
         }
         
-        function ev2ZoomIn() { ev2CurrentZoom = Math.min(400, ev2CurrentZoom + 25); document.getElementById('ev2ZoomLevel').textContent = ev2CurrentZoom + '%'; }
-        function ev2ZoomOut() { ev2CurrentZoom = Math.max(25, ev2CurrentZoom - 25); document.getElementById('ev2ZoomLevel').textContent = ev2CurrentZoom + '%'; }
-        function ev2FitCanvas() { ev2CurrentZoom = 100; document.getElementById('ev2ZoomLevel').textContent = '100%'; }
+        function ev2ApplyZoom() {
+            const canvas = document.getElementById('ev2Canvas');
+            if (canvas) {
+                canvas.style.transform = `scale(${ev2CurrentZoom / 100})`;
+                canvas.style.transformOrigin = 'center center';
+            }
+            document.getElementById('ev2ZoomLevel').textContent = ev2CurrentZoom + '%';
+        }
+        function ev2ZoomIn() { ev2CurrentZoom = Math.min(400, ev2CurrentZoom + 25); ev2ApplyZoom(); }
+        function ev2ZoomOut() { ev2CurrentZoom = Math.max(25, ev2CurrentZoom - 25); ev2ApplyZoom(); }
+        function ev2FitCanvas() { ev2CurrentZoom = 100; ev2ApplyZoom(); }
         function ev2Undo() {
             document.execCommand('undo', false, null);
             showNotification('Undo', 'info');
@@ -15382,8 +15390,25 @@ if __name__ == '__main__':
             document.execCommand('redo', false, null);
             showNotification('Redo', 'info');
         }
+        function ev2RenderLayers() {
+            const list = document.getElementById('ev2LayersList');
+            if (!list) return;
+            list.innerHTML = '';
+            ev2Layers.forEach((layer, i) => {
+                const div = document.createElement('div');
+                div.className = 'ev2-layer' + (i === ev2Layers.length - 1 ? ' active' : '');
+                div.innerHTML = `
+                    <span class="ev2-layer-vis" onclick="ev2Layers[${i}].visible=!ev2Layers[${i}].visible;ev2RenderLayers()" style="cursor:pointer;opacity:${layer.visible ? 0.6 : 0.2}">${layer.visible ? '👁️' : '🚫'}</span>
+                    <span class="ev2-layer-name">${layer.name}</span>
+                    <span class="ev2-layer-lock" onclick="ev2Layers[${i}].locked=!ev2Layers[${i}].locked;ev2RenderLayers()" style="cursor:pointer;opacity:${layer.locked ? 0.8 : 0.4}">${layer.locked ? '🔒' : '🔓'}</span>
+                `;
+                div.onclick = (e) => { if (!e.target.closest('.ev2-layer-vis,.ev2-layer-lock')) { list.querySelectorAll('.ev2-layer').forEach(l => l.classList.remove('active')); div.classList.add('active'); }};
+                list.appendChild(div);
+            });
+        }
         function ev2AddLayer() { 
             ev2Layers.push({id: ev2Layers.length + 1, name: 'Layer ' + (ev2Layers.length + 1), visible: true, locked: false});
+            ev2RenderLayers();
             showNotification('Layer added', 'success');
         }
         function ev2AddEffect(effect) {
@@ -15779,12 +15804,68 @@ if __name__ == '__main__':
             console.scrollTop = console.scrollHeight;
         }
         
-        function ev4ZoomIn() { ev4Zoom = Math.min(400, ev4Zoom + 25); document.getElementById('ev4ZoomDisplay').textContent = ev4Zoom + '%'; }
-        function ev4ZoomOut() { ev4Zoom = Math.max(25, ev4Zoom - 25); document.getElementById('ev4ZoomDisplay').textContent = ev4Zoom + '%'; }
-        function ev4FitView() { ev4Zoom = 100; document.getElementById('ev4ZoomDisplay').textContent = '100%'; }
-        function ev4Undo() { ev4Log('Undo', 'info'); }
-        function ev4Redo() { ev4Log('Redo', 'info'); }
-        function ev4CompareToggle() { ev4Log('Compare mode toggled', 'info'); }
+        function ev4ApplyZoom() {
+            const canvas = document.getElementById('ev4Canvas');
+            if (canvas) {
+                canvas.style.transform = `scale(${ev4Zoom / 100})`;
+                canvas.style.transformOrigin = 'center center';
+            }
+            document.getElementById('ev4ZoomDisplay').textContent = ev4Zoom + '%';
+        }
+        function ev4ZoomIn() { ev4Zoom = Math.min(400, ev4Zoom + 25); ev4ApplyZoom(); }
+        function ev4ZoomOut() { ev4Zoom = Math.max(25, ev4Zoom - 25); ev4ApplyZoom(); }
+        function ev4FitView() { ev4Zoom = 100; ev4ApplyZoom(); }
+        
+        let ev4UndoStack = [];
+        let ev4UndoIndex = -1;
+        function ev4SaveState() {
+            const canvas = document.getElementById('ev4Canvas');
+            if (canvas) {
+                ev4UndoStack = ev4UndoStack.slice(0, ev4UndoIndex + 1);
+                ev4UndoStack.push(canvas.innerHTML);
+                ev4UndoIndex = ev4UndoStack.length - 1;
+            }
+        }
+        function ev4Undo() {
+            if (ev4UndoIndex > 0) {
+                ev4UndoIndex--;
+                const canvas = document.getElementById('ev4Canvas');
+                if (canvas) canvas.innerHTML = ev4UndoStack[ev4UndoIndex];
+                ev4Log('Undo', 'info');
+                showNotification('Undo', 'info');
+            } else {
+                showNotification('Nothing to undo', 'info');
+            }
+        }
+        function ev4Redo() {
+            if (ev4UndoIndex < ev4UndoStack.length - 1) {
+                ev4UndoIndex++;
+                const canvas = document.getElementById('ev4Canvas');
+                if (canvas) canvas.innerHTML = ev4UndoStack[ev4UndoIndex];
+                ev4Log('Redo', 'info');
+                showNotification('Redo', 'info');
+            } else {
+                showNotification('Nothing to redo', 'info');
+            }
+        }
+        
+        let ev4CompareMode = false;
+        function ev4CompareToggle() {
+            ev4CompareMode = !ev4CompareMode;
+            const canvas = document.getElementById('ev4Canvas');
+            if (canvas) {
+                if (ev4CompareMode && ev4UndoStack.length > 1) {
+                    // Show split view with original and current
+                    canvas.style.background = 'linear-gradient(90deg, rgba(0,0,0,0.3) 50%, transparent 50%)';
+                    ev4Log('Compare mode ON — showing before/after split', 'info');
+                    showNotification('Compare mode ON', 'info');
+                } else {
+                    canvas.style.background = '';
+                    ev4Log('Compare mode OFF', 'info');
+                    showNotification('Compare mode OFF', 'info');
+                }
+            }
+        }
         function ev4FullscreenCanvas() { 
             const canvas = document.getElementById('ev4Canvas');
             if (canvas.requestFullscreen) canvas.requestFullscreen();
@@ -15825,9 +15906,30 @@ if __name__ == '__main__':
             ev4Log('Added new layer', 'success');
         }
         
-        function ev4GroupLayers() { ev4Log('Grouping layers...', 'info'); }
-        function ev4ToggleLayerVisibility(id) { ev4Log('Toggled layer ' + id + ' visibility', 'info'); }
-        function ev4ToggleLayerLock(id) { ev4Log('Toggled layer ' + id + ' lock', 'info'); }
+        function ev4GroupLayers() {
+            if (ev4Layers.length < 2) { showNotification('Add more layers to group', 'warning'); return; }
+            const group = { id: ev4Layers.length + 1, name: 'Group ' + Math.ceil(ev4Layers.length / 2), visible: true, locked: false };
+            ev4Layers.push(group);
+            ev4RenderLayers();
+            ev4Log('Layers grouped', 'info');
+            showNotification('Layers grouped', 'success');
+        }
+        function ev4ToggleLayerVisibility(id) {
+            const layer = ev4Layers.find(l => l.id === id);
+            if (layer) {
+                layer.visible = !layer.visible;
+                ev4RenderLayers();
+                ev4Log(`Layer ${layer.name} ${layer.visible ? 'visible' : 'hidden'}`, 'info');
+            }
+        }
+        function ev4ToggleLayerLock(id) {
+            const layer = ev4Layers.find(l => l.id === id);
+            if (layer) {
+                layer.locked = !layer.locked;
+                ev4RenderLayers();
+                ev4Log(`Layer ${layer.name} ${layer.locked ? 'locked' : 'unlocked'}`, 'info');
+            }
+        }
         
         function ev4RenderLayers() {
             const list = document.getElementById('ev4LayersList');
@@ -15839,7 +15941,17 @@ if __name__ == '__main__':
                 </div>
             `).reverse().join('');
         }
-        function ev4SelectLayer(id) { ev4Log('Selected layer ' + id, 'info'); }
+        function ev4SelectLayer(id) {
+            const list = document.getElementById('ev4LayersList');
+            if (list) {
+                list.querySelectorAll('.ev4-layer').forEach(l => l.classList.remove('active'));
+                // Find and highlight the layer div
+                const layers = list.querySelectorAll('.ev4-layer');
+                const idx = ev4Layers.length - ev4Layers.findIndex(l => l.id === id) - 1;
+                if (layers[idx]) layers[idx].classList.add('active');
+            }
+            ev4Log('Selected layer ' + id, 'info');
+        }
         
         // V4 AI Tool helpers - call /api/media/edit with the canvas image
         async function ev4AIAction(instruction, actionName) {
@@ -15871,7 +15983,16 @@ if __name__ == '__main__':
         function ev4AIRemoveBG() { ev4AIAction('Remove background from this image completely', 'Background removal'); }
         function ev4AIEnhance() { ev4AIAction('Enhance and improve this image quality, sharpness and colors', 'Enhancement'); }
         function ev4AIUpscale() { ev4AIAction('Upscale this image to 4x resolution with AI enhancement', 'Upscaling'); }
-        function ev4AIInpaint() { ev4Log('Inpaint mode enabled - describe in prompt what to change', 'info'); showNotification('Enter what to change in the prompt, then Generate', 'info'); }
+        function ev4AIInpaint() {
+            const promptEl = document.getElementById('ev4Prompt');
+            const inpaintDesc = promptEl ? promptEl.value : '';
+            if (!inpaintDesc) {
+                showNotification('Enter what to change in the prompt field, then click Inpaint again', 'info');
+                if (promptEl) { promptEl.placeholder = 'Describe what to change (e.g., "replace sky with sunset")'; promptEl.focus(); }
+                return;
+            }
+            ev4AIAction(`Inpaint/modify this image: ${inpaintDesc}`, 'Inpainting');
+        }
         function ev4AIOutpaint() { ev4AIAction('Expand and outpaint this image beyond its borders', 'Outpainting'); }
         async function ev4AIVariations() {
             const canvas = document.getElementById('ev4Canvas');
@@ -16077,32 +16198,39 @@ if __name__ == '__main__':
         
         function e3dSetMode(mode) {
             e3dMode = mode;
-            document.querySelectorAll('.e3d-tool-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
+            document.querySelectorAll('.e3d-tool').forEach(b => b.classList.remove('active'));
+            if (event && event.target) event.target.classList.add('active');
             showNotification(`3D Mode: ${mode.charAt(0).toUpperCase() + mode.slice(1)}`, 'info');
         }
         
         function e3dAddObject(type) {
-            const hierarchy = document.querySelector('.e3d-hierarchy');
+            const hierarchy = document.querySelector('.e3d-tree');
             if (!hierarchy) return;
             const name = type.charAt(0).toUpperCase() + type.slice(1) + '_' + Date.now().toString().slice(-4);
             const item = document.createElement('div');
             item.className = 'e3d-tree-item';
-            item.innerHTML = `<span class="e3d-expand-btn">▸</span> <span class="e3d-obj-icon">◇</span> ${name}`;
+            item.style.paddingLeft = '24px';
+            item.innerHTML = `<span>◇</span> ${name}`;
             item.onclick = () => e3dSelectObject(item, name);
             hierarchy.appendChild(item);
             showNotification(`Added ${type}: ${name}`, 'success');
         }
         
         function e3dSelectObject(el, name) {
-            document.querySelectorAll('.e3d-tree-item').forEach(i => i.classList.remove('selected'));
+            document.querySelectorAll('.e3d-tree-item').forEach(i => {
+                i.classList.remove('selected');
+                i.style.background = '';
+                i.style.color = '';
+            });
             el.classList.add('selected');
+            el.style.background = 'rgba(59, 130, 246, 0.2)';
+            el.style.color = '#60a5fa';
             e3dSelectedObject = name;
-            document.querySelector('.e3d-properties-title').textContent = name;
+            showNotification(`Selected: ${name}`, 'info');
         }
         
         async function e3dAIGenerate() {
-            const prompt = document.querySelector('.e3d-ai-input')?.value;
+            const prompt = (document.getElementById('e3dPrompt') || document.getElementById('e3dPrompt2') || document.querySelector('.e3d-prompt'))?.value;
             if (!prompt) { showNotification('Enter a prompt for 3D generation', 'warning'); return; }
             showNotification('Generating 3D environment...', 'info');
             try {
@@ -16205,42 +16333,73 @@ if __name__ == '__main__':
         let dawRecording = false;
         let dawTempo = 120;
         let dawPosition = '1.1.1';
+        let dawPlayInterval = null;
+        
+        function dawUpdateTimecode() {
+            document.querySelectorAll('.daw-timecode, .daw-position').forEach(el => {
+                if (el) el.textContent = dawPosition;
+            });
+        }
         
         function dawPlay() {
             dawPlaying = !dawPlaying;
-            const btn = document.querySelector('.daw-btn-play');
-            if (btn) btn.textContent = dawPlaying ? '⏸' : '▶';
+            const btn = document.getElementById('dawPlayBtn') || document.getElementById('dawPlayBtn2');
+            if (btn) btn.textContent = dawPlaying ? '⏸' : '▶️';
             showNotification(dawPlaying ? 'Playback started' : 'Playback paused', 'info');
+            if (dawPlaying) {
+                dawPlayInterval = setInterval(() => {
+                    let parts = dawPosition.split('.').map(Number);
+                    parts[2] += 1;
+                    if (parts[2] > 4) { parts[2] = 1; parts[1] += 1; }
+                    if (parts[1] > 4) { parts[1] = 1; parts[0] += 1; }
+                    dawPosition = parts.join('.');
+                    dawUpdateTimecode();
+                }, 500 / (dawTempo / 120));
+            } else {
+                clearInterval(dawPlayInterval);
+            }
         }
         
         function dawStop() {
             dawPlaying = false;
             dawRecording = false;
             dawPosition = '1.1.1';
-            const btn = document.querySelector('.daw-btn-play');
-            if (btn) btn.textContent = '▶';
-            const recBtn = document.querySelector('.daw-btn-record');
-            if (recBtn) recBtn.classList.remove('recording');
+            clearInterval(dawPlayInterval);
+            const btn = document.getElementById('dawPlayBtn') || document.getElementById('dawPlayBtn2');
+            if (btn) btn.textContent = '▶️';
+            const recBtns = document.querySelectorAll('.daw-transport-btn');
+            recBtns.forEach(b => b.classList.remove('recording'));
+            dawUpdateTimecode();
             showNotification('Stopped', 'info');
         }
         
         function dawRecord() {
             dawRecording = !dawRecording;
-            const btn = document.querySelector('.daw-btn-record');
-            if (btn) btn.classList.toggle('recording', dawRecording);
+            const recBtns = document.querySelectorAll('.daw-transport-btn');
+            recBtns.forEach(b => {
+                if (b.textContent.includes('🔴')) {
+                    b.style.background = dawRecording ? '#ef4444' : '';
+                    b.style.boxShadow = dawRecording ? '0 0 12px rgba(239,68,68,0.5)' : '';
+                }
+            });
             showNotification(dawRecording ? 'Recording armed' : 'Recording disarmed', 'info');
         }
         
-        function dawRewind() { dawPosition = '1.1.1'; showNotification('Rewound to start', 'info'); }
+        function dawRewind() {
+            dawPosition = '1.1.1';
+            dawUpdateTimecode();
+            showNotification('Rewound to start', 'info');
+        }
         function dawForward() {
-            dawPosition = dawPosition.split('.').map(Number);
-            dawPosition[0] += 1;
-            dawPosition = dawPosition.join('.');
+            let parts = dawPosition.split('.').map(Number);
+            parts[0] += 1;
+            dawPosition = parts.join('.');
+            dawUpdateTimecode();
             showNotification('Position: ' + dawPosition, 'info');
         }
         
         function dawAddTrack(type) {
-            const timeline = document.querySelector('.daw-timeline');
+            const timeline = document.querySelector('.daw-tracks') || document.getElementById('dawTracks');
             if (!timeline) return;
             const trackNum = timeline.querySelectorAll('.daw-track').length + 1;
             const colors = ['#a855f7', '#22c55e', '#3b82f6', '#ef4444', '#f59e0b'];
@@ -16263,7 +16422,7 @@ if __name__ == '__main__':
         }
         
         async function dawAIGenerate() {
-            const prompt = document.querySelector('.daw-ai-input')?.value;
+            const prompt = (document.getElementById('dawPrompt') || document.querySelector('.daw-prompt'))?.value;
             if (!prompt) { showNotification('Enter a prompt for AI music', 'warning'); return; }
             showNotification('Generating AI music...', 'info');
             try {
@@ -16294,7 +16453,17 @@ if __name__ == '__main__':
         }
         function dawMasterAndExport() {
             showNotification('Mastering & exporting...', 'info');
-            setTimeout(() => showNotification('Audio mastered and exported!', 'success'), 2000);
+            if (lastGeneratedUrl) {
+                setTimeout(() => {
+                    const a = document.createElement('a');
+                    a.href = lastGeneratedUrl;
+                    a.download = 'mastered_export.wav';
+                    a.click();
+                    showNotification('Audio mastered and exported!', 'success');
+                }, 1500);
+            } else {
+                setTimeout(() => showNotification('Generate audio first, then master & export', 'warning'), 1500);
+            }
         }
         function dawMasterVolume(val) {
             // Update any audio elements in the DAW
@@ -16315,11 +16484,14 @@ if __name__ == '__main__':
             const name = prompt('File name:', 'untitled.js');
             if (!name) return;
             codeFiles[name] = '';
-            const explorer = document.querySelector('.code-tree');
+            const explorer = document.querySelector('.code-file-tree') || document.getElementById('codeFileTree');
             if (explorer) {
                 const item = document.createElement('div');
                 item.className = 'code-tree-item';
+                item.style.cssText = 'padding:4px 8px;font-size:12px;color:#d1d5db;cursor:pointer;border-radius:4px;';
                 item.textContent = '📄 ' + name;
+                item.onmouseover = () => item.style.background = 'rgba(59,130,246,0.1)';
+                item.onmouseout = () => item.style.background = '';
                 item.onclick = () => codeOpenFile(name);
                 explorer.appendChild(item);
             }
@@ -16334,11 +16506,13 @@ if __name__ == '__main__':
             if (tabsContainer) {
                 tabsContainer.innerHTML = `<div class="code-tab active">📄 ${name} <span onclick="codeCloseFile('${name}')" style="cursor:pointer;opacity:0.5;margin-left:8px;">×</span></div>`;
             }
-            // Update line numbers and content
-            const lines = document.querySelector('.code-lines');
-            const content = document.querySelector('.code-content');
-            if (lines) lines.innerHTML = Array(20).fill(0).map((_, i) => `<div>${i + 1}</div>`).join('');
-            if (content) content.textContent = codeFiles[name] || '';
+            // Update textarea with file contents
+            const textarea = document.getElementById('codeTextarea');
+            if (textarea) {
+                textarea.value = codeFiles[name] || '';
+                // Also save on input
+                textarea.oninput = () => { codeFiles[name] = textarea.value; };
+            }
         }
         
         function codeCloseFile(name) {
@@ -16377,7 +16551,7 @@ if __name__ == '__main__':
         }
         
         async function codeAIAssist() {
-            const input = document.querySelector('.code-ai-input') || document.getElementById('codeAIInput');
+            const input = document.getElementById('codeAIInput') || document.querySelector('.code-ai-input input') || document.querySelector('.code-ai-input textarea');
             if (!input || !input.value) { showNotification('Enter a coding request', 'warning'); return; }
             const prompt = input.value;
             showNotification('AI processing code...', 'info');
@@ -16388,8 +16562,11 @@ if __name__ == '__main__':
                 });
                 const data = await res.json();
                 if (data.success && data.output_text) {
-                    const content = document.querySelector('.code-content');
-                    if (content) content.textContent = data.output_text;
+                    const textarea = document.getElementById('codeTextarea');
+                    if (textarea) {
+                        textarea.value = data.output_text;
+                        if (codeCurrentFile) codeFiles[codeCurrentFile] = data.output_text;
+                    }
                     showNotification('AI code generated!', 'success');
                 } else { showNotification(data.error || 'AI assist failed', 'error'); }
             } catch(e) { showNotification('Error: ' + e.message, 'error'); }
@@ -16446,10 +16623,22 @@ if __name__ == '__main__':
         let videoPosition = 0;
         let videoClips = [];
         
+        function videoUpdatePlayhead() {
+            const playhead = document.querySelector('.video-playhead') || document.getElementById('videoPlayhead');
+            if (playhead) playhead.style.left = (50 + videoPosition * 5) + 'px';
+            const timecode = document.querySelector('.video-timecode');
+            if (timecode) {
+                const mins = Math.floor(videoPosition / 60);
+                const secs = Math.floor(videoPosition % 60);
+                const frames = Math.floor((videoPosition * 30) % 30);
+                timecode.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}:${String(frames).padStart(2, '0')}`;
+            }
+        }
+        
         function videoPlay() {
             videoPlaying = !videoPlaying;
-            const btn = document.querySelector('.video-play-btn');
-            if (btn) btn.textContent = videoPlaying ? '⏸' : '▶';
+            const btn = document.getElementById('videoPlayBtn');
+            if (btn) btn.textContent = videoPlaying ? '⏸' : '▶️';
             showNotification(videoPlaying ? 'Playing' : 'Paused', 'info');
             if (videoPlaying) videoAnimate();
         }
@@ -16472,20 +16661,21 @@ if __name__ == '__main__':
         function videoStop() {
             videoPlaying = false;
             videoPosition = 0;
-            const btn = document.querySelector('.video-play-btn');
-            if (btn) btn.textContent = '▶';
-            const playhead = document.querySelector('.video-playhead');
-            if (playhead) playhead.style.left = '50px';
+            const btn = document.getElementById('videoPlayBtn');
+            if (btn) btn.textContent = '▶️';
+            videoUpdatePlayhead();
             showNotification('Stopped', 'info');
         }
         
         function videoRewind() {
             videoPosition = Math.max(0, videoPosition - 5);
+            videoUpdatePlayhead();
             showNotification('Rewind 5s', 'info');
         }
         
         function videoForward() {
             videoPosition += 5;
+            videoUpdatePlayhead();
             showNotification('Forward 5s', 'info');
         }
         
@@ -16497,6 +16687,21 @@ if __name__ == '__main__':
             input.onchange = (e) => {
                 const files = Array.from(e.target.files);
                 files.forEach(f => {
+                    // Add to timeline as a clip
+                    videoAddToTimeline(f.type.startsWith('video') ? 'Video' : f.type.startsWith('audio') ? 'Audio' : 'Image');
+                    // Show in preview if it's video/image
+                    const preview = document.getElementById('videoPreview');
+                    if (preview && (f.type.startsWith('video') || f.type.startsWith('image'))) {
+                        const reader = new FileReader();
+                        reader.onload = (ev) => {
+                            if (f.type.startsWith('video')) {
+                                preview.innerHTML = `<video src="${ev.target.result}" controls style="width:100%;height:100%;object-fit:contain;"></video>`;
+                            } else {
+                                preview.innerHTML = `<img src="${ev.target.result}" style="width:100%;height:100%;object-fit:contain;">`;
+                            }
+                        };
+                        reader.readAsDataURL(f);
+                    }
                     showNotification(`Imported: ${f.name}`, 'success');
                 });
             };
@@ -16504,39 +16709,71 @@ if __name__ == '__main__':
         }
         
         async function videoAIGenerate() {
-            const style = document.querySelector('.video-ai-style')?.value || 'auto';
             showNotification('AI processing video...', 'info');
             try {
-                const promptInput = document.querySelector('.video-ai-prompt') || document.querySelector('.video-ai-input');
-                const prompt = promptInput ? promptInput.value : `Generate video with style: ${style}`;
+                // Try to get prompt from any available input
+                const promptInput = document.querySelector('#videoPrompt') || document.querySelector('textarea[placeholder*="video"]');
+                const prompt = promptInput ? promptInput.value : 'Generate a cinematic video';
+                if (!prompt || prompt.trim() === '') { showNotification('Enter a video prompt', 'warning'); return; }
                 const res = await fetch('/api/media/edit', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ file_url: 'generate:video', instruction: prompt || 'Generate a short video', media_type: 'video' })
+                    body: JSON.stringify({ file_url: 'generate:video', instruction: prompt, media_type: 'video' })
                 });
                 const data = await res.json();
                 if (data.success && data.output_url) {
                     lastGeneratedUrl = data.output_url;
+                    // Show generated video in preview
+                    const preview = document.getElementById('videoPreview');
+                    if (preview) {
+                        preview.innerHTML = `<video src="${data.output_url}" controls autoplay style="width:100%;height:100%;object-fit:contain;"></video>`;
+                    }
+                    videoAddToTimeline('AI Video');
                     showNotification('AI video generated!', 'success');
                 } else { showNotification(data.error || 'Video generation failed', 'error'); }
             } catch(e) { showNotification('Error: ' + e.message, 'error'); }
         }
         
         function videoExport() {
-            const format = document.querySelector('.video-export-format')?.value || 'mp4';
-            showNotification(`Exporting as ${format.toUpperCase()}...`, 'info');
+            if (lastGeneratedUrl) {
+                const format = 'mp4';
+                showNotification(`Exporting as ${format.toUpperCase()}...`, 'info');
+                const a = document.createElement('a');
+                a.href = lastGeneratedUrl;
+                a.download = `video_export.${format}`;
+                a.click();
+                showNotification('Video exported!', 'success');
+            } else {
+                showNotification('Generate or import a video first, then export', 'warning');
+            }
+        }
+        
+        function videoRenderClips() {
+            const timeline = document.querySelector('.video-timeline-tracks') || document.querySelector('.video-clips');
+            if (!timeline) return;
+            const colors = ['#a855f7', '#22c55e', '#3b82f6', '#ef4444', '#f59e0b'];
+            timeline.innerHTML = '';
+            videoClips.forEach((clip, i) => {
+                const el = document.createElement('div');
+                const color = colors[i % colors.length];
+                el.style.cssText = `display:inline-block;height:40px;min-width:80px;background:${color};border-radius:4px;margin:2px;padding:4px 8px;font-size:11px;color:white;cursor:pointer;vertical-align:top;`;
+                el.textContent = `${clip.type} ${i + 1}`;
+                el.onclick = () => { showNotification(`Selected: ${clip.type} ${i + 1}`, 'info'); };
+                timeline.appendChild(el);
+            });
         }
         
         function videoAddToTimeline(type) {
             videoClips.push({ type, id: Date.now() });
+            videoRenderClips();
             showNotification(`Added ${type} clip to timeline`, 'success');
         }
         
         // Additional video editor functions
         function videoPlayPause() { videoPlay(); }
-        function videoSeekStart() { videoPosition = 0; showNotification('Start', 'info'); }
-        function videoSeekEnd() { videoPosition = 30; showNotification('End', 'info'); }
-        function videoStepBack() { videoPosition = Math.max(0, videoPosition - 1); showNotification('-1s', 'info'); }
-        function videoStepForward() { videoPosition += 1; showNotification('+1s', 'info'); }
+        function videoSeekStart() { videoPosition = 0; videoUpdatePlayhead(); showNotification('Start', 'info'); }
+        function videoSeekEnd() { videoPosition = 30; videoUpdatePlayhead(); showNotification('End', 'info'); }
+        function videoStepBack() { videoPosition = Math.max(0, videoPosition - 1); videoUpdatePlayhead(); showNotification('-1s', 'info'); }
+        function videoStepForward() { videoPosition += 1; videoUpdatePlayhead(); showNotification('+1s', 'info'); }
         let videoCurrentTool = 'select';
         function videoRazor() {
             videoCurrentTool = 'razor';
@@ -16568,10 +16805,22 @@ if __name__ == '__main__':
             }
             showNotification('Timeline zoom: ' + val + '%', 'info');
         }
-        function videoAITransition() {
+        async function videoAITransition() {
+            if (videoClips.length < 2) {
+                showNotification('Add at least 2 clips to add transitions', 'warning'); return;
+            }
             showNotification('Adding AI transitions...', 'info');
-            // Transitions require timeline context, show info
-            setTimeout(() => showNotification('Smooth transitions added between clips', 'success'), 1500);
+            try {
+                const res = await fetch('/api/media/edit', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ file_url: lastGeneratedUrl || 'generate:video', instruction: `Add smooth transitions between ${videoClips.length} clips`, media_type: 'video' }) });
+                const data = await res.json();
+                if (data.success && data.output_url) {
+                    lastGeneratedUrl = data.output_url;
+                    const preview = document.getElementById('videoPreview');
+                    if (preview) preview.innerHTML = `<video src="${data.output_url}" controls autoplay style="width:100%;height:100%;object-fit:contain;"></video>`;
+                    showNotification('Smooth transitions added between clips!', 'success');
+                } else { showNotification(data.error || 'Transition failed', 'error'); }
+            } catch(e) { showNotification('Error: ' + e.message, 'error'); }
         }
         async function videoAICaption() {
             showNotification('Generating captions...', 'info');
@@ -16631,14 +16880,35 @@ if __name__ == '__main__':
             showNotification('Preview render complete!', 'success');
         }
         function videoExportFrame() {
-            showNotification('Exporting current frame...', 'info');
             const preview = document.getElementById('videoPreview');
-            if (preview) {
+            if (!preview) { showNotification('No video in preview', 'warning'); return; }
+            // Try to capture from video element or img
+            const video = preview.querySelector('video');
+            const img = preview.querySelector('img');
+            if (video) {
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth || 1920;
+                canvas.height = video.videoHeight || 1080;
+                canvas.getContext('2d').drawImage(video, 0, 0);
+                canvas.toBlob(blob => {
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = `frame_${Date.now()}.png`;
+                    a.click();
+                    showNotification('Frame exported as PNG', 'success');
+                });
+            } else if (img && img.src) {
+                const a = document.createElement('a');
+                a.href = img.src;
+                a.download = `frame_${Date.now()}.png`;
+                a.click();
                 showNotification('Frame exported as PNG', 'success');
+            } else {
+                showNotification('No content in preview to export', 'warning');
             }
         }
-        function videoSkipBack() { videoPosition = Math.max(0, videoPosition - 1); showNotification('Skip back', 'info'); }
-        function videoSkipForward() { videoPosition += 1; showNotification('Skip forward', 'info'); }
+        function videoSkipBack() { videoPosition = Math.max(0, videoPosition - 1); videoUpdatePlayhead(); showNotification('Skip back', 'info'); }
+        function videoSkipForward() { videoPosition += 1; videoUpdatePlayhead(); showNotification('Skip forward', 'info'); }
         function videoSwitchMedia(tab) {
             document.querySelectorAll('.video-media-tabs button').forEach(b => b.classList.remove('active'));
             if (event && event.target) event.target.classList.add('active');
@@ -16728,12 +16998,43 @@ if __name__ == '__main__':
         }
         function codeShowPanel(panel) {
             document.querySelectorAll('.code-panel-tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
+            if (event && event.target) event.target.classList.add('active');
+            // Show/hide panels (same logic as codeSwitchPanel for V1)
+            const terminal = document.getElementById('codeTerminal');
+            if (terminal) terminal.style.display = panel === 'terminal' ? 'block' : 'none';
         }
         // codeAIAssist defined above - no duplicate needed
         function codeRunCommand(el) {
-            showNotification('Running: ' + el.value, 'info');
+            const cmd = el.value;
+            if (!cmd) return;
             el.value = '';
+            const terminal = document.getElementById('codeTerminal');
+            if (terminal) {
+                terminal.innerHTML += `<div style="color:#22c55e;">$ ${cmd}</div>`;
+                // Simulate common commands
+                if (cmd.startsWith('echo ')) {
+                    terminal.innerHTML += `<div>${cmd.slice(5)}</div>`;
+                } else if (cmd === 'clear') {
+                    terminal.innerHTML = '';
+                } else if (cmd === 'ls') {
+                    const files = Object.keys(codeFiles).join('  ') || 'No files';
+                    terminal.innerHTML += `<div>${files}</div>`;
+                } else if (cmd === 'pwd') {
+                    terminal.innerHTML += `<div>/workspace</div>`;
+                } else if (cmd === 'help') {
+                    terminal.innerHTML += `<div>Available: echo, clear, ls, pwd, cat, help</div>`;
+                } else if (cmd.startsWith('cat ')) {
+                    const fname = cmd.slice(4).trim();
+                    if (codeFiles[fname] !== undefined) {
+                        terminal.innerHTML += `<div style="white-space:pre-wrap;">${codeFiles[fname] || '(empty)'}</div>`;
+                    } else {
+                        terminal.innerHTML += `<div style="color:#ef4444;">cat: ${fname}: No such file</div>`;
+                    }
+                } else {
+                    terminal.innerHTML += `<div style="color:#f59e0b;">Command not found: ${cmd}</div>`;
+                }
+                terminal.scrollTop = terminal.scrollHeight;
+            }
         }
         
         // Additional 3D functions
@@ -16951,6 +17252,8 @@ if __name__ == '__main__':
         let sheetSelectedCell = { row: 0, col: 0 };
         let sheetSheets = [{ name: 'Sheet 1', data: null }];
         let sheetCurrentSheet = 0;
+        let sheetUndoStack = [];
+        let sheetRedoStack = [];
         
         function sheetInit() {
             sheetData = Array.from({ length: sheetRows }, () => Array(sheetCols).fill(''));
@@ -17019,6 +17322,14 @@ if __name__ == '__main__':
         }
         
         function sheetUpdateCell(row, col, value) {
+            // Save undo state (debounced)
+            if (!sheetUpdateCell._timeout) {
+                sheetUndoStack.push(JSON.parse(JSON.stringify(sheetData)));
+                sheetRedoStack = [];
+                if (sheetUndoStack.length > 50) sheetUndoStack.shift();
+            }
+            clearTimeout(sheetUpdateCell._timeout);
+            sheetUpdateCell._timeout = setTimeout(() => { sheetUpdateCell._timeout = null; }, 1000);
             sheetData[row][col] = value;
             sheetUpdateSelectionInfo();
         }
@@ -17216,6 +17527,14 @@ if __name__ == '__main__':
             const { row, col } = sheetSelectedCell;
             if (!sheetMeta[row][col]) sheetMeta[row][col] = {};
             sheetMeta[row][col][type] = !sheetMeta[row][col][type];
+            // Apply visual formatting to cell
+            const grid = document.getElementById('sheetGrid');
+            const input = grid?.rows[row + 1]?.cells[col + 1]?.querySelector('input');
+            if (input) {
+                if (type === 'bold') input.style.fontWeight = sheetMeta[row][col][type] ? 'bold' : 'normal';
+                if (type === 'italic') input.style.fontStyle = sheetMeta[row][col][type] ? 'italic' : 'normal';
+                if (type === 'underline') input.style.textDecoration = sheetMeta[row][col][type] ? 'underline' : 'none';
+            }
             showNotification(`${type} toggled for ${sheetColName(col)}${row+1}`, 'info');
         }
         
@@ -17305,10 +17624,41 @@ if __name__ == '__main__':
                     sheetDrawChart();
                     break;
                 case 'freeze':
-                    showNotification('First row frozen as header', 'info');
+                    const grid2 = document.getElementById('sheetGrid');
+                    if (grid2 && grid2.rows[1]) {
+                        const headerRow = grid2.rows[1];
+                        const isFrozen = headerRow.style.position === 'sticky';
+                        if (!isFrozen) {
+                            headerRow.style.position = 'sticky';
+                            headerRow.style.top = '0';
+                            headerRow.style.zIndex = '5';
+                            headerRow.style.background = '#1a1a2e';
+                            Array.from(headerRow.cells).forEach(c => c.style.fontWeight = 'bold');
+                            showNotification('First row frozen as header', 'success');
+                        } else {
+                            headerRow.style.position = '';
+                            headerRow.style.top = '';
+                            headerRow.style.zIndex = '';
+                            showNotification('Header unfrozen', 'info');
+                        }
+                    }
                     break;
-                case 'undo': showNotification('Undo', 'info'); break;
-                case 'redo': showNotification('Redo', 'info'); break;
+                case 'undo':
+                    if (sheetUndoStack.length > 0) {
+                        sheetRedoStack.push(JSON.parse(JSON.stringify(sheetData)));
+                        sheetData = sheetUndoStack.pop();
+                        sheetRenderGrid();
+                        showNotification('Undo', 'info');
+                    } else { showNotification('Nothing to undo', 'info'); }
+                    break;
+                case 'redo':
+                    if (sheetRedoStack.length > 0) {
+                        sheetUndoStack.push(JSON.parse(JSON.stringify(sheetData)));
+                        sheetData = sheetRedoStack.pop();
+                        sheetRenderGrid();
+                        showNotification('Redo', 'info');
+                    } else { showNotification('Nothing to redo', 'info'); }
+                    break;
             }
         }
         
@@ -17366,9 +17716,33 @@ if __name__ == '__main__':
         }
         
         function sheetSwitchTab(index, el) {
+            // Save current sheet data
+            sheetSheets[sheetCurrentSheet].data = JSON.parse(JSON.stringify(sheetData));
+            sheetSheets[sheetCurrentSheet].meta = JSON.parse(JSON.stringify(sheetMeta));
+            sheetSheets[sheetCurrentSheet].rows = sheetRows;
+            sheetSheets[sheetCurrentSheet].cols = sheetCols;
+            
             sheetCurrentSheet = index;
             document.querySelectorAll('.sheet-tab').forEach(t => t.classList.remove('active'));
             if (el) el.classList.add('active');
+            
+            // Load target sheet data or initialize
+            if (sheetSheets[index].data) {
+                sheetData = sheetSheets[index].data;
+                sheetMeta = sheetSheets[index].meta;
+                sheetRows = sheetSheets[index].rows;
+                sheetCols = sheetSheets[index].cols;
+            } else {
+                sheetRows = 50;
+                sheetCols = 26;
+                sheetData = [];
+                sheetMeta = [];
+                for (let r = 0; r < sheetRows; r++) {
+                    sheetData.push(Array(sheetCols).fill(''));
+                    sheetMeta.push(Array(sheetCols).fill(null));
+                }
+            }
+            sheetRenderGrid();
             showNotification(`Switched to ${sheetSheets[index]?.name || 'Sheet'}`, 'info');
         }
         
