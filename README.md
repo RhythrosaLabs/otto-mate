@@ -18,7 +18,7 @@
   <img src="https://img.shields.io/badge/AI%20Models-15+-blue" alt="Models">
   <img src="https://img.shields.io/badge/Themes-14-pink" alt="Themes">
   <img src="https://img.shields.io/badge/Plugins-Extensible-green" alt="Plugins">
-  <img src="https://img.shields.io/badge/License-Private-red" alt="License">
+  <img src="https://img.shields.io/badge/License-MIT-green" alt="License">
 </p>
 
 ---

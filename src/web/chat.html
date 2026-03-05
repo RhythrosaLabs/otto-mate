@@ -10625,12 +10625,12 @@
                 
                 <!-- Top Toolbar - Canva style -->
                 <div class="ev2-toolbar">
-                    <button class="ev2-tool-btn active" data-tool="select" title="Select"><span>↖️</span></button>
-                    <button class="ev2-tool-btn" data-tool="move" title="Move"><span>✋</span></button>
-                    <button class="ev2-tool-btn" data-tool="crop" title="Crop"><span>⬜</span></button>
-                    <button class="ev2-tool-btn" data-tool="draw" title="Draw"><span>✏️</span></button>
-                    <button class="ev2-tool-btn" data-tool="erase" title="Erase"><span>🧽</span></button>
-                    <button class="ev2-tool-btn" data-tool="text" title="Text"><span>T</span></button>
+                    <button class="ev2-tool-btn active" data-tool="select" onclick="ev2SelectTool('select', this)" title="Select"><span>↖️</span></button>
+                    <button class="ev2-tool-btn" data-tool="move" onclick="ev2SelectTool('move', this)" title="Move"><span>✋</span></button>
+                    <button class="ev2-tool-btn" data-tool="crop" onclick="ev2SelectTool('crop', this)" title="Crop"><span>⬜</span></button>
+                    <button class="ev2-tool-btn" data-tool="draw" onclick="ev2SelectTool('draw', this)" title="Draw"><span>✏️</span></button>
+                    <button class="ev2-tool-btn" data-tool="erase" onclick="ev2SelectTool('erase', this)" title="Erase"><span>🧽</span></button>
+                    <button class="ev2-tool-btn" data-tool="text" onclick="ev2SelectTool('text', this)" title="Text"><span>T</span></button>
                     <div class="ev2-tool-divider"></div>
                     <button class="ev2-tool-btn" onclick="ev2Undo()" title="Undo"><span>↩️</span></button>
                     <button class="ev2-tool-btn" onclick="ev2Redo()" title="Redo"><span>↪️</span></button>
@@ -10802,7 +10802,7 @@
                                 <div class="ev2-prop-row">
                                     <label>W</label><input type="number" id="ev2PropW" value="512">
                                     <label>H</label><input type="number" id="ev2PropH" value="512">
-                                    <button class="ev2-lock-btn" title="Lock aspect ratio">🔗</button>
+                                    <button class="ev2-lock-btn" onclick="ev2ToggleAspectLock(this)" title="Lock aspect ratio">🔗</button>
                                 </div>
                             </div>
                             <!-- Appearance -->
@@ -11309,7 +11309,7 @@ output = replicate.run(
                                 <div class="ev4-prop-row">
                                     <input type="number" placeholder="W" id="ev4PropW" value="1024">
                                     <input type="number" placeholder="H" id="ev4PropH" value="1024">
-                                    <button class="ev4-link-btn" title="Lock aspect ratio">🔗</button>
+                                    <button class="ev4-link-btn" onclick="ev4ToggleAspectLock(this)" title="Lock aspect ratio">🔗</button>
                                 </div>
                             </div>
                             <div class="ev4-property-group">
@@ -11385,9 +11385,9 @@ output = replicate.run(
                             <div class="video-media-browser">
                                 <div class="video-section-label">Media</div>
                                 <div class="video-media-tabs">
-                                    <button class="active">Clips</button>
-                                    <button>Audio</button>
-                                    <button>Effects</button>
+                                    <button class="active" onclick="videoSwitchMedia('clips')">Clips</button>
+                                    <button onclick="videoSwitchMedia('audio')">Audio</button>
+                                    <button onclick="videoSwitchMedia('effects')">Effects</button>
                                 </div>
                                 <div class="video-media-grid">
                                     <div class="video-media-item"><div class="video-thumb">🎬</div><span>Intro.mp4</span></div>
@@ -11636,6 +11636,7 @@ output = replicate.run(
                                 <span class="e3d-divider"></span>
                                 <button class="e3d-tool" onclick="e3dViewTop()">⬆️</button>
                                 <button class="e3d-tool" onclick="e3dViewFront()">⏹️</button>
+                                <button class="e3d-tool" onclick="e3dViewSide()">◻️</button>
                                 <button class="e3d-tool" onclick="e3dViewPersp()">🧊</button>
                             </div>
                             <div class="e3d-canvas" id="e3dCanvas2">
@@ -15197,6 +15198,41 @@ if __name__ == '__main__':
         // Editor V2 Functions (Canva-style)
         let ev2CurrentZoom = 100;
         let ev2Layers = [{id: 1, name: 'Background', visible: true, locked: false}];
+        let ev2CurrentTool = 'select';
+        let ev2AspectLocked = false;
+        
+        function ev2SelectTool(tool, btn) {
+            ev2CurrentTool = tool;
+            document.querySelectorAll('.ev2-tool-btn[data-tool]').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            const canvas = document.querySelector('.ev2-canvas');
+            if (canvas) {
+                const cursors = { select: 'default', move: 'grab', crop: 'crosshair', draw: 'crosshair', erase: 'cell', text: 'text' };
+                canvas.style.cursor = cursors[tool] || 'default';
+            }
+            showNotification(`Tool: ${tool.charAt(0).toUpperCase() + tool.slice(1)}`, 'info');
+        }
+        
+        function ev2ToggleAspectLock(btn) {
+            ev2AspectLocked = !ev2AspectLocked;
+            btn.textContent = ev2AspectLocked ? '🔒' : '🔗';
+            btn.style.background = ev2AspectLocked ? 'rgba(139,92,246,0.3)' : '';
+            showNotification(ev2AspectLocked ? 'Aspect ratio locked' : 'Aspect ratio unlocked', 'info');
+            if (ev2AspectLocked) {
+                const w = document.getElementById('ev2PropW');
+                const h = document.getElementById('ev2PropH');
+                if (w && h) {
+                    const ratio = parseInt(w.value) / parseInt(h.value);
+                    w.oninput = () => { h.value = Math.round(parseInt(w.value) / ratio); };
+                    h.oninput = () => { w.value = Math.round(parseInt(h.value) * ratio); };
+                }
+            } else {
+                const w = document.getElementById('ev2PropW');
+                const h = document.getElementById('ev2PropH');
+                if (w) w.oninput = null;
+                if (h) h.oninput = null;
+            }
+        }
         
         function ev2SwitchPanel(panel) {
             document.querySelectorAll('.ev2-panel-tab').forEach(t => t.classList.remove('active'));
@@ -15651,7 +15687,7 @@ if __name__ == '__main__':
             if (!prompt) { showNotification('Enter a prompt first', 'warning'); return; }
             // Add to the main task queue
             if (typeof queueCurrentInput === 'function') {
-                document.getElementById('mainInput').value = prompt;
+                document.getElementById('input').value = prompt;
                 queueCurrentInput();
             } else {
                 showNotification('Added to queue: ' + prompt.substring(0, 50), 'success');
@@ -16182,11 +16218,33 @@ if __name__ == '__main__':
             const prompt = document.getElementById('ev4Prompt')?.value;
             if (!prompt) { showNotification('Enter a prompt first', 'warning'); return; }
             if (typeof queueCurrentInput === 'function') {
-                const mainInput = document.getElementById('mainInput');
+                const mainInput = document.getElementById('input');
                 if (mainInput) { mainInput.value = prompt; queueCurrentInput(); }
             }
             showNotification('Added to queue', 'success');
             ev4Log('Added to generation queue', 'success');
+        }
+        
+        let ev4AspectLocked = false;
+        function ev4ToggleAspectLock(btn) {
+            ev4AspectLocked = !ev4AspectLocked;
+            btn.textContent = ev4AspectLocked ? '🔒' : '🔗';
+            btn.style.background = ev4AspectLocked ? 'rgba(59,130,246,0.3)' : '';
+            showNotification(ev4AspectLocked ? 'Aspect ratio locked' : 'Aspect ratio unlocked', 'info');
+            if (ev4AspectLocked) {
+                const w = document.getElementById('ev4PropW');
+                const h = document.getElementById('ev4PropH');
+                if (w && h) {
+                    const ratio = parseInt(w.value) / parseInt(h.value);
+                    w.oninput = () => { h.value = Math.round(parseInt(w.value) / ratio); };
+                    h.oninput = () => { w.value = Math.round(parseInt(h.value) * ratio); };
+                }
+            } else {
+                const w = document.getElementById('ev4PropW');
+                const h = document.getElementById('ev4PropH');
+                if (w) w.oninput = null;
+                if (h) h.oninput = null;
+            }
         }
         
         async function ev4Generate() {
@@ -16904,21 +16962,21 @@ if __name__ == '__main__':
         let videoCurrentTool = 'select';
         function videoRazor() {
             videoCurrentTool = 'razor';
-            document.querySelectorAll('.video-tool-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.video-tool-btn, .video-tool').forEach(b => b.classList.remove('active'));
             if (event && event.target) event.target.classList.add('active');
             document.querySelector('.video-timeline')?.style.setProperty('cursor', 'crosshair');
             showNotification('Razor tool — click on timeline to split clips', 'info');
         }
         function videoSelect() {
             videoCurrentTool = 'select';
-            document.querySelectorAll('.video-tool-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.video-tool-btn, .video-tool').forEach(b => b.classList.remove('active'));
             if (event && event.target) event.target.classList.add('active');
             document.querySelector('.video-timeline')?.style.setProperty('cursor', 'default');
             showNotification('Select tool active', 'info');
         }
         function videoRipple() {
             videoCurrentTool = 'ripple';
-            document.querySelectorAll('.video-tool-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.video-tool-btn, .video-tool').forEach(b => b.classList.remove('active'));
             if (event && event.target) event.target.classList.add('active');
             document.querySelector('.video-timeline')?.style.setProperty('cursor', 'col-resize');
             showNotification('Ripple edit mode — drag clip edges to trim', 'info');

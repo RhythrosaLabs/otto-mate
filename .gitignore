@@ -62,3 +62,10 @@ useful repos/
 *.key
 *.crt
 client_secret*.json
+
+# Audit / scratch scripts
+_audit_*.py
+
+# Test outputs
+test_outputs/
+test_output.*/
