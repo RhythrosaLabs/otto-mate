@@ -890,3 +890,8 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
   <br>
   <sub>Otto Chat — Your AI Business Partner</sub>
 </p>
+
+
+## Support
+
+If you find this useful, consider supporting via [PayPal](https://paypal.me/noodlebake)
